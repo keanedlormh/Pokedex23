@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enciclopedia Técnica v2.9.6</title>
-    
+
+    <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- ============================================== -->
-    <!-- [ACTUALIZADO] Bootloader v2.9.6                -->
-    <!-- Carga desde manifest: .js individuales Y .json de gama -->
-    <!-- ============================================== -->
+    <!-- ====================================================== -->
+    <!-- [ACTUALIZADO] Bootloader v2.9.6 (Carga .json)        -->
+    <!-- Carga desde manifest: .js de esquemas Y .json de datos -->
+    <!-- ====================================================== -->
     <script>
         // 1. Definir la BD global
         window.APP_DB = {
@@ -30,13 +31,13 @@
 
         if (xhr.status === 200) {
             const manifest = JSON.parse(xhr.responseText);
-            
+
             // 4. Escribir las etiquetas <script> de los esquemas
             manifest.schemas.forEach(path => {
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
-            
-            // 5. [NUEVO] Cargar y registrar las gamas JSON a granel (SÍNCRONO)
+
+            // 5. Cargar y registrar las gamas JSON a granel (SÍNCRONO)
             manifest.bulk_gamas.forEach(jsonPath => {
                 const jsonXhr = new XMLHttpRequest();
                 jsonXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
@@ -53,10 +54,20 @@
                 }
             });
 
-            // 6. Escribir las etiquetas <script> de los productos individuales
+            // 6. [CAMBIO v2.9.6] Cargar y registrar los productos .json individuales (SÍNCRONO)
             Object.values(manifest.products).forEach(productList => {
-                productList.forEach(path => {
-                    document.write('<script src="' + basePath + path + '" defer><\/script>');
+                productList.forEach(jsonPath => {
+                    const jsonProductXhr = new XMLHttpRequest();
+                    jsonProductXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                    jsonProductXhr.send(null);
+
+                    if (jsonProductXhr.status === 200) {
+                        const product = JSON.parse(jsonProductXhr.responseText);
+                        // Registra el producto individual
+                        window.APP_DB.registerProduct(product);
+                    } else {
+                        console.error("ERROR: No se pudo cargar el archivo JSON de producto: " + jsonPath);
+                    }
                 });
             });
 
@@ -71,7 +82,7 @@
 
     <!-- El script principal se carga al final -->
     <script src="main.js" defer></script>
-    
+
 </head>
 
 <body>
@@ -80,7 +91,7 @@
 
         <!-- BARRA DE APLICACIÓN SUPERIOR -->
         <header class="app-header">
-            
+
             <div class="header-left">
                 <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.9.6</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"><!-- Relleno por JS --></div>
@@ -88,13 +99,13 @@
 
             <!-- Contenedor para controles derechos -->
             <div class="header-right-controls">
-                
+
                 <!-- SISTEMA DE FILTROS -->
                 <div id="smart-filter-system" class="smart-filter-wrapper-v2">
                     <button id="smart-filter-toggle" class="smart-filter-summary">
                         Filtros Inteligentes
                     </button>
-                    
+
                     <div id="smart-filter-panel" class="smart-filter-content-hidden">
                         <div class="filter-schema-selector">
                             <label for="schema-filter-select">Gama de Producto:</label>
@@ -130,11 +141,13 @@
 
         </header>
         <!-- FIN DE BARRA SUPERIOR -->
-        
+
+        <!-- Barra de filtros activos -->
         <div id="active-filters-bar" class="active-filters-bar-hidden">
             <!-- Relleno por JS con los filtros activos -->
         </div>
-        
+
+        <!-- Layout principal de 2 columnas -->
         <div class="main-layout">
             <aside class="sidebar-column">
                 <div class="futuristic-card search-panel">
@@ -162,10 +175,10 @@
                 </div>
             </main>
         </div>
-        
+
     </div> <!-- Fin del contenedor principal -->
 
-    <!-- OVERLAY -->
+    <!-- OVERLAY (para modales y menús) -->
     <div id="filter-overlay" class="overlay-hidden"></div>
 
     <!-- MODAL PARA EL README -->
