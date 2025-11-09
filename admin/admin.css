@@ -168,8 +168,8 @@ body {
 }
 .futuristic-textarea {
     width: 100%;
-    min-height: 40px; /* Altura mínima */
-    resize: vertical; /* Permitir redimensionar verticalmente */
+    min-height: 40px;
+    resize: vertical;
 }
 .futuristic-label {
     font-size: 0.8rem;
@@ -216,6 +216,8 @@ body {
     overflow-y: auto;
     border-radius: 4px;
     background-color: var(--color-bg-dark);
+    /* [NUEVO] Transición para colapsar */
+    transition: all 0.3s ease;
 }
 
 .futuristic-list .list-item {
@@ -237,6 +239,15 @@ body {
     background-color: var(--color-cyan-glow);
     color: var(--color-cyan-accent);
     font-weight: 600;
+}
+
+/* [NUEVA CLASE] */
+.futuristic-list.list-collapsed {
+    flex-grow: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+    border: none;
 }
 
 /* ==============================================
