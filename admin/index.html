@@ -3,45 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v2.9.2</title>
+    <title>Admin - Enciclopedia Técnica v2.9.4</title>
     
-    <!-- [CORREGIDO] Ruta absoluta para el CSS -->
     <link rel="stylesheet" href="/admin/admin.css">
 
-    <!-- ============================================== -->
-    <!-- Bootloader v2.9.2 (Con rutas absolutas)      -->
-    <!-- ============================================== -->
+    <!-- Bootloader v2.9.2 (Rutas Absolutas) -->
     <script>
-        // 1. Definir la BD global
         window.APP_DB = {
             products: [],
             schemas: {},
             registerProduct: function(product) { this.products.push(product); },
             registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
         };
-
-        // 2. [CORREGIDO] Definir la ruta base como la RAÍZ del sitio ('/')
         const basePath = '/';
-
-        // 3. Cargar el manifest (SÍNCRONO)
         const xhr = new XMLHttpRequest();
-        // Ahora buscará en '/db/manifest.json' (correcto)
         xhr.open('GET', basePath + 'db/manifest.json', false);
         xhr.send(null);
-
         if (xhr.status === 200) {
             const manifest = JSON.parse(xhr.responseText);
-            
-            // 4. Escribir las etiquetas <script> de los esquemas
             manifest.schemas.forEach(path => {
-                // Escribirá <script src="/db/schemas/..." defer>
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
-            
-            // 5. Escribir las etiquetas <script> de los productos
             Object.values(manifest.products).forEach(productList => {
                 productList.forEach(path => {
-                    // Escribirá <script src="/db/tvs/..." defer>
                     document.write('<script src="' + basePath + path + '" defer><\/script>');
                 });
             });
@@ -50,44 +34,55 @@
             alert("ERROR CRÍTICO: No se pudo cargar la base de datos. Revise la consola.");
         }
     </script>
-    <!-- ============================================== -->
-    <!-- FIN DEL BOOTLOADER                           -->
-    <!-- ============================================== -->
     
-    <!-- [CORREGIDO] Ruta absoluta para el JS -->
     <script src="/admin/admin.js" defer></script>
-
 </head>
 
 <body>
 
-    <!-- [NUEVA] Barra de Navegación Fija -->
-    <nav class="admin-top-bar">
-        <div class="header-left">
-             <!-- Versión actualizada -->
-            <h1 class="app-title">Administrador <span class="app-version">v2.9.2</span></h1>
+    <!-- [NUEVO] Encabezado Fijo -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="app-title">Administrador <span class="app-version">v2.9.4</span></h1>
+            </div>
+            <a href="/" class="header-link">Volver a la Enciclopedia</a>
         </div>
-        <div class="admin-tab-controls">
-            <button class="tab-button active" data-tab="edit-model">
-                Editar Modelo
-            </button>
-            <button class="tab-button" data-tab="export-gama">
-                Exportar Gama
-            </button>
+    </header>
+    
+    <!-- [NUEVA] Barra de Menús Fija -->
+    <nav class="admin-navbar">
+        
+        <!-- Menú "Editar" -->
+        <div class="menu-group">
+            <button class="menu-title" data-dropdown="menu-edit">Editar</button>
+            <div id="menu-edit" class="menu-dropdown">
+                <button class="menu-item" data-tab="edit-model">
+                    Editar Modelo
+                </button>
+            </div>
         </div>
-        <!-- [CORREGIDO] Ruta absoluta para volver -->
-        <a href="/" class="header-link">Volver a la Enciclopedia</a>
+
+        <!-- Menú "Exportar" -->
+        <div class="menu-group">
+            <button class="menu-title" data-dropdown="menu-export">Exportar</button>
+            <div id="menu-export" class="menu-dropdown">
+                <button class="menu-item" data-tab="export-gama">
+                    Exportar Gama
+                </button>
+            </div>
+        </div>
+        
+        <!-- Puedes añadir más menús aquí -->
+
     </nav>
 
-    <!-- [NUEVA] Área de Contenido Principal -->
+    <!-- Área de Contenido Principal -->
     <main class="admin-content-area">
 
         <!-- Panel 1: Editar Modelo (Activo por defecto) -->
         <div id="panel-edit-model" class="content-panel active">
-            
-            <!-- Layout de 2 columnas (movido aquí dentro) -->
             <div class="panel-layout-2col">
-                <!-- Columna Izquierda: Búsqueda -->
                 <aside class="sidebar-column">
                     <div class="futuristic-card search-panel">
                         <h2 class="futuristic-title">1. Cargar Modelo</h2>
@@ -97,8 +92,6 @@
                         </div>
                     </div>
                 </aside>
-                
-                <!-- Columna Derecha: Editor -->
                 <main class="main-column">
                     <div class="futuristic-card sticky-panel">
                         <h2 id="product-title" class="spec-title">2. Editor de Producto</h2>
@@ -116,16 +109,12 @@
                     </div>
                 </main>
             </div>
-            
         </div>
 
         <!-- Panel 2: Exportar Gama (Oculto por defecto) -->
         <div id="panel-export-gama" class="content-panel">
-            
-            <!-- Layout de 1 columna -->
-            <div class="futuristic-card">
+            <div class="futuristic-card" style="max-width: 800px; margin: 0 auto;">
                 <h2 class="futuristic-title">Exportar Gama Completa</h2>
-                
                 <div class="gama-export-controls">
                     <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
                     <select id="gama-export-select" class="futuristic-select w-full">
@@ -133,12 +122,10 @@
                         <!-- Relleno por JS -->
                     </select>
                 </div>
-
                 <div id="gama-export-list" class="gama-export-list">
                     <!-- Relleno por JS con los modelos -->
                 </div>
             </div>
-
         </div>
 
     </main>
