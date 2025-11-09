@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enciclopedia Técnica v2.0</title>
+    <title>Enciclopedia Técnica v2.6</title>
     
     <link rel="stylesheet" href="style.css">
 
+    <!-- Scripts de la base de datos -->
     <script src="main.js" defer></script>
     
+    <!-- ESQUEMAS DE PRODUCTO -->
     <script src="db/schemas/moduloSoundbars.js" defer></script>
     <script src="db/schemas/moduloTVs.js" defer></script>
 
+    <!-- DATOS DE PRODUCTO (Soundbars) -->
     <script src="db/soundbars/s20a.js" defer></script>
     <script src="db/soundbars/s40t.js" defer></script>
     <script src="db/soundbars/s40tr.js" defer></script>
@@ -34,7 +37,7 @@
     <script src="db/tvs/55UA75006LA.js" defer></script>
     <script src="db/tvs/50NANO81A6A.js" defer></script>
     <script src="db/tvs/OLED42C45LA.js" defer></script>
-    <script src="db/tvs/OLED65C54LA.AEU.js" defer></script>
+    <script src="db/tvs/OLED65C54LA.AEU.js" defer></script>>
     
 </head>
 
@@ -42,31 +45,41 @@
 
     <div class="container">
 
+        <!-- BARRA DE APLICACIÓN SUPERIOR (ACTUALIZADA) -->
         <header class="app-header">
             
             <div class="header-left">
-                <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.0</span></h1>
-                <div id="selected-model-display" class="model-chip-hidden"></div>
+                <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.6</span></h1>
+                <div id="selected-model-display" class="model-chip-hidden"><!-- Relleno por JS --></div>
             </div>
 
+            <!-- Contenedor para controles derechos -->
             <div class="header-right-controls">
                 
+                <!-- SISTEMA DE FILTROS -->
                 <div id="smart-filter-system" class="smart-filter-wrapper-v2">
                     <button id="smart-filter-toggle" class="smart-filter-summary">
                         Filtros Inteligentes
                     </button>
                     
                     <div id="smart-filter-panel" class="smart-filter-content-hidden">
+                        <!-- Selector de Gama -->
                         <div class="filter-schema-selector">
                             <label for="schema-filter-select">Gama de Producto:</label>
                             <select id="schema-filter-select" class="futuristic-select">
                                 <option value="all">Todas las Gamas</option>
-                                </select>
+                                <!-- Relleno por JS -->
+                            </select>
                         </div>
+                        <!-- Contenedor de Filtros -->
                         <div id="smart-filters-container" class="smart-filters-list">
-                            </div>
+                            <!-- Relleno por JS -->
+                        </div>
                     </div>
                 </div>
+                <!-- Fin del Sistema de Filtros -->
+
+                <!-- MENÚ DE AJUSTES (ACTUALIZADO) -->
                 <div class="settings-menu-wrapper">
                     <button id="settings-menu-toggle" class="settings-button" title="Ajustes">
                         ⚙️
@@ -78,27 +91,37 @@
                         <button id="info-toggle-btn" class="settings-menu-item" title="Información del proyecto">
                             ℹ️ Info
                         </button>
+                        <!-- [NUEVO] Enlace al Admin Panel -->
+                        <a href="admin/index.html" target="_blank" id="admin-link-btn" class="settings-menu-item" title="Administrar base de datos">
+                            🛠️ Administrar
+                        </a>
                     </div>
                 </div>
-                </div> </header>
+                <!-- Fin del Menú de Ajustes -->
+
+            </div> <!-- Fin de header-right-controls -->
+
+        </header>
+        <!-- FIN DE BARRA SUPERIOR -->
+
+
+        <!-- ... (El resto de tu layout principal no cambia) ... -->
+        
         <div id="active-filters-bar" class="active-filters-bar-hidden">
-            </div>
-
+            <!-- Relleno por JS con los filtros activos -->
+        </div>
         <div class="main-layout">
-
             <aside class="sidebar-column">
                 <div class="futuristic-card search-panel">
                     <h2 class="futuristic-title">Búsqueda por Modelo</h2>
                     <input type="text" id="search-model" placeholder="Escribe un modelo (ej: S95TR)" class="futuristic-input w-full">
-                    
                     <div id="model-results-list" class="futuristic-list full-list-visible">
-                        </div>
+                        <!-- Relleno por JS -->
+                    </div>
                 </div>
             </aside>
-
             <main class="main-column">
                 <div class="futuristic-card sticky-panel">
-                    
                     <div class="spec-header">
                         <h2 id="product-title" class="spec-title">
                             Selecciona un producto
@@ -108,14 +131,29 @@
                             <button id="collapse-all-btn" class="spec-button" title="Contraer todo">[ − ]</button>
                         </div>
                     </div>
-                    
                     <div id="product-specs" class="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
                         <p id="product-placeholder" class="text-gray-400">Los detalles del modelo seleccionado aparecerán aquí.</p>
                     </div>
                 </div>
             </main>
+        </div>
+        
+    </div> <!-- Fin del contenedor principal -->
 
-        </div> </div> <div id="filter-overlay" class="overlay-hidden"></div>
+    <!-- OVERLAY (Usado por filtros, ajustes y el nuevo modal) -->
+    <div id="filter-overlay" class="overlay-hidden"></div>
+
+    <!-- [NUEVO] MODAL PARA EL README -->
+    <div id="readme-modal" class="modal-hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Información del Proyecto (README.md)</h2>
+                <button id="readme-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <!-- El contenido del README.md se cargará aquí -->
+            <pre id="readme-content" class="modal-body"></pre>
+        </div>
+    </div>
 
 </body>
 </html>
