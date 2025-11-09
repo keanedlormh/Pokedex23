@@ -1,0 +1,292 @@
+/* ==============================================
+   Estilos para el Admin Panel v2.6
+   (Basado en el style.css principal)
+   ============================================== */
+:root {
+    --color-bg-dark: #0D1117;
+    --color-bg-medium: #161B22;
+    --color-border: #21262D;
+    --color-border-light: #2a3038;
+    --color-text-primary: #e2e8f0;
+    --color-text-secondary: #9ca3af;
+    --color-text-dim: #6b7280;
+    --color-cyan-accent: #06b6d4;
+    --color-cyan-glow: rgba(6, 182, 212, 0.25);
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+
+body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-medium); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
+
+/* ==============================================
+   Layout Básico
+   ============================================== */
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0.75rem;
+}
+@media (min-width: 1024px) {
+    .container { padding: 1.5rem; }
+}
+
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+@media (min-width: 1024px) {
+    .main-layout { flex-direction: row; }
+    .sidebar-column {
+        width: 33.333333%;
+        flex-shrink: 0;
+    }
+    .main-column {
+        width: 66.666667%;
+    }
+}
+
+.sticky-panel { position: sticky; top: 1rem; }
+.w-full { width: 100%; }
+.text-gray-400 { color: var(--color-text-secondary); }
+
+/* ==============================================
+   Header
+   ============================================== */
+.app-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    gap: 0.75rem;
+}
+@media (min-width: 1024px) {
+    .app-header {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.app-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+.app-version {
+    font-size: 0.75rem;
+    padding: 0 0.3rem;
+    font-family: var(--font-mono);
+    color: var(--color-cyan-accent);
+    background-color: var(--color-bg-medium);
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+}
+.header-link {
+    font-size: 0.85rem;
+    color: var(--color-cyan-accent);
+    text-decoration: none;
+    border: 1px solid var(--color-cyan-accent);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.header-link:hover {
+    background-color: var(--color-cyan-glow);
+    color: #fff;
+}
+
+/* ==============================================
+   Tarjetas y Paneles
+   ============================================== */
+.futuristic-card {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-cyan-accent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.search-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh; /* Altura limitada */
+}
+.futuristic-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.4rem;
+    flex-shrink: 0;
+}
+.spec-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+/* ==============================================
+   Inputs y Botones
+   ============================================== */
+.futuristic-input,
+.futuristic-select,
+.futuristic-textarea {
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
+    font-family: var(--font-mono);
+}
+.futuristic-input:focus,
+.futuristic-select:focus,
+.futuristic-textarea:focus {
+    outline: none;
+    border-color: var(--color-cyan-accent);
+    box-shadow: 0 0 0 3px var(--color-cyan-glow);
+}
+.futuristic-textarea {
+    width: 100%;
+    min-height: 40px; /* Altura mínima */
+    resize: vertical; /* Permitir redimensionar verticalmente */
+}
+.futuristic-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+.futuristic-button {
+    background-color: var(--color-cyan-accent);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    padding: 0.6rem 1.2rem;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--color-cyan-accent);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.futuristic-button:hover {
+    background-color: #0891b2;
+    box-shadow: 0 0 15px var(--color-cyan-glow);
+}
+.futuristic-button:disabled {
+    background-color: var(--color-border);
+    border-color: var(--color-border-light);
+    color: var(--color-text-dim);
+    cursor: not-allowed;
+}
+
+
+/* ==============================================
+   Lista de Búsqueda
+   ============================================== */
+.futuristic-list {
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+}
+.full-list-visible {
+    margin-top: 0.75rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    border-radius: 4px;
+    background-color: var(--color-bg-dark);
+}
+
+.futuristic-list .list-item {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px dashed var(--color-border);
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+}
+.futuristic-list .list-item:last-child {
+    border-bottom: none;
+}
+.futuristic-list .list-item:hover {
+    background-color: var(--color-border);
+    color: var(--color-cyan-accent);
+}
+.futuristic-list .list-item.active {
+    background-color: var(--color-cyan-glow);
+    color: var(--color-cyan-accent);
+    font-weight: 600;
+}
+
+/* ==============================================
+   Panel Editor
+   ============================================== */
+.editor-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+@media (min-width: 768px) {
+    .editor-controls {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+}
+.control-group {
+    flex-grow: 1;
+}
+
+.editor-form-fields {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+.form-group {
+    margin-bottom: 0.75rem;
+}
+.form-group-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    padding: 0.5rem 0;
+    background: var(--color-border);
+    margin: 1rem 0 0.75rem 0;
+    padding-left: 0.75rem;
+    border-radius: 4px;
+}
+.form-row {
+    margin-bottom: 0.75rem;
+}
+.form-row .futuristic-label {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--color-text-secondary);
+}
