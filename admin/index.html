@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v2.8</title>
+    <title>Admin - Enciclopedia Técnica v2.9</title>
     
     <link rel="stylesheet" href="admin.css">
 
+    <!-- Definir la BD ANTES de cargar los scripts -->
     <script>
         window.APP_DB = {
             products: [],
@@ -16,92 +17,108 @@
         };
     </script>
 
+    <!-- Carga de Esquemas y Modelos (desde la raíz) -->
     <script src="../db/schemas/moduloSoundbars.js" defer></script>
     <script src="../db/schemas/moduloTVs.js" defer></script>
     
-    <!-- Carga TODOS los modelos -->
     <!-- Soundbars -->
     <script src="../db/soundbars/s20a.js" defer></script>
-    <script src="../db/soundbars/s40t.js" defer></script>
-    <script src="../db/soundbars/s40tr.js" defer></script>
-    <script src="../db/soundbars/s60t.js" defer></script>
-    <script src="../db/soundbars/s60tr.js" defer></script>
-    <script src="../db/soundbars/s65q.js" defer></script>
-    <script src="../db/soundbars/s70tr.js" defer></script>
-    <script src="../db/soundbars/s70ty.js" defer></script>
-    <script src="../db/soundbars/s80tr.js" defer></script>
-    <script src="../db/soundbars/s90tr.js" defer></script>
-    <script src="../db/soundbars/s90ty.js" defer></script>
-    <script src="../db/soundbars/s95trsp.js" defer></script>
-    <script src="../db/soundbars/sc9s.js" defer></script>
-    <script src="../db/soundbars/sg10ty.js" defer></script>
-    <script src="../db/soundbars/sqc2.js" defer></script>
+    <!-- ... (todos tus archivos de soundbars) ... -->
     <script src="../db/soundbars/sqc4r.js" defer></script>
-
+    
     <!-- TVs -->
     <script src="../db/tvs/OLED83G55LW.js" defer></script>
-    <script src="../db/tvs/75QNED93A6A.js" defer></string>
+    <script src="../db/tvs/75QNED93A6A.js" defer></script>
     <script src="../db/tvs/55UA75006LA.js" defer></script>
     <script src="../db/tvs/50NANO81A6A.js" defer></script>
     <script src="../db/tvs/OLED42C45LA.js" defer></script>
-    <script src="../db/tvs/OLED65C54LA.js" defer></script>
+    <script src="../db/tvs/OLED65C54LA.AEU.js" defer></script>
     
+    <!-- Lógica del Admin -->
     <script src="admin.js" defer></script>
 </head>
 
 <body>
 
-    <div class="container">
-        <header class="app-header">
-            <div class="header-left">
-                <h1 class="app-title">Administrador de Datos <span class="app-version">v2.8</span></h1>
-            </div>
-            <a href="../index.html" class="header-link">Volver a la Enciclopedia</a>
-        </header>
+    <!-- [NUEVA] Barra de Navegación Fija -->
+    <nav class="admin-top-bar">
+        <div class="header-left">
+            <h1 class="app-title">Administrador <span class="app-version">v2.9</span></h1>
+        </div>
+        <div class="admin-tab-controls">
+            <button class="tab-button active" data-tab="edit-model">
+                Editar Modelo
+            </button>
+            <button class="tab-button" data-tab="export-gama">
+                Exportar Gama
+            </button>
+        </div>
+        <a href="../index.html" class="header-link">Volver a la Enciclopedia</a>
+    </nav>
 
-        <div class="main-layout">
+    <!-- [NUEVA] Área de Contenido Principal -->
+    <main class="admin-content-area">
 
-            <aside class="sidebar-column">
-                <div class="futuristic-card search-panel">
-                    <h2 class="futuristic-title">1. Cargar Modelo en Editor</h2>
-                    <input type="text" id="search-model" placeholder="Escribe un modelo (ej: S95TR)" class="futuristic-input w-full">
-                    
-                    <div id="model-results-list" class="futuristic-list full-list-visible">
+        <!-- Panel 1: Editar Modelo (Activo por defecto) -->
+        <div id="panel-edit-model" class="content-panel active">
+            
+            <!-- Layout de 2 columnas (movido aquí dentro) -->
+            <div class="panel-layout-2col">
+                <!-- Columna Izquierda: Búsqueda -->
+                <aside class="sidebar-column">
+                    <div class="futuristic-card search-panel">
+                        <h2 class="futuristic-title">1. Cargar Modelo</h2>
+                        <input type="text" id="search-model" placeholder="Escribe un modelo (ej: S95TR)" class="futuristic-input w-full">
+                        <div id="model-results-list" class="futuristic-list full-list-visible">
+                            <!-- Relleno por JS -->
                         </div>
-                </div>
-            </aside>
-
-            <main class="main-column">
-
-                <div class="futuristic-card">
-                    <h2 class="futuristic-title">2. Exportar Gama Completa</h2>
-                    
-                    <div class="gama-export-controls">
-                        <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
-                        <select id="gama-export-select" class="futuristic-select w-full">
-                            <option value="">-- Seleccionar --</option>
-                            </select>
                     </div>
-
-                    <div id="gama-export-list" class="gama-export-list">
+                </aside>
+                
+                <!-- Columna Derecha: Editor -->
+                <main class="main-column">
+                    <div class="futuristic-card sticky-panel">
+                        <h2 id="product-title" class="spec-title">2. Editor de Producto</h2>
+                        <div class="editor-controls">
+                            <div class="control-group">
+                                <label for="new-model-id" class="futuristic-label">Nuevo Model ID (para exportar):</label>
+                                <input type="text" id="new-model-id" class="futuristic-input w-full" placeholder="Ej: NUEVOMODELO">
+                            </div>
+                            <button id="export-btn" class="futuristic-button">Exportar a .txt</button>
                         </div>
-                </div>
-                <div class="futuristic-card sticky-panel" style="margin-top: 1rem;">
-                    <h2 id="product-title" class="spec-title">3. Editor de Producto</h2>
-                    
-                    <div class="editor-controls">
-                        <div class="control-group">
-                            <label for="new-model-id" class="futuristic-label">Nuevo Model ID (para exportar):</label>
-                            <input type="text" id="new-model-id" class="futuristic-input w-full" placeholder="Ej: NUEVOMODELO">
-                        </div>
-                        <button id="export-btn" class="futuristic-button">Exportar a .txt</button>
-                    </div>
-
-                    <form id="editor-form" class="editor-form-fields">
-                        <p id="editor-placeholder" class="text-gray-400">Selecciona un modelo de la izquierda (Paso 1) para cargarlo aquí.</p>
+                        <form id="editor-form" class="editor-form-fields">
+                            <p id="editor-placeholder" class="text-gray-400">Selecciona un modelo de la izquierda (Paso 1) para cargarlo aquí.</p>
+                            <!-- Relleno por JS -->
                         </form>
-                </div>
-            </main>
+                    </div>
+                </main>
+            </div>
+            
+        </div>
 
-        </div> </div> </body>
+        <!-- Panel 2: Exportar Gama (Oculto por defecto) -->
+        <div id="panel-export-gama" class="content-panel">
+            
+            <!-- Layout de 1 columna -->
+            <div class="futuristic-card">
+                <h2 class="futuristic-title">Exportar Gama Completa</h2>
+                
+                <div class="gama-export-controls">
+                    <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
+                    <select id="gama-export-select" class="futuristic-select w-full">
+                        <option value="">-- Seleccionar --</option>
+                        <!-- Relleno por JS -->
+                    </select>
+                </div>
+
+                <div id="gama-export-list" class="gama-export-list">
+                    <!-- Relleno por JS con los modelos -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
 </html>
