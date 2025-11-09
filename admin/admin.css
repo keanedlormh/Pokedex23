@@ -1,6 +1,6 @@
 /* ==============================================
-   Estilos para el Admin Panel v2.9
-   (Refactorizado para Navegación por Pestañas)
+   Estilos para el Admin Panel v2.9.4
+   (Refactorizado para Menú Desplegable)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -14,7 +14,8 @@
     --color-cyan-glow: rgba(6, 182, 212, 0.25);
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    --top-bar-height: 60px; /* Altura de la barra de navegación */
+    --header-height: 60px; /* Altura del encabezado superior */
+    --navbar-height: 45px; /* Altura de la barra de menús */
 }
 
 body {
@@ -22,6 +23,8 @@ body {
     color: var(--color-text-secondary);
     font-family: var(--font-sans);
     line-height: 1.5;
+    /* Evita que el contenido se oculte detrás de las barras fijas */
+    padding-top: calc(var(--header-height) + var(--navbar-height));
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -29,29 +32,36 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
 
 /* ==============================================
-   1. [NUEVO] Barra de Navegación Fija
+   1. [NUEVO] Encabezado y Barra de Menús Fijos
    ============================================== */
-.admin-top-bar {
+.admin-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 1.5rem;
-    height: var(--top-bar-height);
-    background-color: var(--color-bg-medium);
+    height: var(--header-height);
+    background-color: var(--color-bg-dark); /* Más oscuro para diferenciar */
     border-bottom: 1px solid var(--color-border);
     
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 100;
+    z-index: 101;
     box-sizing: border-box;
+}
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px; /* Coincide con el max-width del contenido */
+    margin: 0 auto;
 }
 .header-left {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    flex-shrink: 0; /* No encoger */
 }
 .app-title {
     font-size: 1.25rem;
@@ -63,7 +73,7 @@ body {
     padding: 0 0.3rem;
     font-family: var(--font-mono);
     color: var(--color-cyan-accent);
-    background-color: var(--color-bg-dark);
+    background-color: var(--color-bg-medium);
     border-radius: 4px;
     border: 1px solid var(--color-border);
 }
@@ -75,45 +85,101 @@ body {
     padding: 0.4rem 0.8rem;
     border-radius: 4px;
     transition: all 0.2s ease;
-    flex-shrink: 0; /* No encoger */
 }
 .header-link:hover {
     background-color: var(--color-cyan-glow);
     color: #fff;
 }
-/* Controles de Pestañas */
-.admin-tab-controls {
+
+/* Barra de Menús */
+.admin-navbar {
     display: flex;
-    justify-content: center;
-    flex-grow: 1; /* Ocupa el espacio central */
+    align-items: center;
     gap: 0.5rem;
+    padding: 0 1.5rem;
+    height: var(--navbar-height);
+    background-color: var(--color-bg-medium);
+    border-bottom: 1px solid var(--color-border);
+    
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    box-sizing: border-box;
 }
-.tab-button {
+.menu-group {
+    position: relative;
+}
+.menu-title {
     font-family: var(--font-sans);
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-text-secondary);
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
     padding: 0.5rem 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    border-radius: 4px;
 }
-.tab-button:hover {
+.menu-title:hover, .menu-title.active {
+    background-color: var(--color-border);
     color: var(--color-text-primary);
 }
-.tab-button.active {
+.menu-dropdown {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    padding: 0.5rem;
+    z-index: 101;
+    min-width: 200px;
+}
+.menu-dropdown.active {
+    display: block; /* Visible */
+    animation: fadeIn 0.2s ease-out;
+}
+.menu-item {
+    display: block;
+    width: 100%;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.menu-item:hover {
+    background-color: var(--color-border);
     color: var(--color-cyan-accent);
-    border-bottom-color: var(--color-cyan-accent);
+}
+.menu-item.active {
+    background-color: var(--color-cyan-glow);
+    color: var(--color-cyan-accent);
+    border-color: var(--color-cyan-accent);
+}
+.menu-item + .menu-item {
+    margin-top: 0.25rem;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-
 /* ==============================================
-   2. [NUEVO] Área de Contenido y Paneles
+   2. Área de Contenido y Paneles
    ============================================== */
 .admin-content-area {
-    padding: calc(var(--top-bar-height) + 1.5rem) 1.5rem 1.5rem 1.5rem;
+    padding: 1.5rem;
     max-width: 1400px;
     margin: 0 auto;
 }
@@ -125,7 +191,7 @@ body {
 }
 
 /* ==============================================
-   3. [NUEVO] Layout de 2 Columnas (para paneles)
+   3. Layout de 2 Columnas (para paneles)
    ============================================== */
 .panel-layout-2col {
     display: flex;
@@ -144,13 +210,15 @@ body {
         width: 66.666667%;
     }
 }
-
-.sticky-panel { position: sticky; top: calc(var(--top-bar-height) + 1.5rem)); }
+.sticky-panel { 
+    position: sticky; 
+    top: calc(var(--header-height) + var(--navbar-height) + 1.5rem); 
+}
 .w-full { width: 100%; }
 .text-gray-400 { color: var(--color-text-secondary); }
 
 /* ==============================================
-   4. Tarjetas y Paneles (Sin cambios)
+   4. Tarjetas y Paneles
    ============================================== */
 .futuristic-card {
     background-color: var(--color-bg-medium);
@@ -163,7 +231,7 @@ body {
 .search-panel {
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - var(--top-bar-height) - 3rem); /* Altura dinámica */
+    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 3rem); /* Altura dinámica */
 }
 .futuristic-title {
     font-size: 1.15rem;
@@ -181,7 +249,7 @@ body {
 }
 
 /* ==============================================
-   5. Inputs y Botones (Sin cambios)
+   5. Inputs y Botones
    ============================================== */
 .futuristic-input,
 .futuristic-select,
@@ -239,7 +307,7 @@ body {
 }
 
 /* ==============================================
-   6. Lista de Búsqueda (Sidebar) (Sin cambios)
+   6. Lista de Búsqueda (Sidebar)
    ============================================== */
 .futuristic-list {
     background-color: var(--color-bg-dark);
@@ -283,7 +351,7 @@ body {
 }
 
 /* ==============================================
-   7. Panel Editor (Sin cambios)
+   7. Panel Editor
    ============================================== */
 .editor-controls {
     display: flex;
@@ -306,7 +374,7 @@ body {
     flex-grow: 1;
 }
 .editor-form-fields {
-    max-height: calc(100vh - var(--top-bar-height) - 250px); /* Altura dinámica */
+    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 270px); /* Altura dinámica */
     overflow-y: auto;
     padding-right: 0.5rem;
 }
@@ -334,13 +402,14 @@ body {
 }
 
 /* ==============================================
-   8. Panel Exportar Gama (Sin cambios)
+   8. Panel Exportar Gama
    ============================================== */
 .gama-export-controls {
     margin-bottom: 1rem;
+    max-width: 400px;
 }
 .gama-export-list {
-    max-height: calc(100vh - var(--top-bar-height) - 200px); /* Altura dinámica */
+    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 220px); /* Altura dinámica */
     overflow-y: auto;
     padding-right: 0.5rem;
     background: var(--color-bg-dark);
