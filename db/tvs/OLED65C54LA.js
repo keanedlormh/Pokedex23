@@ -1,11 +1,11 @@
 /**
- * Ficha de producto: OLED65C54LA.AEU
+ * Ficha de producto: OLED65C54LA
  *
  * Contiene los datos de un producto específico (TV).
  * Se registra en la base de datos global.
  */
 
-const OLED65C54LA_AEU_DATA = {
+const OLED65C54LA_DATA = {
     "model": "OLED65C54LA",
     "schema_key": "tvs",
     "attributes": {
@@ -100,7 +100,7 @@ const OLED65C54LA_AEU_DATA = {
 // --- REGISTRO ---
 // Comprueba si la BD global existe y registra este producto
 if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
-    window.APP_DB.registerProduct(OLED65C54LA_AEU_DATA);
+    window.APP_DB.registerProduct(OLED65C54LA_DATA);
 } else {
     console.error("Error: APP_DB no está inicializada. Asegúrate de que main.js se carga primero.");
 }
