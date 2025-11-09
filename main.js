@@ -1,19 +1,10 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.6
- * AÑADIDO: Lógica del modal README y enlace a Admin.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.9.1
+ * CORREGIDO: Añadido setTimeout a initialize() para esperar la carga de scripts del manifest.
  */
 
 // PASO 1: Creación de la base de datos global
-window.APP_DB = {
-    products: [],
-    schemas: {},
-    registerProduct: function(product) {
-        this.products.push(product);
-    },
-    registerSchema: function(key, schemaGroups) {
-        this.schemas[key] = schemaGroups;
-    }
-};
+// (Definido en el bootloader de index.html)
 
 // PASO 2: Espera al DOM
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,9 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
         infoToggleButton: document.getElementById('info-toggle-btn'),
-        adminLinkButton: document.getElementById('admin-link-btn'), // Enlace, no un botón de JS
+        adminLinkButton: document.getElementById('admin-link-btn'),
         
-        // --- [NUEVO] Modal README ---
+        // --- Modal README ---
         readmeModal: document.getElementById('readme-modal'),
         readmeContent: document.getElementById('readme-content'),
         readmeCloseButton: document.getElementById('readme-close-btn'),
@@ -77,23 +68,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 3. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v2.6 inicializando...");
+        console.log("Enciclopedia v2.9.1 inicializando...");
         
-        masterDatabase = window.APP_DB.products;
-        masterSchemaMap = window.APP_DB.schemas;
-        masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
+        // [CORRECCIÓN] Esperar 100ms para que los scripts 'defer' de la BD se registren
+        setTimeout(() => {
+            masterDatabase = window.APP_DB.products;
+            masterSchemaMap = window.APP_DB.schemas;
 
-        buildAttributeCache();
-        buildFilterValueCache();
+            if (masterDatabase.length === 0) {
+                console.warn("La base de datos está vacía. ¿Se cargó el manifest.json correctamente?");
+            }
 
-        setupEventListeners();
-        
-        populateSchemaSelector();
-        populateSmartFilters('all');
-        populateFullModelList(); 
+            masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
 
-        console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
-        console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
+            buildAttributeCache();
+            buildFilterValueCache();
+            setupEventListeners();
+            populateSchemaSelector();
+            populateSmartFilters('all');
+            populateFullModelList(); 
+
+            console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
+            console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
+        }, 100); // 100ms de retardo (igual que en admin.js)
     }
 
     function setupEventListeners() {
@@ -141,11 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
         }
         if (dom.filterOverlay) {
-            // El overlay ahora cierra todo
             dom.filterOverlay.addEventListener('click', () => {
                 closeFilterPanel();
                 closeSettingsMenu();
-                closeReadmeModal(); // [NUEVO]
+                closeReadmeModal();
             });
         }
         if (dom.readmeCloseButton) {
@@ -562,8 +558,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!dom.settingsMenuPanel) return;
         dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu();
     }
-
-    // [NUEVAS] Funciones para el Modal README
     function openReadmeModal() {
         if (!dom.readmeModal || !dom.filterOverlay) return;
         closeFilterPanel();
@@ -620,12 +614,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
-    // [MODIFICADO] Carga el README.md en el modal
     async function showReadmeInfo() {
         closeSettingsMenu();
         openReadmeModal();
         
-        if (dom.readmeContent.textContent === "") { // Cargar solo una vez
+        if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
             try {
                 dom.readmeContent.textContent = "Cargando...";
                 const response = await fetch('README.md');
