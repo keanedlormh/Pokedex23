@@ -1,0 +1,661 @@
+/* ==============================================
+   1. ESTILOS BASE Y FUENTES (Compacto)
+   ============================================== */
+:root {
+    --color-bg-dark: #0D1117;
+    --color-bg-medium: #161B22;
+    --color-border: #21262D;
+    --color-border-light: #2a3038;
+    --color-text-primary: #e2e8f0;
+    --color-text-secondary: #9ca3af;
+    --color-text-dim: #6b7280;
+    --color-cyan-accent: #06b6d4;
+    --color-cyan-glow: rgba(6, 182, 212, 0.25);
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+
+body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease;
+}
+
+/* Scrollbar (fino) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-medium); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #0891b2; }
+
+/* ==============================================
+   2. LAYOUT PRINCIPAL Y ESTADO v2.0
+   ============================================== */
+
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0.75rem;
+}
+@media (min-width: 1024px) {
+    .container { padding: 1.5rem; }
+}
+
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.3s ease-in-out;
+}
+@media (min-width: 1024px) {
+    .main-layout { flex-direction: row; }
+    .sidebar-column {
+        width: 33.333333%;
+        flex-shrink: 0;
+        transition: all 0.3s ease-in-out;
+    }
+    .main-column {
+        width: 66.666667%;
+        transition: all 0.3s ease-in-out;
+    }
+}
+
+/* --- ESTADO: MODELO SELECCIONADO --- */
+body.model-is-selected .sidebar-column { display: none; }
+body.model-is-selected .main-column { width: 100%; }
+body.model-is-selected #smart-filter-system { display: none; }
+body.model-is-selected #active-filters-bar { display: none; } /* Ocultar también la barra */
+body.model-is-selected #selected-model-display { display: block; }
+
+.sticky-panel { position: sticky; top: 1rem; }
+
+/* Clases de utilidad */
+.w-full { width: 100%; }
+.mb-4 { margin-bottom: 1rem; }
+.mt-4 { margin-top: 1rem; }
+.pr-2 { padding-right: 0.5rem; }
+.space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+.text-gray-400 { color: var(--color-text-secondary); }
+.overflow-y-auto { overflow-y: auto; }
+.max-h-64 { max-height: 16rem; }
+
+/* ==============================================
+   3. BARRA SUPERIOR DE APP (Compacta)
+   ============================================== */
+.app-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem; /* Reducido para barra de filtros */
+    border-bottom: 1px solid var(--color-border);
+    gap: 0.75rem;
+}
+@media (min-width: 1024px) {
+    .app-header {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.app-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+}
+.app-version {
+    font-size: 0.75rem;
+    padding: 0 0.3rem;
+    font-family: var(--font-mono);
+    color: var(--color-cyan-accent);
+    background-color: var(--color-bg-medium);
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    position: relative;
+    top: -2px;
+}
+
+/* "Chip" del modelo seleccionado */
+#selected-model-display.model-chip-hidden { display: none; }
+.model-chip-button {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-cyan-accent);
+    background-color: var(--color-cyan-glow);
+    border: 1px solid var(--color-cyan-accent);
+    border-radius: 1rem;
+    padding: 0.35rem 0.6rem 0.35rem 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+.model-chip-button:hover {
+    background-color: rgba(6, 182, 212, 0.3);
+    box-shadow: 0 0 10px var(--color-cyan-glow);
+}
+.model-chip-button span {
+    font-family: var(--font-sans);
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    transition: transform 0.2s ease;
+}
+.model-chip-button:hover span {
+    transform: rotate(90deg);
+    color: #fff;
+}
+
+/* ==============================================
+   4. SISTEMA DE FILTROS (Compacto)
+   ============================================== */
+.smart-filter-wrapper-v2 {
+    position: relative;
+    width: 100%;
+}
+@media (min-width: 1024px) {
+    .smart-filter-wrapper-v2 {
+        width: auto;
+    }
+}
+
+/* Botón de 'Filtros Inteligentes' */
+.smart-filter-summary {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.15s ease;
+    width: 100%;
+    text-align: left;
+}
+.smart-filter-summary:hover,
+.smart-filter-summary.active {
+    color: var(--color-text-primary);
+    border-color: var(--color-border-light);
+}
+.smart-filter-summary::after {
+    content: '[ + ]';
+    font-family: var(--font-mono);
+    color: var(--color-cyan-accent);
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+.smart-filter-summary.active::after {
+    content: '[ − ]';
+}
+
+/* Panel de Contenido de Filtros */
+.smart-filter-content-hidden { display: none; }
+.smart-filter-content-open {
+    display: block;
+    position: absolute;
+    z-index: 50;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    width: 100%;
+    min-width: 300px;
+    max-width: 500px;
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    padding: 0.75rem;
+    animation: fadeIn 0.2s ease-out;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+@media (min-width: 1024px) {
+    .smart-filter-content-open { width: auto; }
+}
+
+.smart-filters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem; /* Reducido para grupos plegables */
+}
+
+/* --- NUEVO: Grupo de Filtros Plegable --- */
+.filter-group-wrapper {
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.filter-group-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    padding: 0.5rem 0.75rem;
+    background: var(--color-border);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.filter-toggle-btn {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+    padding: 0;
+}
+.filter-toggle-btn.gray { background-color: var(--color-text-dim); }
+.filter-toggle-btn.blue { background-color: var(--color-cyan-accent); }
+
+.filter-rows-container {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.filter-rows-container.collapsed {
+    display: none;
+}
+.filter-rows-container.expanded {
+    display: flex;
+}
+/* --- Fin Grupo Plegable --- */
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+}
+@media (min-width: 480px) {
+    .filter-row {
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+    }
+}
+.filter-row label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    padding-right: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Overlay */
+.overlay-hidden { display: none; }
+.overlay-visible {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.3);
+    z-index: 49;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================================
+   5. NUEVA BARRA DE FILTROS ACTIVOS
+   ============================================== */
+.active-filters-bar-hidden {
+    display: none;
+}
+.active-filters-bar-visible {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    /* Para que no crezca indefinidamente */
+    max-height: 100px; 
+    overflow-y: auto;
+}
+
+.active-filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--color-cyan-glow);
+    border: 1px solid var(--color-cyan-accent);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-primary);
+}
+
+.chip-label .filter-name {
+    color: var(--color-text-secondary);
+    margin-right: 0.25rem;
+}
+.chip-label .filter-value {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.chip-remove-btn {
+    background: none;
+    border: none;
+    color: var(--color-cyan-accent);
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    line-height: 1;
+}
+.chip-remove-btn:hover {
+    color: #fff;
+}
+
+
+/* ==============================================
+   6. TARJETAS Y PANELES (Compacto)
+   ============================================== */
+
+.futuristic-card {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-cyan-accent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background-image: 
+        linear-gradient(rgba(33, 38, 45, 0.7) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(33, 38, 45, 0.7) 1px, transparent 1px);
+    background-size: 25px 25px;
+}
+.search-panel {
+    display: flex;
+    flex-direction: column;
+}
+@media (min-width: 1024px) {
+    .search-panel {
+        height: calc(100vh - 11rem); /* 11rem = 176px para header/padding/barra filtros */
+        max-height: 800px;
+    }
+}
+
+.futuristic-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.4rem;
+    flex-shrink: 0;
+}
+
+/* ==============================================
+   7. INPUTS Y BOTONES (Compacto)
+   ============================================== */
+
+.futuristic-input,
+.futuristic-select {
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease-in-out;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.futuristic-input:focus,
+.futuristic-select:focus {
+    outline: none;
+    border-color: var(--color-cyan-accent);
+    box-shadow: 0 0 0 3px var(--color-cyan-glow);
+}
+.futuristic-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+.futuristic-button {
+    background-color: var(--color-cyan-accent);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    padding: 0.6rem 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--color-cyan-accent);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.futuristic-button:hover {
+    background-color: #0891b2;
+    border-color: #0891b2;
+    box-shadow: 0 0 15px var(--color-cyan-glow);
+}
+
+/* ==============================================
+   8. LISTAS DE RESULTADOS (Compacta)
+   ============================================== */
+
+.futuristic-list {
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+}
+.full-list-visible {
+    margin-top: 0.75rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    border-radius: 4px;
+    background-color: var(--color-bg-dark);
+}
+
+.futuristic-list .list-item {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px dashed var(--color-border);
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+}
+.futuristic-list .list-item:last-child {
+    border-bottom: none;
+}
+.futuristic-list .list-item:hover {
+    background-color: var(--color-border);
+    color: var(--color-cyan-accent);
+}
+.futuristic-list .list-item.active {
+    background-color: var(--color-cyan-glow);
+    color: var(--color-cyan-accent);
+    font-weight: 600;
+    border-left: 3px solid var(--color-cyan-accent);
+    padding-left: calc(0.75rem - 3px);
+}
+.futuristic-list .list-item[style*="color: var(--color-text-dim)"]:hover {
+    background: none;
+    color: var(--color-text-dim);
+}
+
+/* ==============================================
+   9. PANEL DE ESPECS Y CONTROLES (ACTUALIZADO)
+   ============================================== */
+.spec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.4rem;
+}
+.spec-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.spec-controls-hidden {
+    display: none;
+    gap: 0.5rem;
+}
+body.model-is-selected .spec-controls-visible {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.spec-button {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    transition: all 0.15s ease;
+}
+.spec-button:hover {
+    background-color: var(--color-border-light);
+    color: var(--color-cyan-accent);
+    border-color: var(--color-cyan-accent);
+}
+
+/* Grupos de specs desplegables (ESTILOS UNIFICADOS) */
+details.spec-group {
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+details.spec-group summary {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    padding: 0.5rem 0.75rem;
+    background: var(--color-border);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    list-style: none; /* Quita el triángulo/flecha por defecto */
+    transition: background-color 0.15s ease;
+}
+details.spec-group summary:hover {
+    background-color: var(--color-border-light);
+}
+
+/* Botón coloreado (copiado de .filter-toggle-btn) */
+details.spec-group summary::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+    padding: 0;
+    background-color: var(--color-text-dim); /* Estado 'cerrado' (gris) */
+    transition: background-color 0.2s ease;
+}
+
+/* Botón coloreado en estado 'abierto' */
+details[open].spec-group summary::before {
+    background-color: var(--color-cyan-accent); /* Estado 'abierto' (azul) */
+}
+
+/* Ocultar el marcador '::after' que usábamos antes */
+details.spec-group summary::after {
+    content: none;
+}
+
+/* Contenido del grupo de specs */
+.spec-group-content {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--color-border-light);
+    background-color: var(--color-bg-dark); /* Fondo oscuro para contraste */
+}
+
+.spec-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.45rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px dotted var(--color-border-light);
+}
+@media (min-width: 768px) {
+    .spec-row { flex-direction: row; }
+}
+.spec-row:last-child {
+    border-bottom: none;
+}
+.spec-row .attr-desc {
+    color: var(--color-text-secondary);
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+.spec-row .attr-value {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    text-align: left;
+}
+@media (min-width: 768px) {
+    .spec-row .attr-value { text-align: right; }
+}
+
+/* ==============================================
+   10. ESTILOS SELECTOR DE GAMA
+   ============================================== */
+.filter-schema-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+}
+.filter-schema-selector label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+/* Asegurarnos que el select ocupa todo el ancho del panel */
+.filter-schema-selector #schema-filter-select {
+    width: 100%;
+}
