@@ -1,20 +1,10 @@
 /*
  * Lógica del Panel de Administración v2.6
- * Esta es una aplicación separada y no interactúa con main.js.
+ * (window.APP_DB se define en admin/index.html)
  */
 
-// 1. Crear el objeto APP_DB local para esta página
-// Los scripts ../db/ rellenarán este objeto.
-window.APP_DB = {
-    products: [],
-    schemas: {},
-    registerProduct: function(product) {
-        this.products.push(product);
-    },
-    registerSchema: function(key, schemaGroups) {
-        this.schemas[key] = schemaGroups;
-    }
-};
+// --- [BLOQUE ELIMINADO] ---
+// Ya no definimos window.APP_DB aquí.
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -41,8 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Esperar un breve momento para que se carguen los scripts de ../db/
         setTimeout(() => {
+            // Ahora window.APP_DB debería estar lleno
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
+            
+            if (masterDatabase.length === 0) {
+                console.warn("La base de datos está vacía. ¿Se cargaron los scripts de ../db/?");
+            }
+
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             
             setupEventListeners();
@@ -130,8 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fragment = document.createDocumentFragment();
 
-        // Rellenar el formulario basado en el ESQUEMA, no en los datos
-        // Esto asegura que incluso los campos vacíos ("unknown") aparezcan
         schema.forEach(group => {
             const groupTitle = document.createElement('h3');
             groupTitle.className = 'form-group-title';
@@ -139,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment.appendChild(groupTitle);
 
             group.attrs.forEach(attr => {
-                const value = product.attributes[attr.code] || ""; // Obtener valor o string vacío
+                const value = product.attributes[attr.code] || "";
                 
                 const row = document.createElement('div');
                 row.className = 'form-row';
@@ -152,11 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const textarea = document.createElement('textarea');
                 textarea.className = 'futuristic-textarea';
                 textarea.id = `attr_${attr.code}`;
-                textarea.name = attr.code; // Usar 'name' para el FormData
-                textarea.rows = 1; // Empezar pequeño
+                textarea.name = attr.code;
+                textarea.rows = 1;
                 textarea.textContent = value;
                 
-                // Auto-ajustar altura
                 textarea.addEventListener('input', () => {
                     textarea.style.height = 'auto';
                     textarea.style.height = (textarea.scrollHeight) + 'px';
@@ -169,9 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         dom.editorForm.appendChild(fragment);
-        dom.exportButton.disabled = false; // Activar botón de exportar
+        dom.exportButton.disabled = false;
 
-        // Ajustar altura de todos los textareas después de añadirlos al DOM
         setTimeout(() => {
             dom.editorForm.querySelectorAll('textarea').forEach(textarea => {
                 textarea.style.height = 'auto';
@@ -194,17 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 1. Recoger todos los datos del formulario
         const formData = new FormData(dom.editorForm);
         const newAttributes = {};
         for (const [key, value] of formData.entries()) {
-            if (value.trim() !== "") { // Solo guardar atributos con valor
+            if (value.trim() !== "") {
                 newAttributes[key] = value.trim();
             }
         }
 
-        // 2. Generar el contenido del archivo .js (como texto)
-        const variableName = `${newModelId.replace(/\./g, '_')}_DATA`; // Ej: OLED65C54LA_AEU_DATA
+        const variableName = `${newModelId.replace(/\./g, '_')}_DATA`;
         
         const fileContent = `/**
  * Ficha de producto: ${newModelId}
@@ -226,11 +216,10 @@ if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
 }
 `;
 
-        // 3. Crear y descargar el archivo .txt
         const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `${newModelId}.js.txt`; // El usuario pidió .txt
+        link.download = `${newModelId}.js.txt`;
         
         document.body.appendChild(link);
         link.click();
