@@ -1,6 +1,6 @@
 /*
- * Lógica del Panel de Administración v2.9.4
- * REFACTOR: Lógica para menús desplegables y pestañas.
+ * Lógica del Panel de Administración v2.9.5
+ * AÑADIDO: Exportar gama completa a JSON.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -9,11 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Almacenamiento de Elementos del DOM ---
     const dom = {
-        // [NUEVO] Controles de Navegación
+        // Controles de Navegación
         adminNavbar: document.querySelector('.admin-navbar'),
         allContentPanels: document.querySelectorAll('.content-panel'),
         allMenuDropdowns: document.querySelectorAll('.menu-dropdown'),
-        allMenuItems: document.querySelectorAll('.menu-item'), // Botones que cambian de panel
+        allMenuItems: document.querySelectorAll('.menu-item'),
         
         // Panel 1: Editar Modelo
         modelSearchInput: document.getElementById('search-model'),
@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Panel 2: Exportar Gama
         gamaExportSelect: document.getElementById('gama-export-select'),
-        gamaExportList: document.getElementById('gama-export-list')
+        gamaExportList: document.getElementById('gama-export-list'),
+        exportGamaJsonButton: document.getElementById('export-gama-json-btn') // [NUEVO]
     };
 
     // --- Base de Datos Local ---
@@ -34,19 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let masterSchemaMap = {};
     let currentLoadedSchemaKey = null;
     let currentLoadedModel = null;
-    let activeDropdown = null; // Rastrea el menú desplegable abierto
+    let activeDropdown = null;
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v2.9.4 inicializando...");
+        console.log("Admin Panel v2.9.5 inicializando...");
         
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
             
-            if (masterDatabase.length === 0) {
-                console.warn("La base de datos está vacía.");
-            }
+            if (masterDatabase.length === 0) console.warn("La base de datos está vacía.");
 
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             
@@ -54,23 +53,22 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSearchResults(masterDatabase);
             populateGamaSelector();
             
-            // Activar el primer panel y su botón de menú por defecto
-            showPanel('edit-model');
+            showPanel('edit-model'); // Mostrar panel por defecto
             
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
             dom.exportButton.disabled = true;
+            dom.exportGamaJsonButton.disabled = true; // [NUEVO] Deshabilitado al inicio
         }, 100);
     }
 
     function setupEventListeners() {
-        // [NUEVO] Listeners de Navegación
+        // Navegación
         if (dom.adminNavbar) {
             dom.adminNavbar.addEventListener('click', handleNavClick);
         }
-        // Cierra los menús si se hace clic fuera
         document.addEventListener('click', (e) => {
-            if (!dom.adminNavbar.contains(e.target)) {
+            if (dom.adminNavbar && !dom.adminNavbar.contains(e.target)) {
                 closeAllDropdowns();
             }
         });
@@ -82,30 +80,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // Panel 2: Exportar Gama
         dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
+        dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); // [NUEVO]
         
         // Panel 1 (continuación): Editor
         dom.exportButton.addEventListener('click', exportDataFromEditor);
     }
 
-    // --- [NUEVO] Lógica de Navegación por Menús ---
+    // --- Lógica de Navegación por Menús ---
     
-    /**
-     * Maneja todos los clics dentro de la barra de navegación.
-     */
     function handleNavClick(e) {
         const menuTitle = e.target.closest('.menu-title');
         const menuItem = e.target.closest('.menu-item');
 
         if (menuTitle) {
-            // Se hizo clic en un título de menú (ej: "Editar")
-            e.stopPropagation(); // Evita que el clic se propague al 'document'
+            e.stopPropagation();
             const dropdownId = menuTitle.dataset.dropdown;
             toggleDropdown(dropdownId);
             return;
         }
 
         if (menuItem) {
-            // Se hizo clic en un item de función (ej: "Editar Modelo")
             e.stopPropagation();
             const tabId = menuItem.dataset.tab;
             if (tabId) {
@@ -116,29 +110,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Abre/cierra un menú desplegable específico.
-     */
     function toggleDropdown(dropdownId) {
         const dropdownToToggle = document.getElementById(dropdownId);
         if (!dropdownToToggle) return;
 
-        // Si ya está activo, ciérralo
         if (dropdownToToggle.classList.contains('active')) {
             dropdownToToggle.classList.remove('active');
             activeDropdown = null;
         } else {
-            // Si hay otro abierto, ciérralo
             closeAllDropdowns();
-            // Abre el nuevo
             dropdownToToggle.classList.add('active');
             activeDropdown = dropdownToToggle;
         }
     }
 
-    /**
-     * Cierra cualquier menú desplegable que esté abierto.
-     */
     function closeAllDropdowns() {
         if (activeDropdown) {
             activeDropdown.classList.remove('active');
@@ -146,32 +131,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Muestra el panel solicitado y oculta los demás.
-     */
     function showPanel(panelId) {
-        // Ocultar todos los paneles
-        dom.allContentPanels.forEach(panel => {
-            panel.classList.remove('active');
-        });
-        
-        // Quitar 'active' de todos los items de menú
-        dom.allMenuItems.forEach(button => {
-            button.classList.remove('active');
-        });
+        dom.allContentPanels.forEach(panel => panel.classList.remove('active'));
+        dom.allMenuItems.forEach(button => button.classList.remove('active'));
 
-        // Mostrar el panel y el item de menú correctos
         const panelToShow = document.getElementById(`panel-${panelId}`);
         const menuItemToActivate = document.querySelector(`.menu-item[data-tab="${panelId}"]`);
         
-        if (panelToShow) {
-            panelToShow.classList.add('active');
-        }
+        if (panelToShow) panelToShow.classList.add('active');
         if (menuItemToActivate) {
             menuItemToActivate.classList.add('active');
-            // También activa el título del menú padre (buen detalle visual)
             const parentTitle = menuItemToActivate.closest('.menu-group').querySelector('.menu-title');
-            if(parentTitle) parentTitle.classList.add('active');
+            if(parentTitle) parentTitle.classList.add('active'); // Mantiene el menú padre activo
         }
     }
 
@@ -243,9 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedSchema = dom.gamaExportSelect.value;
         dom.gamaExportList.innerHTML = '';
         
-        if (!selectedSchema) return;
+        if (!selectedSchema) {
+            dom.exportGamaJsonButton.disabled = true; // [NUEVO] Deshabilitar botón
+            return;
+        }
 
+        dom.exportGamaJsonButton.disabled = false; // [NUEVO] Habilitar botón
         const modelsInGama = masterDatabase.filter(p => p.schema_key === selectedSchema);
+        
         if (modelsInGama.length === 0) {
             dom.gamaExportList.innerHTML = '<p class="text-gray-400" style="padding: 0.5rem;">No hay modelos en esta gama.</p>';
             return;
@@ -258,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.innerHTML = `
                 <span>${product.model}</span>
                 <button class="export-item-button" data-model="${product.model}">
-                    Descargar .txt
+                    Descargar .txt (JS)
                 </button>
             `;
             fragment.appendChild(item);
@@ -276,6 +252,32 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             alert(`Error: No se pudo encontrar el modelo ${modelId} en la base de datos.`);
         }
+    }
+    
+    // [NUEVA] Función para exportar la gama completa como JSON
+    function exportGamaAsJson() {
+        const selectedSchema = dom.gamaExportSelect.value;
+        if (!selectedSchema) {
+            alert("Por favor, selecciona una gama primero.");
+            return;
+        }
+
+        // 1. Filtrar la base de datos completa para esta gama
+        const productsToExport = masterDatabase.filter(p => p.schema_key === selectedSchema);
+        
+        if (productsToExport.length === 0) {
+            alert("No hay productos en esta gama para exportar.");
+            return;
+        }
+
+        // 2. Convertir el array de productos a un string JSON formateado
+        const jsonString = JSON.stringify(productsToExport, null, 4);
+
+        // 3. Generar el nombre del archivo
+        const filename = `GAMA_${selectedSchema.toUpperCase()}.json.txt`;
+
+        // 4. Descargar el archivo
+        downloadFile(filename, jsonString, 'text/plain;charset=utf-8');
     }
 
 
@@ -370,13 +372,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica de Exportación Genérica ---
     
+    /**
+     * Genera el contenido de un archivo .js para un solo producto.
+     */
     function generateAndDownloadProductFile(product, fileName) {
         
         const variableName = `${fileName.replace(/\./g, '_')}_DATA`;
         
         const fileContent = `/**
  * Ficha de producto: ${product.model}
- * (Generado por Admin Panel v2.9.4)
+ * (Generado por Admin Panel v2.9.5)
  */
 
 const ${variableName} = {
@@ -393,11 +398,17 @@ if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
     console.error("Error: APP_DB no está inicializada. Asegúrate de que main.js se carga primero.");
 }
 `;
+        downloadFile(`${fileName}.js.txt`, fileContent);
+    }
 
-        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    /**
+     * [NUEVO HELPER] Crea un blob y fuerza la descarga de un archivo de texto.
+     */
+    function downloadFile(filename, content, mimeType = 'text/plain;charset=utf-8') {
+        const blob = new Blob([content], { type: mimeType });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `${fileName}.js.txt`;
+        link.download = filename;
         
         document.body.appendChild(link);
         link.click();
