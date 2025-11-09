@@ -3,41 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enciclopedia Técnica v2.6</title>
+    <title>Enciclopedia Técnica v2.9.1</title>
     
     <link rel="stylesheet" href="style.css">
 
-    <!-- Scripts de la base de datos -->
+    <!-- ============================================== -->
+    <!-- [NUEVO] Bootloader v2.9.1                      -->
+    <!-- Carga todos los scripts de la BD desde un manifest -->
+    <!-- ============================================== -->
+    <script>
+        // 1. Definir la BD global INMEDIATAMENTE
+        window.APP_DB = {
+            products: [],
+            schemas: {},
+            registerProduct: function(product) { this.products.push(product); },
+            registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
+        };
+
+        // 2. Definir la ruta base (estamos en la raíz)
+        const basePath = '';
+
+        // 3. Cargar el manifest (SÍNCRONO para bloquear la carga hasta que esté listo)
+        const xhr = new XMLHttpRequest();
+        // Usamos la ruta base para encontrar el manifest
+        xhr.open('GET', basePath + 'db/manifest.json', false); // 'false' = síncrono
+        xhr.send(null);
+
+        if (xhr.status === 200) {
+            const manifest = JSON.parse(xhr.responseText);
+            
+            // 4. Escribir las etiquetas <script> de los esquemas
+            manifest.schemas.forEach(path => {
+                // Usamos la ruta base para construir la URL correcta
+                document.write('<script src="' + basePath + path + '" defer><\/script>');
+            });
+            
+            // 5. Escribir las etiquetas <script> de los productos
+            Object.values(manifest.products).forEach(productList => {
+                productList.forEach(path => {
+                    document.write('<script src="' + basePath + path + '" defer><\/script>');
+                });
+            });
+        } else {
+            console.error("ERROR CRÍTICO: No se pudo cargar 'db/manifest.json'.");
+            alert("ERROR CRÍTICO: No se pudo cargar la base de datos. Revise la consola.");
+        }
+    </script>
+    <!-- ============================================== -->
+    <!-- FIN DEL BOOTLOADER                           -->
+    <!-- ============================================== -->
+
+    <!-- El script principal se carga al final, 'defer' asegura que espera a los anteriores -->
     <script src="main.js" defer></script>
     
-    <!-- ESQUEMAS DE PRODUCTO -->
-    <script src="db/schemas/moduloSoundbars.js" defer></script>
-    <script src="db/schemas/moduloTVs.js" defer></script>
-
-    <!-- DATOS DE PRODUCTO (Soundbars) -->
-    <script src="db/soundbars/s20a.js" defer></script>
-    <script src="db/soundbars/s40t.js" defer></script>
-    <script src="db/soundbars/s40tr.js" defer></script>
-    <script src="db/soundbars/s60t.js" defer></script>
-    <script src="db/soundbars/s60tr.js" defer></script>
-    <script src="db/soundbars/s65q.js" defer></script>
-    <script src="db/soundbars/s70tr.js" defer></script>
-    <script src="db/soundbars/s70ty.js" defer></script>
-    <script src="db/soundbars/s80tr.js" defer></script>
-    <script src="db/soundbars/s90tr.js" defer></script>
-    <script src="db/soundbars/s90ty.js" defer></script>
-    <script src="db/soundbars/s95trsp.js" defer></script>
-    <script src="db/soundbars/sc9s.js" defer></script>
-    <script src="db/soundbars/sg10ty.js" defer></script>
-    <script src="db/soundbars/sqc2.js" defer></script>
-    <script src="db/soundbars/sqc4r.js" defer></script>
-
-    <script src="db/tvs/OLED83G55LW.js" defer></script>
-    <script src="db/tvs/75QNED93A6A.js" defer></script>
-    <script src="db/tvs/55UA75006LA.js" defer></script>
-    <script src="db/tvs/50NANO81A6A.js" defer></script>
-    <script src="db/tvs/OLED42C45LA.js" defer></script>
-    <script src="db/tvs/OLED65C54LA.js" defer></script>
+    <!-- [ELIMINADO] Todas las antiguas etiquetas <script> de /db/... se han ido -->
     
 </head>
 
@@ -45,11 +64,12 @@
 
     <div class="container">
 
-        <!-- BARRA DE APLICACIÓN SUPERIOR (ACTUALIZADA) -->
+        <!-- BARRA DE APLICACIÓN SUPERIOR -->
         <header class="app-header">
             
             <div class="header-left">
-                <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.6</span></h1>
+                <!-- Versión actualizada -->
+                <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.9.1</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"><!-- Relleno por JS --></div>
             </div>
 
@@ -79,7 +99,7 @@
                 </div>
                 <!-- Fin del Sistema de Filtros -->
 
-                <!-- MENÚ DE AJUSTES (ACTUALIZADO) -->
+                <!-- MENÚ DE AJUSTES -->
                 <div class="settings-menu-wrapper">
                     <button id="settings-menu-toggle" class="settings-button" title="Ajustes">
                         ⚙️
@@ -91,7 +111,6 @@
                         <button id="info-toggle-btn" class="settings-menu-item" title="Información del proyecto">
                             ℹ️ Info
                         </button>
-                        <!-- [NUEVO] Enlace al Admin Panel -->
                         <a href="admin/index.html" target="_blank" id="admin-link-btn" class="settings-menu-item" title="Administrar base de datos">
                             🛠️ Administrar
                         </a>
@@ -105,7 +124,7 @@
         <!-- FIN DE BARRA SUPERIOR -->
 
 
-        <!-- ... (El resto de tu layout principal no cambia) ... -->
+        <!-- ... (El resto del <body> no cambia) ... -->
         
         <div id="active-filters-bar" class="active-filters-bar-hidden">
             <!-- Relleno por JS con los filtros activos -->
@@ -140,17 +159,16 @@
         
     </div> <!-- Fin del contenedor principal -->
 
-    <!-- OVERLAY (Usado por filtros, ajustes y el nuevo modal) -->
+    <!-- OVERLAY -->
     <div id="filter-overlay" class="overlay-hidden"></div>
 
-    <!-- [NUEVO] MODAL PARA EL README -->
+    <!-- MODAL PARA EL README -->
     <div id="readme-modal" class="modal-hidden">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Información del Proyecto (README.md)</h2>
                 <button id="readme-close-btn" class="modal-close-btn">&times;</button>
             </div>
-            <!-- El contenido del README.md se cargará aquí -->
             <pre id="readme-content" class="modal-body"></pre>
         </div>
     </div>
