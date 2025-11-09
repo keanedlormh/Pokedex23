@@ -1,7 +1,6 @@
 /*
- * Lógica del Panel de Administración v2.8
- * AÑADIDO: Panel de exportación por gama.
- * REFACTOR: Lógica de exportación genérica.
+ * Lógica del Panel de Administración v2.9
+ * REFACTOR: Navegación por pestañas.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -10,6 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Almacenamiento de Elementos del DOM ---
     const dom = {
+        // Pestañas y Paneles
+        adminTabControls: document.querySelector('.admin-tab-controls'),
+        allTabButtons: document.querySelectorAll('.tab-button'),
+        allContentPanels: document.querySelectorAll('.content-panel'),
+        panelEditModel: document.getElementById('panel-edit-model'),
+        panelExportGama: document.getElementById('panel-export-gama'),
+
+        // Panel 1: Editar Modelo
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
         productTitle: document.getElementById('product-title'),
@@ -18,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         newModelIdInput: document.getElementById('new-model-id'),
         exportButton: document.getElementById('export-btn'),
         
-        // [NUEVO] Panel de Exportar Gama
+        // Panel 2: Exportar Gama
         gamaExportSelect: document.getElementById('gama-export-select'),
         gamaExportList: document.getElementById('gama-export-list')
     };
@@ -31,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v2.8 inicializando...");
+        console.log("Admin Panel v2.9 inicializando...");
         
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
@@ -45,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             setupEventListeners();
             renderSearchResults(masterDatabase);
-            populateGamaSelector(); // [NUEVO]
+            populateGamaSelector();
             
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
@@ -54,6 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
+        // [NUEVO] Listeners de Pestañas
+        if (dom.adminTabControls) {
+            dom.adminTabControls.addEventListener('click', handleTabClick);
+        }
+
         // Panel 1: Cargar en Editor
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
@@ -62,9 +74,52 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
         
-        // Panel 3: Editor
+        // Panel 1 (continuación): Editor
         dom.exportButton.addEventListener('click', exportDataFromEditor);
     }
+
+    // --- [NUEVO] Lógica de Navegación por Pestañas ---
+    
+    /**
+     * Maneja el clic en un botón de pestaña.
+     */
+    function handleTabClick(e) {
+        const target = e.target.closest('.tab-button');
+        if (!target) return;
+
+        const tabId = target.dataset.tab;
+        if (tabId) {
+            showPanel(tabId);
+        }
+    }
+
+    /**
+     * Muestra el panel solicitado y oculta los demás.
+     * @param {string} panelId - El ID del panel a mostrar (ej: "edit-model").
+     */
+    function showPanel(panelId) {
+        // Ocultar todos los paneles
+        dom.allContentPanels.forEach(panel => {
+            panel.classList.remove('active');
+        });
+        
+        // Quitar 'active' de todas las pestañas
+        dom.allTabButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Mostrar el panel y la pestaña correctos
+        const panelToShow = document.getElementById(`panel-${panelId}`);
+        const tabToActivate = document.querySelector(`.tab-button[data-tab="${panelId}"]`);
+        
+        if (panelToShow) {
+            panelToShow.classList.add('active');
+        }
+        if (tabToActivate) {
+            tabToActivate.classList.add('active');
+        }
+    }
+
 
     // --- Lógica de Búsqueda (Panel 1) ---
     function applySearch() {
@@ -113,11 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- [NUEVA] Lógica de Exportar Gama (Panel 2) ---
+    // --- Lógica de Exportar Gama (Panel 2) ---
     
-    /**
-     * Rellena el dropdown de selección de gama en el Panel 2.
-     */
     function populateGamaSelector() {
         if (!dom.gamaExportSelect) return;
         const fragment = document.createDocumentFragment();
@@ -132,12 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.gamaExportSelect.appendChild(fragment);
     }
 
-    /**
-     * Rellena la lista de exportación cuando se cambia el dropdown.
-     */
     function populateGamaExportList() {
         const selectedSchema = dom.gamaExportSelect.value;
-        dom.gamaExportList.innerHTML = ''; // Limpiar
+        dom.gamaExportList.innerHTML = '';
         
         if (!selectedSchema) return;
 
@@ -162,18 +211,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.gamaExportList.appendChild(fragment);
     }
 
-    /**
-     * Maneja el clic en un botón de descarga individual (Panel 2).
-     */
     function handleGamaExportClick(e) {
         const target = e.target.closest('.export-item-button');
         if (!target) return;
-
         const modelId = target.dataset.model;
         const product = masterDatabase.find(p => p.model === modelId);
-
         if (product) {
-            // Exporta el producto original tal cual
             generateAndDownloadProductFile(product, product.model);
         } else {
             alert(`Error: No se pudo encontrar el modelo ${modelId} en la base de datos.`);
@@ -181,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- Lógica del Editor (Panel 3) ---
+    // --- Lógica del Editor (Panel 1) ---
     
     function loadModelIntoEditor(product) {
         currentLoadedModel = product;
@@ -195,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dom.editorPlaceholder.style.display = 'none';
         dom.editorForm.innerHTML = '';
-        dom.productTitle.textContent = `3. Editando: ${product.model}`;
+        dom.productTitle.textContent = `2. Editando: ${product.model}`;
         dom.newModelIdInput.value = product.model;
         
         const fragment = document.createDocumentFragment();
@@ -240,9 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1);
     }
 
-    /**
-     * Maneja el clic en el botón "Exportar" del Editor (Panel 3).
-     */
     function exportDataFromEditor() {
         if (!currentLoadedModel || !currentLoadedSchemaKey) {
             alert("No hay ningún modelo cargado en el editor para exportar.");
@@ -256,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Recoge los datos *modificados* del formulario
         const formData = new FormData(dom.editorForm);
         const newAttributes = {};
         for (const [key, value] of formData.entries()) {
@@ -265,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Crea un objeto producto *temporal* con los nuevos datos
         const modifiedProduct = {
             model: newModelId,
             schema_key: currentLoadedSchemaKey,
@@ -275,21 +313,15 @@ document.addEventListener('DOMContentLoaded', () => {
         generateAndDownloadProductFile(modifiedProduct, newModelId);
     }
 
-
-    // --- [REFACTORIZADO] Lógica de Exportación Genérica ---
+    // --- Lógica de Exportación Genérica ---
     
-    /**
-     * Genera el contenido del archivo .js y lo descarga como .txt.
-     * @param {object} product - El objeto producto (original o modificado).
-     * @param {string} fileName - El nombre del modelo (Model ID) para el archivo.
-     */
     function generateAndDownloadProductFile(product, fileName) {
         
         const variableName = `${fileName.replace(/\./g, '_')}_DATA`;
         
         const fileContent = `/**
  * Ficha de producto: ${product.model}
- * (Generado por Admin Panel v2.8)
+ * (Generado por Admin Panel v2.9)
  */
 
 const ${variableName} = {
@@ -310,7 +342,7 @@ if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
         const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `${fileName}.js.txt`; // Exportar como .txt
+        link.download = `${fileName}.js.txt`;
         
         document.body.appendChild(link);
         link.click();
