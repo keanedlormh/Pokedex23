@@ -3,54 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v2.9</title>
+    <title>Admin - Enciclopedia Técnica v2.9.1</title>
     
     <link rel="stylesheet" href="admin.css">
 
-    <!-- Definir la BD ANTES de cargar los scripts -->
+    <!-- ============================================== -->
+    <!-- [NUEVO] Bootloader v2.9.1 (Versión Admin)      -->
+    <!-- Carga todos los scripts de la BD desde un manifest -->
+    <!-- ============================================== -->
     <script>
+        // 1. Definir la BD global INMEDIATAMENTE
         window.APP_DB = {
             products: [],
             schemas: {},
             registerProduct: function(product) { this.products.push(product); },
             registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
         };
+
+        // 2. Definir la ruta base (estamos en /admin/, la BD está arriba)
+        const basePath = '../';
+
+        // 3. Cargar el manifest (SÍNCRONO)
+        const xhr = new XMLHttpRequest();
+        // Usamos la ruta base para encontrar el manifest
+        xhr.open('GET', basePath + 'db/manifest.json', false); // 'false' = síncrono
+        xhr.send(null);
+
+        if (xhr.status === 200) {
+            const manifest = JSON.parse(xhr.responseText);
+            
+            // 4. Escribir las etiquetas <script> de los esquemas
+            manifest.schemas.forEach(path => {
+                // Usamos la ruta base para construir la URL correcta
+                // ej: ../ + db/schemas/moduloTVs.js
+                document.write('<script src="' + basePath + path + '" defer><\/script>');
+            });
+            
+            // 5. Escribir las etiquetas <script> de los productos
+            Object.values(manifest.products).forEach(productList => {
+                productList.forEach(path => {
+                    document.write('<script src="' + basePath + path + '" defer><\/script>');
+                });
+            });
+        } else {
+            console.error("ERROR CRÍTICO: No se pudo cargar '../db/manifest.json'.");
+            alert("ERROR CRÍTICO: No se pudo cargar la base de datos. Revise la consola.");
+        }
     </script>
-
-    <!-- Carga de Esquemas y Modelos (desde la raíz) -->
-    <script src="../db/schemas/moduloSoundbars.js" defer></script>
-    <script src="../db/schemas/moduloTVs.js" defer></script>
-
-<!-- Carga TODOS los modelos -->
-    <!-- Soundbars -->
-    <script src="../db/soundbars/s20a.js" defer></script>
-    <script src="../db/soundbars/s40t.js" defer></script>
-    <script src="../db/soundbars/s40tr.js" defer></script>
-    <script src="../db/soundbars/s60t.js" defer></script>
-    <script src="../db/soundbars/s60tr.js" defer></script>
-    <script src="../db/soundbars/s65q.js" defer></script>
-    <script src="../db/soundbars/s70tr.js" defer></script>
-    <script src="../db/soundbars/s70ty.js" defer></script>
-    <script src="../db/soundbars/s80tr.js" defer></script>
-    <script src="../db/soundbars/s90tr.js" defer></script>
-    <script src="../db/soundbars/s90ty.js" defer></script>
-    <script src="../db/soundbars/s95trsp.js" defer></script>
-    <script src="../db/soundbars/sc9s.js" defer></script>
-    <script src="../db/soundbars/sg10ty.js" defer></script>
-    <script src="../db/soundbars/sqc2.js" defer></script>
-    <script src="../db/soundbars/sqc4r.js" defer></script>
-
-    <!-- TVs -->
-    <script src="../db/tvs/OLED83G55LW.js" defer></script>
-    <script src="../db/tvs/75QNED93A6A.js" defer></string>
-    <script src="../db/tvs/55UA75006LA.js" defer></script>
-    <script src="../db/tvs/50NANO81A6A.js" defer></script>
-    <script src="../db/tvs/OLED42C45LA.js" defer></script>
-    <script src="../db/tvs/OLED65C54LA.js" defer></script>
-
+    <!-- ============================================== -->
+    <!-- FIN DEL BOOTLOADER                           -->
+    <!-- ============================================== -->
     
-    <!-- Lógica del Admin -->
+    <!-- Lógica del Admin (al final, también con defer) -->
     <script src="admin.js" defer></script>
+
+    <!-- [ELIMINADO] Todas las antiguas etiquetas <script> de ../db/... se han ido -->
+
 </head>
 
 <body>
@@ -58,7 +66,8 @@
     <!-- [NUEVA] Barra de Navegación Fija -->
     <nav class="admin-top-bar">
         <div class="header-left">
-            <h1 class="app-title">Administrador <span class="app-version">v2.9</span></h1>
+             <!-- Versión actualizada -->
+            <h1 class="app-title">Administrador <span class="app-version">v2.9.1</span></h1>
         </div>
         <div class="admin-tab-controls">
             <button class="tab-button active" data-tab="edit-model">
