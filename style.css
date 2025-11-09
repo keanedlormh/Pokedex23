@@ -746,3 +746,15 @@ details.spec-group summary::after {
 .settings-menu-item + .settings-menu-item {
     margin-top: 0.25rem; /* Espacio entre botones */
 }
+
+/* ==============================================
+   12. [NUEVO] PLACEHOLDER DE FILTROS
+   ============================================== */
+.filter-placeholder {
+    font-size: 0.8rem;
+    color: var(--color-text-dim);
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+    font-style: italic;
+}
+
