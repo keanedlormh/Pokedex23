@@ -1,6 +1,5 @@
 /* ==============================================
-   Estilos para el Admin Panel v2.9.4
-   (Refactorizado para Menú Desplegable)
+   Estilos para el Admin Panel v2.9.5
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -14,8 +13,8 @@
     --color-cyan-glow: rgba(6, 182, 212, 0.25);
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    --header-height: 60px; /* Altura del encabezado superior */
-    --navbar-height: 45px; /* Altura de la barra de menús */
+    --header-height: 60px;
+    --navbar-height: 45px;
 }
 
 body {
@@ -23,7 +22,6 @@ body {
     color: var(--color-text-secondary);
     font-family: var(--font-sans);
     line-height: 1.5;
-    /* Evita que el contenido se oculte detrás de las barras fijas */
     padding-top: calc(var(--header-height) + var(--navbar-height));
 }
 
@@ -32,7 +30,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
 
 /* ==============================================
-   1. [NUEVO] Encabezado y Barra de Menús Fijos
+   1. Encabezado y Barra de Menús Fijos
    ============================================== */
 .admin-header {
     display: flex;
@@ -40,9 +38,8 @@ body {
     justify-content: space-between;
     padding: 0 1.5rem;
     height: var(--header-height);
-    background-color: var(--color-bg-dark); /* Más oscuro para diferenciar */
+    background-color: var(--color-bg-dark);
     border-bottom: 1px solid var(--color-border);
-    
     position: fixed;
     top: 0;
     left: 0;
@@ -55,7 +52,7 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 1400px; /* Coincide con el max-width del contenido */
+    max-width: 1400px;
     margin: 0 auto;
 }
 .header-left {
@@ -100,7 +97,6 @@ body {
     height: var(--navbar-height);
     background-color: var(--color-bg-medium);
     border-bottom: 1px solid var(--color-border);
-    
     position: fixed;
     top: var(--header-height);
     left: 0;
@@ -128,7 +124,7 @@ body {
     color: var(--color-text-primary);
 }
 .menu-dropdown {
-    display: none; /* Oculto por defecto */
+    display: none;
     position: absolute;
     top: calc(100% + 5px);
     left: 0;
@@ -141,7 +137,7 @@ body {
     min-width: 200px;
 }
 .menu-dropdown.active {
-    display: block; /* Visible */
+    display: block;
     animation: fadeIn 0.2s ease-out;
 }
 .menu-item {
@@ -184,10 +180,10 @@ body {
     margin: 0 auto;
 }
 .content-panel {
-    display: none; /* Oculto por defecto */
+    display: none;
 }
 .content-panel.active {
-    display: block; /* Visible */
+    display: block;
 }
 
 /* ==============================================
@@ -231,7 +227,7 @@ body {
 .search-panel {
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 3rem); /* Altura dinámica */
+    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 3rem);
 }
 .futuristic-title {
     font-size: 1.15rem;
@@ -294,6 +290,8 @@ body {
     border: 1px solid var(--color-cyan-accent);
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    height: 38px; /* Altura fija para alinear */
+    box-sizing: border-box;
 }
 .futuristic-button:hover {
     background-color: #0891b2;
@@ -374,7 +372,7 @@ body {
     flex-grow: 1;
 }
 .editor-form-fields {
-    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 270px); /* Altura dinámica */
+    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 270px);
     overflow-y: auto;
     padding-right: 0.5rem;
 }
@@ -402,14 +400,22 @@ body {
 }
 
 /* ==============================================
-   8. Panel Exportar Gama
+   8. Panel Exportar Gama (ACTUALIZADO)
    ============================================== */
 .gama-export-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end; /* Alinear select y botón */
     margin-bottom: 1rem;
-    max-width: 400px;
 }
+.gama-export-controls .control-group {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
 .gama-export-list {
-    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 220px); /* Altura dinámica */
+    max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 220px);
     overflow-y: auto;
     padding-right: 0.5rem;
     background: var(--color-bg-dark);
