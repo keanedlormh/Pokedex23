@@ -1,23 +1,21 @@
 /**
- * Ficha de producto: 50NANO81A6A
+ * Ficha de producto: 55UA75006LA
  *
  * Contiene los datos de un producto específico (TV).
  * Se registra en la base de datos global.
  */
 
-const S50NANO81A6A_DATA = {
-    "model": "50NANO81A6A",
+const S55UA75006LA_DATA = {
+    "model": "55UA75006LA",
     "schema_key": "tvs",
     "attributes": {
         "display_tipo_pantalla": "4K UHD",
         "display_resolucion_pantalla": "4K Ultra HD (3,840 x 2,160)",
         "display_tipo_retroiluminacion": "Directa",
         "display_tasa_refresco": "60Hz Nativo",
-        "display_wide_color_gamut": "Nano Color",
         "procesado_procesador_imagen": "Procesador 4K IA α7 Gen8",
         "procesado_escalado_ia": "Super Escalado 4K",
         "procesado_dynamic_tone_mapping": "Si",
-        "procesado_control_brillo_ia": "Si",
         "procesado_hdr": "HDR10 / HLG",
         "procesado_filmmaker_mode": "Si",
         "procesado_modos_imagen": "10 modos",
@@ -33,9 +31,8 @@ const S50NANO81A6A_DATA = {
         "audio_salida_simultanea": "Si",
         "audio_bluetooth_surround": "Si (Reproducción en 2 sentidos)",
         "audio_salida_w": "20W",
-        "audio_calibracion_acustica_ia": "Si",
         "audio_codecs": "AC4, AC3, (Dolby Digital), EAC3, HE-AAC, AAC, MP2, MP3, PCM, apt-X (Consulte el Manual)",
-        "audio_direccion_altavos": "Salida hacia Abajo",
+        "audio_direccion_altavoces": "Salida hacia Abajo",
         "audio_sistema_altavoces": "2.0 Canales",
         "audio_wow_orchestra": "Si",
         "smart_sistema_operativo": "WebOS 25",
@@ -46,48 +43,48 @@ const S50NANO81A6A_DATA = {
         "smart_google_cast": "Si",
         "smart_google_home": "Si",
         "smart_home_hub": "Si",
-        "smart_reconocimiento_voz": "Si",
+        "smart_reconocimiento_voz": "Compatible (Requiere Magic Remote Opcional)",
         "smart_lg_channels": "Si",
-        "smart_magic_remote": "Incluido",
+        "smart_magic_remote": "Compatible (Opcional)",
         "smart_remote_app": "Si (LG ThinQ)",
-        "smart_id_voz": "Si",
-        "smart_apple_home": "Si",
         "smart_thinq": "Si",
+        "smart_id_voz": "Compatible (Requiere Magic Remote Opcional)",
+        "smart_apple_home": "Si",
         "con_hdmi_earc_puerto": "eARC (HDMI 2)",
-        "con_bluetooth_version": "Si (v 5.1)",
+        "con_bluetooth_version": "Si (v 5.0)",
         "con_ethernet": "1ud",
         "con_hdmi_cec_simplink": "Si",
         "con_optica": "1ud",
         "con_ranura_ci": "1x (Excepto UK, Irlanda)",
         "con_hdmi_num_puertos": "3ud (soporta eARC, ALLM)",
         "con_rf_in": "2ud",
-        "con_usb_num_puertos": "2ud (v 2.0)",
+        "con_usb_num_puertos": "1ud (v 2.0)",
         "con_wifi_version": "Si (Wi-Fi 5)",
         "accesibilidad_alto_contraste": "Si",
         "accesibilidad_escala_grises": "Si",
         "accesibilidad_invertir_colores": "Si",
-        "dim_sin_peana_mm": "1121 x 651 x 57,1",
-        "dim_con_peana_mm": "1121 x 703 x 249",
-        "dim_embalaje_mm": "1215 x 810 x 162",
-        "dim_vesa_mm": "unknown", // Este dato no estaba en la lista
-        "dim_peana_mm": "unknown", // Este dato no estaba en la lista
-        "peso_sin_peana_kg": "unknown", // Este dato no estaba en la lista
-        "peso_con_peana_kg": "unknown", // Este dato no estaba en la lista
-        "peso_embalaje_kg": "unknown", // Este dato no estaba en la lista
+        "dim_sin_peana_mm": "1236 x 718 x 67,9",
+        "dim_con_peana_mm": "1236 x 780 x 230",
+        "dim_embalaje_mm": "1360 x 845 x 142",
+        "dim_peana_mm": "1086 x 230",
+        "peso_sin_peana_kg": "11,5",
+        "peso_con_peana_kg": "11,6",
+        "peso_embalaje_kg": "15,8",
+        "dim_vesa_mm": "300 x 200",
         "power_voltaje": "AC 100~240V 50-60Hz",
         "power_standby_w": "Under 0.5W",
-        "acc_mando_distancia": "Magic Remote MR25GA / MR25GB (UK, Italia)",
+        "acc_mando_distancia": "Mando Estándar",
         "acc_cable_alimentacion": "Si (Desenchufable)",
         "radio_recepcion_analogica": "Si",
         "radio_recepcion_digital": "DVB-T2/T (Terrestre), DVB-C (Cable), DVB-S2/S (Satélite)",
-        "info_ean": "8806096352885"
+        "info_ean": "8806096348109"
     }
 };
 
 // --- REGISTRO ---
 // Comprueba si la BD global existe y registra este producto
 if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
-    window.APP_DB.registerProduct(S50NANO81A6A_DATA);
+    window.APP_DB.registerProduct(S55UA75006LA_DATA); // <-- ¡CORREGIDO!
 } else {
     console.error("Error: APP_DB no está inicializada. Asegúrate de que main.js se carga primero.");
 }
