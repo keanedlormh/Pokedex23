@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enciclopedia Técnica v2.9.1</title>
+    <title>Enciclopedia Técnica v2.9.6</title>
     
     <link rel="stylesheet" href="style.css">
 
     <!-- ============================================== -->
-    <!-- [NUEVO] Bootloader v2.9.1                      -->
-    <!-- Carga todos los scripts de la BD desde un manifest -->
+    <!-- [ACTUALIZADO] Bootloader v2.9.6                -->
+    <!-- Carga desde manifest: .js individuales Y .json de gama -->
     <!-- ============================================== -->
     <script>
-        // 1. Definir la BD global INMEDIATAMENTE
+        // 1. Definir la BD global
         window.APP_DB = {
             products: [],
             schemas: {},
@@ -23,10 +23,9 @@
         // 2. Definir la ruta base (estamos en la raíz)
         const basePath = '';
 
-        // 3. Cargar el manifest (SÍNCRONO para bloquear la carga hasta que esté listo)
+        // 3. Cargar el manifest (SÍNCRONO)
         const xhr = new XMLHttpRequest();
-        // Usamos la ruta base para encontrar el manifest
-        xhr.open('GET', basePath + 'db/manifest.json', false); // 'false' = síncrono
+        xhr.open('GET', basePath + 'db/manifest.json', false);
         xhr.send(null);
 
         if (xhr.status === 200) {
@@ -34,16 +33,33 @@
             
             // 4. Escribir las etiquetas <script> de los esquemas
             manifest.schemas.forEach(path => {
-                // Usamos la ruta base para construir la URL correcta
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
             
-            // 5. Escribir las etiquetas <script> de los productos
+            // 5. [NUEVO] Cargar y registrar las gamas JSON a granel (SÍNCRONO)
+            manifest.bulk_gamas.forEach(jsonPath => {
+                const jsonXhr = new XMLHttpRequest();
+                jsonXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                jsonXhr.send(null);
+
+                if (jsonXhr.status === 200) {
+                    const products = JSON.parse(jsonXhr.responseText);
+                    products.forEach(product => {
+                        // Registra directamente en la BD global
+                        window.APP_DB.registerProduct(product);
+                    });
+                } else {
+                    console.error("ERROR: No se pudo cargar el archivo JSON de gama: " + jsonPath);
+                }
+            });
+
+            // 6. Escribir las etiquetas <script> de los productos individuales
             Object.values(manifest.products).forEach(productList => {
                 productList.forEach(path => {
                     document.write('<script src="' + basePath + path + '" defer><\/script>');
                 });
             });
+
         } else {
             console.error("ERROR CRÍTICO: No se pudo cargar 'db/manifest.json'.");
             alert("ERROR CRÍTICO: No se pudo cargar la base de datos. Revise la consola.");
@@ -53,10 +69,8 @@
     <!-- FIN DEL BOOTLOADER                           -->
     <!-- ============================================== -->
 
-    <!-- El script principal se carga al final, 'defer' asegura que espera a los anteriores -->
+    <!-- El script principal se carga al final -->
     <script src="main.js" defer></script>
-    
-    <!-- [ELIMINADO] Todas las antiguas etiquetas <script> de /db/... se han ido -->
     
 </head>
 
@@ -68,8 +82,7 @@
         <header class="app-header">
             
             <div class="header-left">
-                <!-- Versión actualizada -->
-                <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.9.1</span></h1>
+                <h1 class="app-title">Enciclopedia Técnica <span class="app-version">v2.9.6</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"><!-- Relleno por JS --></div>
             </div>
 
@@ -83,21 +96,17 @@
                     </button>
                     
                     <div id="smart-filter-panel" class="smart-filter-content-hidden">
-                        <!-- Selector de Gama -->
                         <div class="filter-schema-selector">
                             <label for="schema-filter-select">Gama de Producto:</label>
                             <select id="schema-filter-select" class="futuristic-select">
                                 <option value="all">Todas las Gamas</option>
-                                <!-- Relleno por JS -->
                             </select>
                         </div>
-                        <!-- Contenedor de Filtros -->
                         <div id="smart-filters-container" class="smart-filters-list">
                             <!-- Relleno por JS -->
                         </div>
                     </div>
                 </div>
-                <!-- Fin del Sistema de Filtros -->
 
                 <!-- MENÚ DE AJUSTES -->
                 <div class="settings-menu-wrapper">
@@ -116,19 +125,16 @@
                         </a>
                     </div>
                 </div>
-                <!-- Fin del Menú de Ajustes -->
 
             </div> <!-- Fin de header-right-controls -->
 
         </header>
         <!-- FIN DE BARRA SUPERIOR -->
-
-
-        <!-- ... (El resto del <body> no cambia) ... -->
         
         <div id="active-filters-bar" class="active-filters-bar-hidden">
             <!-- Relleno por JS con los filtros activos -->
         </div>
+        
         <div class="main-layout">
             <aside class="sidebar-column">
                 <div class="futuristic-card search-panel">
