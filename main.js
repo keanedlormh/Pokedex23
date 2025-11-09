@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.3
- * AÑADIDO: Generador de paleta de colores aleatoria.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.4
+ * AÑADIDO: Menú de Ajustes (para Paleta e Info)
  */
 
 // PASO 1: Creación de la base de datos global
@@ -30,7 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
         filterOverlay: document.getElementById('filter-overlay'),
         smartFilterContainer: document.getElementById('smart-filters-container'),
         schemaFilterSelect: document.getElementById('schema-filter-select'),
-        paletteToggleButton: document.getElementById('palette-toggle-btn'), // [NUEVO]
+        
+        // --- [NUEVO] Menú de Ajustes ---
+        settingsMenuToggle: document.getElementById('settings-menu-toggle'),
+        settingsMenuPanel: document.getElementById('settings-menu-panel'),
+        paletteToggleButton: document.getElementById('palette-toggle-btn'),
+        infoToggleButton: document.getElementById('info-toggle-btn'),
         
         // --- Barra de Filtros Activos ---
         activeFiltersBar: document.getElementById('active-filters-bar'),
@@ -53,22 +58,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let filterValueCache = {};
     let attrCodeToDescMap = {};
     
-    // [NUEVO] Definición de la paleta original para mantener relaciones
     const originalPalette = {
-        accent: { h: 188, s: 96, l: 41 }, // #06b6d4 (Cian)
-        dark:   { h: 210, s: 29, l: 8 },  // #0D1117 (Fondo)
-        medium: { h: 210, s: 19, l: 11 }, // #161B22 (Tarjeta)
-        border: { h: 210, s: 16, l: 15 }, // #21262D (Borde)
-        textP:  { h: 210, s: 29, l: 92 }, // #e2e8f0 (Texto)
-        textS:  { h: 210, s: 12, l: 67 }  // #9ca3af (Texto Sec.)
+        accent: { h: 188, s: 96, l: 41 }, 
+        dark:   { h: 210, s: 29, l: 8 },  
+        medium: { h: 210, s: 19, l: 11 },
+        border: { h: 210, s: 16, l: 15 },
+        textP:  { h: 210, s: 29, l: 92 },
+        textS:  { h: 210, s: 12, l: 67 } 
     };
-    // Diferencia de Tono (Hue) entre acento y fondos (210 - 188 = 22)
     const hueDifference = originalPalette.dark.h - originalPalette.accent.h;
 
     // --- 3. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v2.3 inicializando...");
+        console.log("Enciclopedia v2.4 inicializando...");
         
         masterDatabase = window.APP_DB.products;
         masterSchemaMap = window.APP_DB.schemas;
@@ -125,12 +128,21 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.modelSearchResults.addEventListener('click', handleResultClick);
         }
 
+        // --- [MODIFICADO] Listeners de Paneles ---
         if (dom.smartFilterToggle) {
             dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
         }
-        if (dom.filterOverlay) {
-            dom.filterOverlay.addEventListener('click', closeFilterPanel);
+        if (dom.settingsMenuToggle) {
+            dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
         }
+        if (dom.filterOverlay) {
+            // El overlay ahora cierra ambos paneles
+            dom.filterOverlay.addEventListener('click', () => {
+                closeFilterPanel();
+                closeSettingsMenu();
+            });
+        }
+        // --- Fin Listeners de Paneles ---
 
         if (dom.expandAllButton) {
             dom.expandAllButton.addEventListener('click', expandAllSpecs);
@@ -139,18 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         }
 
-        // [NUEVO] Listener del botón de paleta
+        // Listeners de botones de Ajustes
         if (dom.paletteToggleButton) {
             dom.paletteToggleButton.addEventListener('click', generateRandomPalette);
+        }
+        if (dom.infoToggleButton) {
+            dom.infoToggleButton.addEventListener('click', showReadmeInfo);
         }
     }
 
     // --- 4. Lógica de Búsqueda y Filtro ---
-
+    // (Esta sección no tiene cambios)
+    
     function populateFullModelList() {
         renderSearchResults(masterDatabase, dom.modelSearchResults);
     }
-
     function buildAttributeCache() {
         if (Object.keys(masterSchemaMap).length === 0) return;
         Object.values(masterSchemaMap).forEach(schema => {
@@ -161,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
     function buildFilterValueCache() {
         if (Object.keys(masterSchemaMap).length === 0) return;
         Object.values(masterSchemaMap).forEach(schema => {
@@ -190,10 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
     function populateSchemaSelector() {
         if (!dom.schemaFilterSelect) return;
-        // Evitar duplicados si se llama de nuevo
         dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>';
         const fragment = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
@@ -207,85 +219,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.schemaFilterSelect.appendChild(fragment);
     }
-
     function populateSmartFilters(schemaKey = 'all') {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
-
         dom.smartFilterContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
-
         let schemaList = [];
         if (schemaKey === 'all') {
             schemaList = Object.values(masterSchemaMap); 
         } else if (masterSchemaMap[schemaKey]) {
             schemaList = [ masterSchemaMap[schemaKey] ];
         }
-
         schemaList.forEach(schemaGroups => {
             schemaGroups.forEach(group => {
                 const groupWrapper = document.createElement('div');
                 groupWrapper.className = 'filter-group-wrapper';
-                
                 const title = document.createElement('h3');
                 title.className = 'filter-group-title';
-
                 const toggleBtn = document.createElement('button');
                 toggleBtn.className = 'filter-toggle-btn gray';
-                
                 title.appendChild(toggleBtn);
                 title.appendChild(document.createTextNode(group.group));
                 groupWrapper.appendChild(title);
-
                 const rowsContainer = document.createElement('div');
                 rowsContainer.className = 'filter-rows-container collapsed';
-                
                 let hasFiltersInGroup = false;
-
                 group.attrs.forEach(attr => {
                     const values = filterValueCache[attr.code];
                     if (values && values.length > 0) {
                         hasFiltersInGroup = true;
                         const row = document.createElement('div');
                         row.className = 'filter-row';
-
                         const label = document.createElement('label');
                         label.htmlFor = `filter_${attr.code}`;
                         label.textContent = attr.desc;
                         label.title = attr.desc;
-
                         const select = document.createElement('select');
                         select.id = `filter_${attr.code}`;
                         select.className = 'futuristic-select';
                         select.dataset.attribute = attr.code;
-
                         const defaultOption = document.createElement('option');
                         defaultOption.value = "";
                         defaultOption.textContent = "---";
                         select.appendChild(defaultOption);
-
                         values.forEach(value => {
                             const option = document.createElement('option');
                             option.value = value;
                             option.textContent = value;
                             select.appendChild(option);
                         });
-
                         row.appendChild(label);
                         row.appendChild(select);
                         rowsContainer.appendChild(row);
                     }
                 });
-
                 if (hasFiltersInGroup) {
                     groupWrapper.appendChild(rowsContainer);
                     fragment.appendChild(groupWrapper);
                 }
             });
         });
-
         dom.smartFilterContainer.appendChild(fragment);
     }
-
     function getAppliedFilters() {
         const filters = {};
         const selects = dom.smartFilterContainer.querySelectorAll('select');
@@ -296,27 +290,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         return filters;
     }
-
     function applyFiltersAndSearch() {
         const textQuery = dom.modelSearchInput.value.toLowerCase().trim();
         const attributeFilters = getAppliedFilters();
-
         const filteredProducts = filterProducts(textQuery, attributeFilters);
         renderSearchResults(filteredProducts, dom.modelSearchResults);
-        
         renderActiveFilters(attributeFilters);
     }
-
     function filterProducts(textQuery, attributeFilters) {
         const selectedSchema = dom.schemaFilterSelect.value;
         const hasTextQuery = textQuery.length > 0;
         const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
         const hasSchemaFilter = selectedSchema !== 'all';
-
         if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) {
             return masterDatabase;
         }
-
         return masterDatabase.filter(product => {
             if (hasSchemaFilter && product.schema_key !== selectedSchema) {
                 return false;
@@ -335,21 +323,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
     }
-
     function handleResultClick(e) {
         const target = e.target.closest('.list-item');
         if (!target) return;
-
         document.querySelectorAll('.list-item.active').forEach(item => {
             item.classList.remove('active');
         });
         target.classList.add('active');
-
         closeFilterPanel();
-
+        closeSettingsMenu(); // Cerrar también el menú de ajustes
         const model = target.dataset.model;
         if (!model) return;
-
         const product = masterDatabase.find(p => p.model === model);
         if (product) {
             displayProduct(product);
@@ -360,26 +344,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 5. Lógica de Renderizado ---
+    // (Esta sección no tiene cambios)
+
     function renderActiveFilters(filters) {
         if (!dom.activeFiltersBar) return;
-
         if (Object.keys(filters).length === 0) {
             dom.activeFiltersBar.className = 'active-filters-bar-hidden';
             dom.activeFiltersBar.innerHTML = '';
             return;
         }
-        
         dom.activeFiltersBar.className = 'active-filters-bar-visible';
-        dom.activeFiltersBar.innerHTML = ''; // Limpiar
-        
+        dom.activeFiltersBar.innerHTML = ''; 
         const fragment = document.createDocumentFragment();
-        
         Object.entries(filters).forEach(([attrCode, attrValue]) => {
-            const attrDesc = attrCodeToDescMap[attrCode] || attrCode; // Usar caché
-            
+            const attrDesc = attrCodeToDescMap[attrCode] || attrCode;
             const chip = document.createElement('div');
             chip.className = 'active-filter-chip';
-            
             chip.innerHTML = `
                 <span class="chip-label">
                     <span class="filter-name">${attrDesc}:</span>
@@ -389,10 +369,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             fragment.appendChild(chip);
         });
-        
         dom.activeFiltersBar.appendChild(fragment);
     }
-    
     function removeActiveFilter(attrCode) {
         const select = dom.smartFilterContainer.querySelector(`#filter_${attrCode}`);
         if (select) {
@@ -400,16 +378,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         applyFiltersAndSearch();
     }
-
     function renderSearchResults(results, container) {
         if (!container) return;
         container.innerHTML = '';
-
         if (results.length === 0) {
             container.innerHTML = '<div class="list-item" style="cursor: default; background: none; color: var(--color-text-dim);">No se encontraron resultados.</div>';
             return;
         }
-
         const fragment = document.createDocumentFragment();
         results.forEach(product => {
             const item = document.createElement('div');
@@ -418,10 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
             item.textContent = product.model;
             fragment.appendChild(item);
         });
-
         container.appendChild(fragment);
     }
-
     function displayProduct(product) {
         if (dom.productDisplayPlaceholder) {
             dom.productDisplayPlaceholder.style.display = 'none';
@@ -429,10 +402,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.specControls) {
             dom.specControls.className = 'spec-controls-visible'; 
         }
-
         dom.productTitle.textContent = product.model;
         const productSchema = masterSchemaMap[product.schema_key]; 
-        
         if (productSchema) {
             renderProductSpecs(product.attributes, productSchema);
         } else {
@@ -440,27 +411,20 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.productSpecsContainer.innerHTML = '<p class="text-gray-400">Error: No se pudo cargar la estructura de especificaciones.</p>';
         }
     }
-
     function renderProductSpecs(attributes, schema) {
         dom.productSpecsContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
-
         schema.forEach(group => {
             const details = document.createElement('details');
             details.className = 'spec-group';
-            
             const summary = document.createElement('summary');
             summary.textContent = group.group;
             details.appendChild(summary);
-
             const content = document.createElement('div');
             content.className = 'spec-group-content';
-
             let hasContentInGroup = false; 
-
             group.attrs.forEach(attr => {
                 const value = attributes[attr.code];
-                
                 if (value && value !== 'unknown') {
                     hasContentInGroup = true;
                     const specItem = document.createElement('div');
@@ -472,17 +436,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     content.appendChild(specItem);
                 }
             });
-
             if (hasContentInGroup) {
                 details.appendChild(content);
                 fragment.appendChild(details);
             }
         });
-
         dom.productSpecsContainer.appendChild(fragment);
     }
     
     // --- 6. FUNCIONES DE ESTADO Y PANEL ---
+    // (Esta sección fue modificada para incluir los nuevos paneles)
+    
     function showSelectedModelChip(modelName) {
         dom.selectedModelDisplay.innerHTML = `
             <button id="clear-selection-btn" class="model-chip-button" title="Volver al buscador">
@@ -493,7 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.selectedModelDisplay.querySelector('#clear-selection-btn')
             .addEventListener('click', clearSelection);
     }
-
     function clearSelection() {
         dom.body.classList.remove('model-is-selected');
         dom.selectedModelDisplay.innerHTML = '';
@@ -517,44 +480,17 @@ document.addEventListener('DOMContentLoaded', () => {
             currentActive.classList.remove('active');
         }
     }
-
     function expandAllSpecs() {
         const allGroups = dom.productSpecsContainer.querySelectorAll('details.spec-group');
         allGroups.forEach(group => group.open = true);
     }
-
     function collapseAllSpecs() {
         const allGroups = dom.productSpecsContainer.querySelectorAll('details.spec-group');
         allGroups.forEach(group => group.open = false);
     }
-
-    function openFilterPanel() {
-        if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
-        dom.smartFilterPanel.className = 'smart-filter-content-open';
-        dom.filterOverlay.className = 'overlay-visible';
-        dom.smartFilterToggle.classList.add('active');
-    }
-
-    function closeFilterPanel() {
-        if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
-        dom.smartFilterPanel.className = 'smart-filter-content-hidden';
-        dom.filterOverlay.className = 'overlay-hidden';
-        dom.smartFilterToggle.classList.remove('active');
-    }
-    
-    function toggleFilterPanel() {
-        if (!dom.smartFilterPanel) return;
-        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden') {
-            openFilterPanel();
-        } else {
-            closeFilterPanel();
-        }
-    }
-
     function toggleFilterGroup(titleElement) {
         const btn = titleElement.querySelector('.filter-toggle-btn');
         const rowsContainer = titleElement.nextElementSibling; 
-
         if (rowsContainer && btn) {
             if (rowsContainer.classList.contains('collapsed')) {
                 rowsContainer.classList.remove('collapsed');
@@ -570,18 +506,59 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 7. [NUEVO] FUNCIONES DE PALETA DE COLOR ---
+    // --- Funciones de Paneles (Filtros y Ajustes) ---
+    
+    function openFilterPanel() {
+        if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
+        closeSettingsMenu(); // Cierra el otro panel
+        dom.smartFilterPanel.className = 'smart-filter-content-open';
+        dom.filterOverlay.className = 'overlay-visible';
+        dom.smartFilterToggle.classList.add('active');
+    }
+    function closeFilterPanel() {
+        if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
+        dom.smartFilterPanel.className = 'smart-filter-content-hidden';
+        dom.filterOverlay.className = 'overlay-hidden';
+        dom.smartFilterToggle.classList.remove('active');
+    }
+    function toggleFilterPanel() {
+        if (!dom.smartFilterPanel) return;
+        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden') {
+            openFilterPanel();
+        } else {
+            closeFilterPanel();
+        }
+    }
 
-    /**
-     * Genera y aplica la nueva paleta de colores.
-     */
+    // [NUEVAS] Funciones para el Panel de Ajustes
+    function openSettingsMenu() {
+        if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
+        closeFilterPanel(); // Cierra el otro panel
+        dom.settingsMenuPanel.className = 'settings-menu-panel-open';
+        dom.filterOverlay.className = 'overlay-visible';
+        dom.settingsMenuToggle.classList.add('active');
+    }
+    function closeSettingsMenu() {
+        if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
+        dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
+        dom.filterOverlay.className = 'overlay-hidden';
+        dom.settingsMenuToggle.classList.remove('active');
+    }
+    function toggleSettingsMenu() {
+        if (!dom.settingsMenuPanel) return;
+        if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
+            openSettingsMenu();
+        } else {
+            closeSettingsMenu();
+        }
+    }
+
+    // --- 7. FUNCIONES DE PALETA DE COLOR E INFO ---
+    
     function generateRandomPalette() {
         const newAccentHue = Math.floor(Math.random() * 360);
-        // Mantiene la relación de HUE original (22 grados de separación)
         const newDarkHue = (newAccentHue + hueDifference + 360) % 360; 
-
-        // 1. Generar nuevos colores HSL
-        const p = originalPalette; // Alias corto
+        const p = originalPalette;
         const newColors = {
             accent: `hsl(${newAccentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
             bgDark: `hsl(${newDarkHue}, ${p.dark.s}%, ${p.dark.l}%)`,
@@ -590,18 +567,10 @@ document.addEventListener('DOMContentLoaded', () => {
             textPrimary: `hsl(${newDarkHue}, ${p.textP.s}%, ${p.textP.l}%)`,
             textSecondary: `hsl(${newDarkHue}, ${p.textS.s}%, ${p.textS.l}%)`
         };
-
-        // 2. Convertir acento a RGB para el 'glow'
         const accentRGB = hslToRgb(newAccentHue, p.accent.s, p.accent.l);
         newColors.glow = `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`;
-
-        // 3. Aplicar al DOM
         updatePaletteCSS(newColors);
     }
-
-    /**
-     * Actualiza las variables CSS Root en el DOM.
-     */
     function updatePaletteCSS(colors) {
         const root = document.documentElement;
         root.style.setProperty('--color-cyan-accent', colors.accent);
@@ -612,11 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
         root.style.setProperty('--color-text-primary', colors.textPrimary);
         root.style.setProperty('--color-text-secondary', colors.textSecondary);
     }
-
-    /**
-     * Convierte HSL a RGB.
-     * s (saturación) y l (lightness) deben ser 0-100.
-     */
     function hslToRgb(h, s, l) {
         s /= 100;
         l /= 100;
@@ -624,12 +588,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const a = s * Math.min(l, 1 - l);
         const f = n =>
             l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        
         return {
             r: Math.round(255 * f(0)),
             g: Math.round(255 * f(8)),
             b: Math.round(255 * f(4))
         };
+    }
+    
+    // [NUEVA] Función placeholder para el Readme
+    function showReadmeInfo() {
+        alert("Aquí se mostrará la información del archivo README.md más adelante.");
+        closeSettingsMenu(); // Cierra el menú después de hacer clic
     }
 
     // --- 8. Ejecución ---
