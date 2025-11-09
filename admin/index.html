@@ -7,7 +7,20 @@
     
     <link rel="stylesheet" href="admin.css">
 
-    <!-- [IMPORTANTE] Carga la misma base de datos que la app principal -->
+    <!-- ============================================== -->
+    <!-- [CORRECCIÓN PRINCIPAL]                     -->
+    <!-- Definir la BD ANTES de cargar los scripts    -->
+    <!-- ============================================== -->
+    <script>
+        window.APP_DB = {
+            products: [],
+            schemas: {},
+            registerProduct: function(product) { this.products.push(product); },
+            registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
+        };
+    </script>
+
+    <!-- [IMPORTANTE] Ahora estos scripts 'defer' encontrarán window.APP_DB -->
     <script src="../db/schemas/moduloSoundbars.js" defer></script>
     <script src="../db/schemas/moduloTVs.js" defer></script>
     
@@ -32,13 +45,13 @@
     
     <!-- TVs -->
     <script src="../db/tvs/OLED83G55LW.js" defer></script>
-    <script src="../db/tvs/75QNED93A6A.js" defer></script>
+    <script src="../db/tvs/75QNED93A6A.js" defer></string>
     <script src="../db/tvs/55UA75006LA.js" defer></script>
     <script src="../db/tvs/50NANO81A6A.js" defer></script>
     <script src="../db/tvs/OLED42C45LA.js" defer></script>
     <script src="../db/tvs/OLED65C54LA.AEU.js" defer></script>
     
-    <!-- Carga la lógica del Admin -->
+    <!-- Carga la lógica del Admin (al final, también con defer) -->
     <script src="admin.js" defer></script>
 </head>
 
