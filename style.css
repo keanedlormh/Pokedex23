@@ -68,8 +68,11 @@ body {
 body.model-is-selected .sidebar-column { display: none; }
 body.model-is-selected .main-column { width: 100%; }
 body.model-is-selected #smart-filter-system { display: none; }
-body.model-is-selected #active-filters-bar { display: none; } /* Ocultar también la barra */
+body.model-is-selected #active-filters-bar { display: none; }
 body.model-is-selected #selected-model-display { display: block; }
+/* Ocultar botón de paleta cuando un modelo está seleccionado */
+body.model-is-selected .palette-button { display: none; }
+
 
 .sticky-panel { position: sticky; top: 1rem; }
 
@@ -84,7 +87,7 @@ body.model-is-selected #selected-model-display { display: block; }
 .max-h-64 { max-height: 16rem; }
 
 /* ==============================================
-   3. BARRA SUPERIOR DE APP (Compacta)
+   3. BARRA SUPERIOR DE APP (ACTUALIZADA)
    ============================================== */
 .app-header {
     display: flex;
@@ -92,7 +95,7 @@ body.model-is-selected #selected-model-display { display: block; }
     justify-content: space-between;
     align-items: flex-start;
     padding-bottom: 0.75rem;
-    margin-bottom: 0.75rem; /* Reducido para barra de filtros */
+    margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--color-border);
     gap: 0.75rem;
 }
@@ -161,16 +164,53 @@ body.model-is-selected #selected-model-display { display: block; }
     color: #fff;
 }
 
+/* Contenedor para controles derechos */
+.header-right-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%; /* Ocupa todo el espacio en móvil */
+}
+
+@media (min-width: 1024px) {
+    .header-right-controls {
+        width: auto; /* Se encoge a su contenido en desktop */
+    }
+}
+
+/* Botón de Paleta */
+.palette-button {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 1rem; /* Para el emoji */
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.45rem 0.6rem;
+    transition: all 0.15s ease;
+    /* Altura aprox. para alinear con el botón de filtros */
+    height: 38px; 
+}
+.palette-button:hover {
+    border-color: var(--color-cyan-accent);
+    color: var(--color-cyan-accent);
+}
+
 /* ==============================================
-   4. SISTEMA DE FILTROS (Compacto)
+   4. SISTEMA DE FILTROS (ACTUALIZADO)
    ============================================== */
 .smart-filter-wrapper-v2 {
     position: relative;
-    width: 100%;
+    width: 100%; /* En móvil, sigue 100% */
+    flex-grow: 1; /* Ocupa el espacio disponible */
 }
+
 @media (min-width: 1024px) {
     .smart-filter-wrapper-v2 {
         width: auto;
+        flex-grow: 0;
     }
 }
 
@@ -235,10 +275,10 @@ body.model-is-selected #selected-model-display { display: block; }
 .smart-filters-list {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem; /* Reducido para grupos plegables */
+    gap: 0.25rem;
 }
 
-/* --- NUEVO: Grupo de Filtros Plegable --- */
+/* --- Grupo de Filtros Plegable --- */
 .filter-group-wrapper {
     border: 1px solid var(--color-border);
     border-radius: 4px;
@@ -281,7 +321,6 @@ body.model-is-selected #selected-model-display { display: block; }
 .filter-rows-container.expanded {
     display: flex;
 }
-/* --- Fin Grupo Plegable --- */
 
 .filter-row {
     display: grid;
@@ -337,7 +376,6 @@ body.model-is-selected #selected-model-display { display: block; }
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
     margin-bottom: 1rem;
-    /* Para que no crezca indefinidamente */
     max-height: 100px; 
     overflow-y: auto;
 }
@@ -401,7 +439,7 @@ body.model-is-selected #selected-model-display { display: block; }
 }
 @media (min-width: 1024px) {
     .search-panel {
-        height: calc(100vh - 11rem); /* 11rem = 176px para header/padding/barra filtros */
+        height: calc(100vh - 11rem);
         max-height: 800px;
     }
 }
@@ -580,7 +618,7 @@ details.spec-group summary:hover {
 }
 
 /* Botón coloreado (copiado de .filter-toggle-btn) */
-details.spec-group summary::before {
+details.spec-grop summary::before {
     content: '';
     width: 12px;
     height: 12px;
