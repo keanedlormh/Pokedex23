@@ -70,8 +70,8 @@ body.model-is-selected .main-column { width: 100%; }
 body.model-is-selected #smart-filter-system { display: none; }
 body.model-is-selected #active-filters-bar { display: none; }
 body.model-is-selected #selected-model-display { display: block; }
-/* Ocultar botón de paleta cuando un modelo está seleccionado */
-body.model-is-selected .palette-button { display: none; }
+/* Ocultar menú de ajustes cuando un modelo está seleccionado */
+body.model-is-selected .settings-menu-wrapper { display: none; }
 
 
 .sticky-panel { position: sticky; top: 1rem; }
@@ -177,25 +177,6 @@ body.model-is-selected .palette-button { display: none; }
     .header-right-controls {
         width: auto; /* Se encoge a su contenido en desktop */
     }
-}
-
-/* Botón de Paleta */
-.palette-button {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    font-size: 1rem; /* Para el emoji */
-    line-height: 1;
-    border-radius: 4px;
-    cursor: pointer;
-    padding: 0.45rem 0.6rem;
-    transition: all 0.15s ease;
-    /* Altura aprox. para alinear con el botón de filtros */
-    height: 38px; 
-}
-.palette-button:hover {
-    border-color: var(--color-cyan-accent);
-    color: var(--color-cyan-accent);
 }
 
 /* ==============================================
@@ -618,7 +599,7 @@ details.spec-group summary:hover {
 }
 
 /* Botón coloreado (copiado de .filter-toggle-btn) */
-details.spec-grop summary::before {
+details.spec-group summary::before {
     content: '';
     width: 12px;
     height: 12px;
@@ -696,4 +677,72 @@ details.spec-group summary::after {
 /* Asegurarnos que el select ocupa todo el ancho del panel */
 .filter-schema-selector #schema-filter-select {
     width: 100%;
+}
+
+/* ==============================================
+   11. [NUEVO] MENÚ DE AJUSTES (Settings)
+   ============================================== */
+.settings-menu-wrapper {
+    position: relative; /* Ancla para el panel */
+}
+
+.settings-button {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 1.2rem; /* Tamaño del engranaje */
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+    transition: all 0.15s ease;
+    height: 38px;
+    width: 38px; /* Cuadrado */
+}
+.settings-button:hover, 
+.settings-button.active {
+    border-color: var(--color-cyan-accent);
+    color: var(--color-cyan-accent);
+}
+
+/* Panel de Ajustes (copiado de .smart-filter-content) */
+.settings-menu-panel-hidden { display: none; }
+.settings-menu-panel-open {
+    display: block;
+    position: absolute;
+    z-index: 50;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    width: 200px; /* Ancho fijo para el menú */
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    padding: 0.5rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Botones dentro del panel de ajustes */
+.settings-menu-item {
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex; /* Para alinear icono y texto */
+    align-items: center;
+    gap: 0.5rem;
+}
+.settings-menu-item:hover {
+    background-color: var(--color-border);
+    color: var(--color-cyan-accent);
+}
+.settings-menu-item + .settings-menu-item {
+    margin-top: 0.25rem; /* Espacio entre botones */
 }
