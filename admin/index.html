@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v2.9.4</title>
+    <title>Admin - Enciclopedia Técnica v2.9.5</title>
     
     <link rel="stylesheet" href="/admin/admin.css">
 
@@ -40,17 +40,17 @@
 
 <body>
 
-    <!-- [NUEVO] Encabezado Fijo -->
+    <!-- Encabezado Fijo -->
     <header class="admin-header">
         <div class="header-content">
             <div class="header-left">
-                <h1 class="app-title">Administrador <span class="app-version">v2.9.4</span></h1>
+                <h1 class="app-title">Administrador <span class="app-version">v2.9.5</span></h1>
             </div>
             <a href="/" class="header-link">Volver a la Enciclopedia</a>
         </div>
     </header>
     
-    <!-- [NUEVA] Barra de Menús Fija -->
+    <!-- Barra de Menús Fija -->
     <nav class="admin-navbar">
         
         <!-- Menú "Editar" -->
@@ -73,8 +73,6 @@
             </div>
         </div>
         
-        <!-- Puedes añadir más menús aquí -->
-
     </nav>
 
     <!-- Área de Contenido Principal -->
@@ -115,13 +113,23 @@
         <div id="panel-export-gama" class="content-panel">
             <div class="futuristic-card" style="max-width: 800px; margin: 0 auto;">
                 <h2 class="futuristic-title">Exportar Gama Completa</h2>
+                
+                <!-- [SECCIÓN ACTUALIZADA] -->
                 <div class="gama-export-controls">
-                    <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
-                    <select id="gama-export-select" class="futuristic-select w-full">
-                        <option value="">-- Seleccionar --</option>
-                        <!-- Relleno por JS -->
-                    </select>
+                    <div class="control-group">
+                        <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
+                        <select id="gama-export-select" class="futuristic-select">
+                            <option value="">-- Seleccionar --</option>
+                            <!-- Relleno por JS -->
+                        </select>
+                    </div>
+                    <!-- [NUEVO BOTÓN] -->
+                    <button id="export-gama-json-btn" class="futuristic-button">
+                        Exportar Gama a JSON
+                    </button>
                 </div>
+                <!-- Fin de Controles -->
+
                 <div id="gama-export-list" class="gama-export-list">
                     <!-- Relleno por JS con los modelos -->
                 </div>
