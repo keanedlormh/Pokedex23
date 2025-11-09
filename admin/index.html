@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v2.9.6</title>
-    
+    <title>Admin - Enciclopedia Técnica v2.9.7</title>
+
+    <!-- Hoja de estilos del panel de administración -->
     <link rel="stylesheet" href="/admin/admin.css">
 
-    <!-- ============================================== -->
-    <!-- [ACTUALIZADO] Bootloader v2.9.6 (Versión Admin)-->
-    <!-- ============================================== -->
+    <!-- ====================================================== -->
+    <!-- [ACTUALIZADO] Bootloader v2.9.6 (Carga .json)        -->
+    <!-- ====================================================== -->
     <script>
         // 1. Definir la BD global
         window.APP_DB = {
@@ -29,13 +30,13 @@
 
         if (xhr.status === 200) {
             const manifest = JSON.parse(xhr.responseText);
-            
+
             // 4. Escribir las etiquetas <script> de los esquemas
             manifest.schemas.forEach(path => {
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
-            
-            // 5. [NUEVO] Cargar y registrar las gamas JSON a granel (SÍNCRONO)
+
+            // 5. Cargar y registrar las gamas JSON a granel (SÍNCRONO)
             manifest.bulk_gamas.forEach(jsonPath => {
                 const jsonXhr = new XMLHttpRequest();
                 jsonXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
@@ -51,10 +52,20 @@
                 }
             });
 
-            // 6. Escribir las etiquetas <script> de los productos individuales
+            // 6. [CAMBIO v2.9.6] Cargar y registrar los productos .json individuales (SÍNCRONO)
             Object.values(manifest.products).forEach(productList => {
-                productList.forEach(path => {
-                    document.write('<script src="' + basePath + path + '" defer><\/script>');
+                productList.forEach(jsonPath => {
+                    const jsonProductXhr = new XMLHttpRequest();
+                    jsonProductXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                    jsonProductXhr.send(null);
+
+                    if (jsonProductXhr.status === 200) {
+                        const product = JSON.parse(jsonProductXhr.responseText);
+                        // Registra el producto individual
+                        window.APP_DB.registerProduct(product);
+                    } else {
+                        console.error("ERROR: No se pudo cargar el archivo JSON de producto: " + jsonPath);
+                    }
                 });
             });
 
@@ -66,7 +77,8 @@
     <!-- ============================================== -->
     <!-- FIN DEL BOOTLOADER                           -->
     <!-- ============================================== -->
-    
+
+    <!-- Lógica del panel de administración -->
     <script src="/admin/admin.js" defer></script>
 </head>
 
@@ -81,10 +93,10 @@
             <a href="/" class="header-link">Volver a la Enciclopedia</a>
         </div>
     </header>
-    
+
     <!-- Barra de Menús Fija -->
     <nav class="admin-navbar">
-        
+
         <div class="menu-group">
             <button class="menu-title" data-dropdown="menu-edit">Editar</button>
             <div id="menu-edit" class="menu-dropdown">
@@ -102,7 +114,7 @@
                 </button>
             </div>
         </div>
-        
+
     </nav>
 
     <!-- Área de Contenido Principal -->
@@ -128,7 +140,8 @@
                                 <label for="new-model-id" class="futuristic-label">Nuevo Model ID (para exportar):</label>
                                 <input type="text" id="new-model-id" class="futuristic-input w-full" placeholder="Ej: NUEVOMODELO">
                             </div>
-                            <button id="export-btn" class="futuristic-button">Exportar a .txt</button>
+                            <!-- [CAMBIO v2.9.6] El botón ahora dice "Exportar a .json" -->
+                            <button id="export-btn" class="futuristic-button">Exportar a .json</button>
                         </div>
                         <form id="editor-form" class="editor-form-fields">
                             <p id="editor-placeholder" class="text-gray-400">Selecciona un modelo de la izquierda (Paso 1) para cargarlo aquí.</p>
@@ -143,7 +156,7 @@
         <div id="panel-export-gama" class="content-panel">
             <div class="futuristic-card" style="max-width: 800px; margin: 0 auto;">
                 <h2 class="futuristic-title">Exportar Gama Completa</h2>
-                
+
                 <div class="gama-export-controls">
                     <div class="control-group">
                         <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
