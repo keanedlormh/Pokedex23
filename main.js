@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.4
- * AÑADIDO: Menú de Ajustes (para Paleta e Info)
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.5
+ * CORREGIDO: Los filtros inteligentes ahora se ocultan hasta que se selecciona una gama.
  */
 
 // PASO 1: Creación de la base de datos global
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         smartFilterContainer: document.getElementById('smart-filters-container'),
         schemaFilterSelect: document.getElementById('schema-filter-select'),
         
-        // --- [NUEVO] Menú de Ajustes ---
+        // --- Menú de Ajustes ---
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 3. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v2.4 inicializando...");
+        console.log("Enciclopedia v2.5 inicializando...");
         
         masterDatabase = window.APP_DB.products;
         masterSchemaMap = window.APP_DB.schemas;
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         
         populateSchemaSelector();
-        populateSmartFilters('all');
+        populateSmartFilters('all'); // Cargar el estado 'all' (vacío) por defecto
         populateFullModelList(); 
 
         console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
@@ -98,9 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.addEventListener('change', () => {
                 const selectedSchema = dom.schemaFilterSelect.value;
-                dom.smartFilterContainer.querySelectorAll('select').forEach(select => select.value = "");
-                populateSmartFilters(selectedSchema);
-                applyFiltersAndSearch();
+                // No es necesario limpiar los <select> aquí porque populateSmartFilters() lo hace
+                populateSmartFilters(selectedSchema); // Recargar panel de filtros
+                applyFiltersAndSearch(); // Refrescar lista de productos
             });
         }
         
@@ -128,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.modelSearchResults.addEventListener('click', handleResultClick);
         }
 
-        // --- [MODIFICADO] Listeners de Paneles ---
         if (dom.smartFilterToggle) {
             dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
         }
@@ -136,13 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
         }
         if (dom.filterOverlay) {
-            // El overlay ahora cierra ambos paneles
             dom.filterOverlay.addEventListener('click', () => {
                 closeFilterPanel();
                 closeSettingsMenu();
             });
         }
-        // --- Fin Listeners de Paneles ---
 
         if (dom.expandAllButton) {
             dom.expandAllButton.addEventListener('click', expandAllSpecs);
@@ -151,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         }
 
-        // Listeners de botones de Ajustes
         if (dom.paletteToggleButton) {
             dom.paletteToggleButton.addEventListener('click', generateRandomPalette);
         }
@@ -161,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 4. Lógica de Búsqueda y Filtro ---
-    // (Esta sección no tiene cambios)
     
     function populateFullModelList() {
         renderSearchResults(masterDatabase, dom.modelSearchResults);
@@ -219,16 +214,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.schemaFilterSelect.appendChild(fragment);
     }
+
+    /**
+     * [CORREGIDO] Rellena los filtros. Si schemaKey es 'all', no muestra ninguno.
+     */
     function populateSmartFilters(schemaKey = 'all') {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
-        dom.smartFilterContainer.innerHTML = '';
+
+        dom.smartFilterContainer.innerHTML = ''; // Limpiar siempre
         const fragment = document.createDocumentFragment();
+
         let schemaList = [];
         if (schemaKey === 'all') {
-            schemaList = Object.values(masterSchemaMap); 
+            // 'Todas las Gamas' -> No mostrar filtros de atributos.
+            schemaList = [];
         } else if (masterSchemaMap[schemaKey]) {
+            // Gama específica seleccionada -> Mostrar solo sus filtros
             schemaList = [ masterSchemaMap[schemaKey] ];
         }
+
+        // [NUEVO] Si no hay esquemas que mostrar (ej: 'all'), poner un placeholder
+        if (schemaList.length === 0) {
+            const placeholder = document.createElement('p');
+            placeholder.className = 'filter-placeholder';
+            placeholder.textContent = 'Selecciona una gama para ver filtros específicos.';
+            fragment.appendChild(placeholder);
+            dom.smartFilterContainer.appendChild(fragment);
+            return; // Salir de la función
+        }
+
+        // ... (El resto de la función 'schemaList.forEach(...)' es el mismo) ...
         schemaList.forEach(schemaGroups => {
             schemaGroups.forEach(group => {
                 const groupWrapper = document.createElement('div');
@@ -280,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.smartFilterContainer.appendChild(fragment);
     }
+
     function getAppliedFilters() {
         const filters = {};
         const selects = dom.smartFilterContainer.querySelectorAll('select');
@@ -331,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         target.classList.add('active');
         closeFilterPanel();
-        closeSettingsMenu(); // Cerrar también el menú de ajustes
+        closeSettingsMenu();
         const model = target.dataset.model;
         if (!model) return;
         const product = masterDatabase.find(p => p.model === model);
@@ -344,8 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 5. Lógica de Renderizado ---
-    // (Esta sección no tiene cambios)
-
     function renderActiveFilters(filters) {
         if (!dom.activeFiltersBar) return;
         if (Object.keys(filters).length === 0) {
@@ -445,8 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- 6. FUNCIONES DE ESTADO Y PANEL ---
-    // (Esta sección fue modificada para incluir los nuevos paneles)
-    
     function showSelectedModelChip(modelName) {
         dom.selectedModelDisplay.innerHTML = `
             <button id="clear-selection-btn" class="model-chip-button" title="Volver al buscador">
@@ -467,12 +479,11 @@ document.addEventListener('DOMContentLoaded', () => {
         originalPlaceholder.style.display = 'block';
         
         dom.modelSearchInput.value = '';
-        dom.smartFilterContainer.querySelectorAll('select').forEach(select => select.value = "");
         
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.value = 'all';
         }
-        populateSmartFilters('all');
+        populateSmartFilters('all'); // Restablecer filtros a 'vacío'
         applyFiltersAndSearch(); 
         
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
@@ -507,10 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Funciones de Paneles (Filtros y Ajustes) ---
-    
     function openFilterPanel() {
         if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
-        closeSettingsMenu(); // Cierra el otro panel
+        closeSettingsMenu();
         dom.smartFilterPanel.className = 'smart-filter-content-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.smartFilterToggle.classList.add('active');
@@ -529,11 +539,9 @@ document.addEventListener('DOMContentLoaded', () => {
             closeFilterPanel();
         }
     }
-
-    // [NUEVAS] Funciones para el Panel de Ajustes
     function openSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
-        closeFilterPanel(); // Cierra el otro panel
+        closeFilterPanel();
         dom.settingsMenuPanel.className = 'settings-menu-panel-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.settingsMenuToggle.classList.add('active');
@@ -554,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 7. FUNCIONES DE PALETA DE COLOR E INFO ---
-    
     function generateRandomPalette() {
         const newAccentHue = Math.floor(Math.random() * 360);
         const newDarkHue = (newAccentHue + hueDifference + 360) % 360; 
@@ -594,11 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
             b: Math.round(255 * f(4))
         };
     }
-    
-    // [NUEVA] Función placeholder para el Readme
     function showReadmeInfo() {
         alert("Aquí se mostrará la información del archivo README.md más adelante.");
-        closeSettingsMenu(); // Cierra el menú después de hacer clic
+        closeSettingsMenu();
     }
 
     // --- 8. Ejecución ---
