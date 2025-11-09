@@ -3,32 +3,14 @@
         "db/schemas/moduloSoundbars.js",
         "db/schemas/moduloTVs.js"
     ],
+    "bulk_gamas": [
+        "db/gamas/soundbars.json",
+        "db/gamas/tvs.json"
+    ],
     "products": {
         "soundbars": [
-            "db/soundbars/s20a.js",
-            "db/soundbars/s40t.js",
-            "db/soundbars/s40tr.js",
-            "db/soundbars/s60t.js",
-            "db/soundbars/s60tr.js",
-            "db/soundbars/s65q.js",
-            "db/soundbars/s70tr.js",
-            "db/soundbars/s70ty.js",
-            "db/soundbars/s80tr.js",
-            "db/soundbars/s90tr.js",
-            "db/soundbars/s90ty.js",
-            "db/soundbars/s95trsp.js",
-            "db/soundbars/sc9s.js",
-            "db/soundbars/sg10ty.js",
-            "db/soundbars/sqc2.js",
-            "db/soundbars/sqc4r.js"
         ],
         "tvs": [
-            "db/tvs/OLED83G55LW.js",
-            "db/tvs/75QNED93A6A.js",
-            "db/tvs/55UA75006LA.js",
-            "db/tvs/50NANO81A6A.js",
-            "db/tvs/OLED42C45LA.js",
-            "db/tvs/OLED65C54LA.js"
         ]
     }
 }
