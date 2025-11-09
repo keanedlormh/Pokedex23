@@ -1,6 +1,6 @@
 /*
- * Lógica del Panel de Administración v2.9
- * REFACTOR: Navegación por pestañas.
+ * Lógica del Panel de Administración v2.9.4
+ * REFACTOR: Lógica para menús desplegables y pestañas.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -9,13 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Almacenamiento de Elementos del DOM ---
     const dom = {
-        // Pestañas y Paneles
-        adminTabControls: document.querySelector('.admin-tab-controls'),
-        allTabButtons: document.querySelectorAll('.tab-button'),
+        // [NUEVO] Controles de Navegación
+        adminNavbar: document.querySelector('.admin-navbar'),
         allContentPanels: document.querySelectorAll('.content-panel'),
-        panelEditModel: document.getElementById('panel-edit-model'),
-        panelExportGama: document.getElementById('panel-export-gama'),
-
+        allMenuDropdowns: document.querySelectorAll('.menu-dropdown'),
+        allMenuItems: document.querySelectorAll('.menu-item'), // Botones que cambian de panel
+        
         // Panel 1: Editar Modelo
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
@@ -35,10 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let masterSchemaMap = {};
     let currentLoadedSchemaKey = null;
     let currentLoadedModel = null;
+    let activeDropdown = null; // Rastrea el menú desplegable abierto
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v2.9 inicializando...");
+        console.log("Admin Panel v2.9.4 inicializando...");
         
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSearchResults(masterDatabase);
             populateGamaSelector();
             
+            // Activar el primer panel y su botón de menú por defecto
+            showPanel('edit-model');
+            
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
             dom.exportButton.disabled = true;
@@ -61,10 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
-        // [NUEVO] Listeners de Pestañas
-        if (dom.adminTabControls) {
-            dom.adminTabControls.addEventListener('click', handleTabClick);
+        // [NUEVO] Listeners de Navegación
+        if (dom.adminNavbar) {
+            dom.adminNavbar.addEventListener('click', handleNavClick);
         }
+        // Cierra los menús si se hace clic fuera
+        document.addEventListener('click', (e) => {
+            if (!dom.adminNavbar.contains(e.target)) {
+                closeAllDropdowns();
+            }
+        });
 
         // Panel 1: Cargar en Editor
         dom.modelSearchInput.addEventListener('input', applySearch);
@@ -78,24 +87,67 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.exportButton.addEventListener('click', exportDataFromEditor);
     }
 
-    // --- [NUEVO] Lógica de Navegación por Pestañas ---
+    // --- [NUEVO] Lógica de Navegación por Menús ---
     
     /**
-     * Maneja el clic en un botón de pestaña.
+     * Maneja todos los clics dentro de la barra de navegación.
      */
-    function handleTabClick(e) {
-        const target = e.target.closest('.tab-button');
-        if (!target) return;
+    function handleNavClick(e) {
+        const menuTitle = e.target.closest('.menu-title');
+        const menuItem = e.target.closest('.menu-item');
 
-        const tabId = target.dataset.tab;
-        if (tabId) {
-            showPanel(tabId);
+        if (menuTitle) {
+            // Se hizo clic en un título de menú (ej: "Editar")
+            e.stopPropagation(); // Evita que el clic se propague al 'document'
+            const dropdownId = menuTitle.dataset.dropdown;
+            toggleDropdown(dropdownId);
+            return;
+        }
+
+        if (menuItem) {
+            // Se hizo clic en un item de función (ej: "Editar Modelo")
+            e.stopPropagation();
+            const tabId = menuItem.dataset.tab;
+            if (tabId) {
+                showPanel(tabId);
+                closeAllDropdowns();
+            }
+            return;
+        }
+    }
+
+    /**
+     * Abre/cierra un menú desplegable específico.
+     */
+    function toggleDropdown(dropdownId) {
+        const dropdownToToggle = document.getElementById(dropdownId);
+        if (!dropdownToToggle) return;
+
+        // Si ya está activo, ciérralo
+        if (dropdownToToggle.classList.contains('active')) {
+            dropdownToToggle.classList.remove('active');
+            activeDropdown = null;
+        } else {
+            // Si hay otro abierto, ciérralo
+            closeAllDropdowns();
+            // Abre el nuevo
+            dropdownToToggle.classList.add('active');
+            activeDropdown = dropdownToToggle;
+        }
+    }
+
+    /**
+     * Cierra cualquier menú desplegable que esté abierto.
+     */
+    function closeAllDropdowns() {
+        if (activeDropdown) {
+            activeDropdown.classList.remove('active');
+            activeDropdown = null;
         }
     }
 
     /**
      * Muestra el panel solicitado y oculta los demás.
-     * @param {string} panelId - El ID del panel a mostrar (ej: "edit-model").
      */
     function showPanel(panelId) {
         // Ocultar todos los paneles
@@ -103,20 +155,23 @@ document.addEventListener('DOMContentLoaded', () => {
             panel.classList.remove('active');
         });
         
-        // Quitar 'active' de todas las pestañas
-        dom.allTabButtons.forEach(button => {
+        // Quitar 'active' de todos los items de menú
+        dom.allMenuItems.forEach(button => {
             button.classList.remove('active');
         });
 
-        // Mostrar el panel y la pestaña correctos
+        // Mostrar el panel y el item de menú correctos
         const panelToShow = document.getElementById(`panel-${panelId}`);
-        const tabToActivate = document.querySelector(`.tab-button[data-tab="${panelId}"]`);
+        const menuItemToActivate = document.querySelector(`.menu-item[data-tab="${panelId}"]`);
         
         if (panelToShow) {
             panelToShow.classList.add('active');
         }
-        if (tabToActivate) {
-            tabToActivate.classList.add('active');
+        if (menuItemToActivate) {
+            menuItemToActivate.classList.add('active');
+            // También activa el título del menú padre (buen detalle visual)
+            const parentTitle = menuItemToActivate.closest('.menu-group').querySelector('.menu-title');
+            if(parentTitle) parentTitle.classList.add('active');
         }
     }
 
@@ -321,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fileContent = `/**
  * Ficha de producto: ${product.model}
- * (Generado por Admin Panel v2.9)
+ * (Generado por Admin Panel v2.9.4)
  */
 
 const ${variableName} = {
