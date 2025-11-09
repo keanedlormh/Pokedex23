@@ -1,5 +1,5 @@
 /* ==============================================
-   1. ESTILOS BASE Y FUENTES (Compacto)
+   Estilos para la App Principal (v2.9.4)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -40,6 +40,7 @@ body {
     max-width: 1280px;
     margin: 0 auto;
     padding: 0.75rem;
+    box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
 }
 @media (min-width: 1024px) {
     .container { padding: 1.5rem; }
@@ -110,13 +111,14 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
+    min-width: 0; /* Corrección para flexbox en móviles */
 }
 
 .app-title {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    white-space: nowrap;
+    /* [CORREGIDO] white-space: nowrap; eliminado para permitir que el título se divida */
 }
 .app-version {
     font-size: 0.75rem;
@@ -128,6 +130,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     border: 1px solid var(--color-border);
     position: relative;
     top: -2px;
+    white-space: nowrap; /* La versión sí puede ser nowrap */
 }
 
 /* "Chip" del modelo seleccionado */
@@ -185,6 +188,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     position: relative;
     width: 100%;
     flex-grow: 1;
+    min-width: 0; /* [AÑADIDO] Corrección para flexbox en móviles */
 }
 
 @media (min-width: 1024px) {
@@ -408,10 +412,6 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    background-image: 
-        linear-gradient(rgba(33, 38, 45, 0.7) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(33, 38, 45, 0.7) 1px, transparent 1px);
-    background-size: 25px 25px;
 }
 .search-panel {
     display: flex;
@@ -730,7 +730,7 @@ details.spec-group summary::after {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    text-decoration: none; /* Para el <a> */
+    text-decoration: none;
 }
 .settings-menu-item:hover {
     background-color: var(--color-border);
@@ -752,7 +752,7 @@ details.spec-group summary::after {
 }
 
 /* ==============================================
-   13. [NUEVO] MODAL PARA README
+   13. MODAL PARA README
    ============================================== */
 .modal-hidden {
     display: none;
@@ -760,7 +760,7 @@ details.spec-group summary::after {
 .modal-visible {
     display: flex;
     position: fixed;
-    z-index: 99; /* Debajo del overlay (100) pero encima de todo lo demás */
+    z-index: 99;
     left: 0;
     top: 0;
     width: 100%;
@@ -811,6 +811,6 @@ details.spec-group summary::after {
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--color-text-secondary);
-    white-space: pre-wrap; /* Mantiene el formato de README */
+    white-space: pre-wrap;
     word-wrap: break-word;
 }
