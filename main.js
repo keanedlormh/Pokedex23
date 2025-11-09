@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.5
- * CORREGIDO: Los filtros inteligentes ahora se ocultan hasta que se selecciona una gama.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.6
+ * AÑADIDO: Lógica del modal README y enlace a Admin.
  */
 
 // PASO 1: Creación de la base de datos global
@@ -36,7 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
         infoToggleButton: document.getElementById('info-toggle-btn'),
+        adminLinkButton: document.getElementById('admin-link-btn'), // Enlace, no un botón de JS
         
+        // --- [NUEVO] Modal README ---
+        readmeModal: document.getElementById('readme-modal'),
+        readmeContent: document.getElementById('readme-content'),
+        readmeCloseButton: document.getElementById('readme-close-btn'),
+
         // --- Barra de Filtros Activos ---
         activeFiltersBar: document.getElementById('active-filters-bar'),
         
@@ -71,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 3. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v2.5 inicializando...");
+        console.log("Enciclopedia v2.6 inicializando...");
         
         masterDatabase = window.APP_DB.products;
         masterSchemaMap = window.APP_DB.schemas;
@@ -83,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         
         populateSchemaSelector();
-        populateSmartFilters('all'); // Cargar el estado 'all' (vacío) por defecto
+        populateSmartFilters('all');
         populateFullModelList(); 
 
         console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
@@ -98,9 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.addEventListener('change', () => {
                 const selectedSchema = dom.schemaFilterSelect.value;
-                // No es necesario limpiar los <select> aquí porque populateSmartFilters() lo hace
-                populateSmartFilters(selectedSchema); // Recargar panel de filtros
-                applyFiltersAndSearch(); // Refrescar lista de productos
+                populateSmartFilters(selectedSchema);
+                applyFiltersAndSearch();
             });
         }
         
@@ -128,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.modelSearchResults.addEventListener('click', handleResultClick);
         }
 
+        // --- Listeners de Paneles y Modales ---
         if (dom.smartFilterToggle) {
             dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
         }
@@ -135,11 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
         }
         if (dom.filterOverlay) {
+            // El overlay ahora cierra todo
             dom.filterOverlay.addEventListener('click', () => {
                 closeFilterPanel();
                 closeSettingsMenu();
+                closeReadmeModal(); // [NUEVO]
             });
         }
+        if (dom.readmeCloseButton) {
+            dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
+        }
+        // --- Fin Listeners ---
 
         if (dom.expandAllButton) {
             dom.expandAllButton.addEventListener('click', expandAllSpecs);
@@ -148,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         }
 
+        // Listeners de botones de Ajustes
         if (dom.paletteToggleButton) {
             dom.paletteToggleButton.addEventListener('click', generateRandomPalette);
         }
@@ -214,36 +227,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.schemaFilterSelect.appendChild(fragment);
     }
-
-    /**
-     * [CORREGIDO] Rellena los filtros. Si schemaKey es 'all', no muestra ninguno.
-     */
     function populateSmartFilters(schemaKey = 'all') {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
 
-        dom.smartFilterContainer.innerHTML = ''; // Limpiar siempre
+        dom.smartFilterContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
 
         let schemaList = [];
         if (schemaKey === 'all') {
-            // 'Todas las Gamas' -> No mostrar filtros de atributos.
             schemaList = [];
         } else if (masterSchemaMap[schemaKey]) {
-            // Gama específica seleccionada -> Mostrar solo sus filtros
             schemaList = [ masterSchemaMap[schemaKey] ];
         }
 
-        // [NUEVO] Si no hay esquemas que mostrar (ej: 'all'), poner un placeholder
         if (schemaList.length === 0) {
             const placeholder = document.createElement('p');
             placeholder.className = 'filter-placeholder';
             placeholder.textContent = 'Selecciona una gama para ver filtros específicos.';
             fragment.appendChild(placeholder);
             dom.smartFilterContainer.appendChild(fragment);
-            return; // Salir de la función
+            return;
         }
 
-        // ... (El resto de la función 'schemaList.forEach(...)' es el mismo) ...
         schemaList.forEach(schemaGroups => {
             schemaGroups.forEach(group => {
                 const groupWrapper = document.createElement('div');
@@ -295,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.smartFilterContainer.appendChild(fragment);
     }
-
     function getAppliedFilters() {
         const filters = {};
         const selects = dom.smartFilterContainer.querySelectorAll('select');
@@ -483,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.value = 'all';
         }
-        populateSmartFilters('all'); // Restablecer filtros a 'vacío'
+        populateSmartFilters('all');
         applyFiltersAndSearch(); 
         
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
@@ -517,10 +521,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Funciones de Paneles (Filtros y Ajustes) ---
+    // --- Funciones de Paneles (Filtros, Ajustes, Modal) ---
     function openFilterPanel() {
         if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
         closeSettingsMenu();
+        closeReadmeModal();
         dom.smartFilterPanel.className = 'smart-filter-content-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.smartFilterToggle.classList.add('active');
@@ -528,20 +533,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeFilterPanel() {
         if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
         dom.smartFilterPanel.className = 'smart-filter-content-hidden';
-        dom.filterOverlay.className = 'overlay-hidden';
+        if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden') {
+            dom.filterOverlay.className = 'overlay-hidden';
+        }
         dom.smartFilterToggle.classList.remove('active');
     }
     function toggleFilterPanel() {
         if (!dom.smartFilterPanel) return;
-        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden') {
-            openFilterPanel();
-        } else {
-            closeFilterPanel();
-        }
+        dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel();
     }
     function openSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
         closeFilterPanel();
+        closeReadmeModal();
         dom.settingsMenuPanel.className = 'settings-menu-panel-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.settingsMenuToggle.classList.add('active');
@@ -549,15 +553,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
         dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
-        dom.filterOverlay.className = 'overlay-hidden';
+        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.readmeModal.className === 'modal-hidden') {
+            dom.filterOverlay.className = 'overlay-hidden';
+        }
         dom.settingsMenuToggle.classList.remove('active');
     }
     function toggleSettingsMenu() {
         if (!dom.settingsMenuPanel) return;
-        if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
-            openSettingsMenu();
-        } else {
-            closeSettingsMenu();
+        dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu();
+    }
+
+    // [NUEVAS] Funciones para el Modal README
+    function openReadmeModal() {
+        if (!dom.readmeModal || !dom.filterOverlay) return;
+        closeFilterPanel();
+        closeSettingsMenu();
+        dom.readmeModal.className = 'modal-visible';
+        dom.filterOverlay.className = 'overlay-visible';
+    }
+    function closeReadmeModal() {
+        if (!dom.readmeModal || !dom.filterOverlay) return;
+        dom.readmeModal.className = 'modal-hidden';
+        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
+            dom.filterOverlay.className = 'overlay-hidden';
         }
     }
 
@@ -601,9 +619,26 @@ document.addEventListener('DOMContentLoaded', () => {
             b: Math.round(255 * f(4))
         };
     }
-    function showReadmeInfo() {
-        alert("Aquí se mostrará la información del archivo README.md más adelante.");
+    
+    // [MODIFICADO] Carga el README.md en el modal
+    async function showReadmeInfo() {
         closeSettingsMenu();
+        openReadmeModal();
+        
+        if (dom.readmeContent.textContent === "") { // Cargar solo una vez
+            try {
+                dom.readmeContent.textContent = "Cargando...";
+                const response = await fetch('README.md');
+                if (!response.ok) {
+                    throw new Error('No se pudo encontrar README.md');
+                }
+                const text = await response.text();
+                dom.readmeContent.textContent = text;
+            } catch (error) {
+                console.error("Error al cargar README.md:", error);
+                dom.readmeContent.textContent = "Error al cargar el archivo README.md.\n\nAsegúrate de que el archivo existe en la raíz del proyecto.";
+            }
+        }
     }
 
     // --- 8. Ejecución ---
