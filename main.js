@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.2
- * AÑADIDO: Selector de Gama (Schema) para filtrar productos y atributos.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.3
+ * AÑADIDO: Generador de paleta de colores aleatoria.
  */
 
 // PASO 1: Creación de la base de datos global
@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         smartFilterPanel: document.getElementById('smart-filter-panel'),
         filterOverlay: document.getElementById('filter-overlay'),
         smartFilterContainer: document.getElementById('smart-filters-container'),
-        schemaFilterSelect: document.getElementById('schema-filter-select'), // [NUEVO]
+        schemaFilterSelect: document.getElementById('schema-filter-select'),
+        paletteToggleButton: document.getElementById('palette-toggle-btn'), // [NUEVO]
         
         // --- Barra de Filtros Activos ---
         activeFiltersBar: document.getElementById('active-filters-bar'),
@@ -51,11 +52,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let masterSchemaMap = {};
     let filterValueCache = {};
     let attrCodeToDescMap = {};
+    
+    // [NUEVO] Definición de la paleta original para mantener relaciones
+    const originalPalette = {
+        accent: { h: 188, s: 96, l: 41 }, // #06b6d4 (Cian)
+        dark:   { h: 210, s: 29, l: 8 },  // #0D1117 (Fondo)
+        medium: { h: 210, s: 19, l: 11 }, // #161B22 (Tarjeta)
+        border: { h: 210, s: 16, l: 15 }, // #21262D (Borde)
+        textP:  { h: 210, s: 29, l: 92 }, // #e2e8f0 (Texto)
+        textS:  { h: 210, s: 12, l: 67 }  // #9ca3af (Texto Sec.)
+    };
+    // Diferencia de Tono (Hue) entre acento y fondos (210 - 188 = 22)
+    const hueDifference = originalPalette.dark.h - originalPalette.accent.h;
 
     // --- 3. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v2.2 inicializando...");
+        console.log("Enciclopedia v2.3 inicializando...");
         
         masterDatabase = window.APP_DB.products;
         masterSchemaMap = window.APP_DB.schemas;
@@ -66,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupEventListeners();
         
-        populateSchemaSelector(); // [NUEVO]
-        populateSmartFilters('all'); // [MODIFICADO] Cargar todos por defecto
+        populateSchemaSelector();
+        populateSmartFilters('all');
         populateFullModelList(); 
 
         console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
@@ -79,15 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.modelSearchInput.addEventListener('input', applyFiltersAndSearch);
         }
 
-        // [NUEVO] Listener para el selector de gama
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.addEventListener('change', () => {
                 const selectedSchema = dom.schemaFilterSelect.value;
-                // Limpiar filtros de atributos al cambiar de gama
                 dom.smartFilterContainer.querySelectorAll('select').forEach(select => select.value = "");
-                
-                populateSmartFilters(selectedSchema); // Recargar panel de filtros
-                applyFiltersAndSearch(); // Refrescar lista de productos
+                populateSmartFilters(selectedSchema);
+                applyFiltersAndSearch();
             });
         }
         
@@ -127,6 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (dom.collapseAllButton) {
             dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
+        }
+
+        // [NUEVO] Listener del botón de paleta
+        if (dom.paletteToggleButton) {
+            dom.paletteToggleButton.addEventListener('click', generateRandomPalette);
         }
     }
 
@@ -176,18 +191,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * [NUEVA FUNCIÓN] Rellena el dropdown de selección de gama.
-     */
     function populateSchemaSelector() {
         if (!dom.schemaFilterSelect) return;
+        // Evitar duplicados si se llama de nuevo
+        dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>';
         const fragment = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
             const option = document.createElement('option');
             option.value = key;
-            // Pone en mayúscula la primera letra (ej: 'soundbars' -> 'Soundbars')
             let friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
-            if (key === 'tvs') friendlyName = "TVs"; // Caso especial
+            if (key === 'tvs') friendlyName = "TVs";
             
             option.textContent = friendlyName;
             fragment.appendChild(option);
@@ -195,10 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.schemaFilterSelect.appendChild(fragment);
     }
 
-
-    /**
-     * [MODIFICADO] Rellena los filtros según la gama seleccionada.
-     */
     function populateSmartFilters(schemaKey = 'all') {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
 
@@ -207,10 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let schemaList = [];
         if (schemaKey === 'all') {
-            // Obtiene todos los esquemas (ej: [ [schemaSoundbars], [schemaTVs] ])
             schemaList = Object.values(masterSchemaMap); 
         } else if (masterSchemaMap[schemaKey]) {
-            // Obtiene solo el esquema seleccionado (ej: [ [schemaTVs] ])
             schemaList = [ masterSchemaMap[schemaKey] ];
         }
 
@@ -300,34 +307,23 @@ document.addEventListener('DOMContentLoaded', () => {
         renderActiveFilters(attributeFilters);
     }
 
-    /**
-     * [MODIFICADO] Ahora filtra también por la gama seleccionada.
-     */
     function filterProducts(textQuery, attributeFilters) {
-        // [NUEVO] Obtener la gama seleccionada
         const selectedSchema = dom.schemaFilterSelect.value;
-        
         const hasTextQuery = textQuery.length > 0;
         const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
         const hasSchemaFilter = selectedSchema !== 'all';
 
-        // Si no hay filtros, mostrar todo
         if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) {
             return masterDatabase;
         }
 
         return masterDatabase.filter(product => {
-            // 1. Filtro de Gama (NUEVO)
             if (hasSchemaFilter && product.schema_key !== selectedSchema) {
                 return false;
             }
-
-            // 2. Filtro de Texto
             if (hasTextQuery && !product.model.toLowerCase().includes(textQuery)) {
                 return false;
             }
-            
-            // 3. Filtro de Atributos
             if (hasAttributeFilters) {
                 const match = Object.entries(attributeFilters).every(([attrCode, attrValue]) => {
                     return product.attributes[attrCode] === attrValue;
@@ -336,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return false;
                 }
             }
-            
             return true;
         });
     }
@@ -401,9 +396,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function removeActiveFilter(attrCode) {
         const select = dom.smartFilterContainer.querySelector(`#filter_${attrCode}`);
         if (select) {
-            select.value = ""; // Resetear el <select>
+            select.value = "";
         }
-        applyFiltersAndSearch(); // Refrescar la UI
+        applyFiltersAndSearch();
     }
 
     function renderSearchResults(results, container) {
@@ -487,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.productSpecsContainer.appendChild(fragment);
     }
     
-    // --- 6. FUNCIONES DE ESTADO Y PANEL (v2.0) ---
+    // --- 6. FUNCIONES DE ESTADO Y PANEL ---
     function showSelectedModelChip(modelName) {
         dom.selectedModelDisplay.innerHTML = `
             <button id="clear-selection-btn" class="model-chip-button" title="Volver al buscador">
@@ -499,9 +494,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .addEventListener('click', clearSelection);
     }
 
-    /**
-     * [MODIFICADO] Resetea también el selector de gama.
-     */
     function clearSelection() {
         dom.body.classList.remove('model-is-selected');
         dom.selectedModelDisplay.innerHTML = '';
@@ -512,18 +504,13 @@ document.addEventListener('DOMContentLoaded', () => {
         originalPlaceholder.style.display = 'block';
         
         dom.modelSearchInput.value = '';
-        // Resetear todos los <select> en el panel de filtros
         dom.smartFilterContainer.querySelectorAll('select').forEach(select => select.value = "");
         
-        // [NUEVO] Resetear el selector de gama a "Todas"
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.value = 'all';
         }
-
-        // [NUEVO] Recargar todos los filtros
         populateSmartFilters('all');
-        
-        applyFiltersAndSearch(); // Recargar lista y limpiar barra de filtros activos
+        applyFiltersAndSearch(); 
         
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
         if (currentActive) {
@@ -566,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleFilterGroup(titleElement) {
         const btn = titleElement.querySelector('.filter-toggle-btn');
-        const rowsContainer = titleElement.nextElementSibling;
+        const rowsContainer = titleElement.nextElementSibling; 
 
         if (rowsContainer && btn) {
             if (rowsContainer.classList.contains('collapsed')) {
@@ -583,6 +570,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 7. Ejecución ---
+    // --- 7. [NUEVO] FUNCIONES DE PALETA DE COLOR ---
+
+    /**
+     * Genera y aplica la nueva paleta de colores.
+     */
+    function generateRandomPalette() {
+        const newAccentHue = Math.floor(Math.random() * 360);
+        // Mantiene la relación de HUE original (22 grados de separación)
+        const newDarkHue = (newAccentHue + hueDifference + 360) % 360; 
+
+        // 1. Generar nuevos colores HSL
+        const p = originalPalette; // Alias corto
+        const newColors = {
+            accent: `hsl(${newAccentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
+            bgDark: `hsl(${newDarkHue}, ${p.dark.s}%, ${p.dark.l}%)`,
+            bgMedium: `hsl(${newDarkHue}, ${p.medium.s}%, ${p.medium.l}%)`,
+            border: `hsl(${newDarkHue}, ${p.border.s}%, ${p.border.l}%)`,
+            textPrimary: `hsl(${newDarkHue}, ${p.textP.s}%, ${p.textP.l}%)`,
+            textSecondary: `hsl(${newDarkHue}, ${p.textS.s}%, ${p.textS.l}%)`
+        };
+
+        // 2. Convertir acento a RGB para el 'glow'
+        const accentRGB = hslToRgb(newAccentHue, p.accent.s, p.accent.l);
+        newColors.glow = `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`;
+
+        // 3. Aplicar al DOM
+        updatePaletteCSS(newColors);
+    }
+
+    /**
+     * Actualiza las variables CSS Root en el DOM.
+     */
+    function updatePaletteCSS(colors) {
+        const root = document.documentElement;
+        root.style.setProperty('--color-cyan-accent', colors.accent);
+        root.style.setProperty('--color-cyan-glow', colors.glow);
+        root.style.setProperty('--color-bg-dark', colors.bgDark);
+        root.style.setProperty('--color-bg-medium', colors.bgMedium);
+        root.style.setProperty('--color-border', colors.border);
+        root.style.setProperty('--color-text-primary', colors.textPrimary);
+        root.style.setProperty('--color-text-secondary', colors.textSecondary);
+    }
+
+    /**
+     * Convierte HSL a RGB.
+     * s (saturación) y l (lightness) deben ser 0-100.
+     */
+    function hslToRgb(h, s, l) {
+        s /= 100;
+        l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n =>
+            l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        
+        return {
+            r: Math.round(255 * f(0)),
+            g: Math.round(255 * f(8)),
+            b: Math.round(255 * f(4))
+        };
+    }
+
+    // --- 8. Ejecución ---
     initialize();
 });
