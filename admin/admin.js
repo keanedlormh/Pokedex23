@@ -1,6 +1,7 @@
 /*
- * Lógica del Panel de Administración v2.6.1
- * AÑADIDO: La lista de modelos se oculta al seleccionar uno.
+ * Lógica del Panel de Administración v2.8
+ * AÑADIDO: Panel de exportación por gama.
+ * REFACTOR: Lógica de exportación genérica.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -15,7 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
         editorForm: document.getElementById('editor-form'),
         editorPlaceholder: document.getElementById('editor-placeholder'),
         newModelIdInput: document.getElementById('new-model-id'),
-        exportButton: document.getElementById('export-btn')
+        exportButton: document.getElementById('export-btn'),
+        
+        // [NUEVO] Panel de Exportar Gama
+        gamaExportSelect: document.getElementById('gama-export-select'),
+        gamaExportList: document.getElementById('gama-export-list')
     };
 
     // --- Base de Datos Local ---
@@ -26,20 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v2.6.1 inicializando...");
+        console.log("Admin Panel v2.8 inicializando...");
         
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
             
             if (masterDatabase.length === 0) {
-                console.warn("La base de datos está vacía. ¿Se cargaron los scripts de ../db/?");
+                console.warn("La base de datos está vacía.");
             }
 
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             
             setupEventListeners();
             renderSearchResults(masterDatabase);
+            populateGamaSelector(); // [NUEVO]
             
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
@@ -48,24 +54,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
+        // Panel 1: Cargar en Editor
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
-        dom.exportButton.addEventListener('click', exportDataAsTxt);
+        
+        // Panel 2: Exportar Gama
+        dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
+        dom.gamaExportList.addEventListener('click', handleGamaExportClick);
+        
+        // Panel 3: Editor
+        dom.exportButton.addEventListener('click', exportDataFromEditor);
     }
 
-    // --- Lógica de Búsqueda ---
+    // --- Lógica de Búsqueda (Panel 1) ---
     function applySearch() {
-        // [MODIFICADO] Vuelve a mostrar la lista cuando el usuario escribe
         dom.modelSearchResults.classList.remove('list-collapsed');
-        
         const textQuery = dom.modelSearchInput.value.toLowerCase().trim();
-        if (textQuery === "") {
-            renderSearchResults(masterDatabase);
-            return;
-        }
-        const filteredProducts = masterDatabase.filter(product => {
-            return product.model.toLowerCase().includes(textQuery);
-        });
+        const filteredProducts = (textQuery === "") ?
+            masterDatabase :
+            masterDatabase.filter(p => p.model.toLowerCase().includes(textQuery));
         renderSearchResults(filteredProducts);
     }
 
@@ -75,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.modelSearchResults.innerHTML = '<div class="list-item" style="cursor: default; background: none; color: var(--color-text-dim);">No se encontraron resultados.</div>';
             return;
         }
-
         const fragment = document.createDocumentFragment();
         results.forEach(product => {
             const item = document.createElement('div');
@@ -94,9 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = e.target.closest('.list-item');
         if (!target) return;
 
-        document.querySelectorAll('.list-item.active').forEach(item => {
-            item.classList.remove('active');
-        });
+        document.querySelectorAll('.list-item.active').forEach(item => item.classList.remove('active'));
         target.classList.add('active');
 
         const model = target.dataset.model;
@@ -105,12 +109,80 @@ document.addEventListener('DOMContentLoaded', () => {
         const product = masterDatabase.find(p => p.model === model);
         if (product) {
             loadModelIntoEditor(product);
-            // [MODIFICADO] Oculta la lista después de la selección
             dom.modelSearchResults.classList.add('list-collapsed');
         }
     }
 
-    // --- Lógica del Editor ---
+    // --- [NUEVA] Lógica de Exportar Gama (Panel 2) ---
+    
+    /**
+     * Rellena el dropdown de selección de gama en el Panel 2.
+     */
+    function populateGamaSelector() {
+        if (!dom.gamaExportSelect) return;
+        const fragment = document.createDocumentFragment();
+        Object.keys(masterSchemaMap).forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            let friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
+            if (key === 'tvs') friendlyName = "TVs";
+            option.textContent = friendlyName;
+            fragment.appendChild(option);
+        });
+        dom.gamaExportSelect.appendChild(fragment);
+    }
+
+    /**
+     * Rellena la lista de exportación cuando se cambia el dropdown.
+     */
+    function populateGamaExportList() {
+        const selectedSchema = dom.gamaExportSelect.value;
+        dom.gamaExportList.innerHTML = ''; // Limpiar
+        
+        if (!selectedSchema) return;
+
+        const modelsInGama = masterDatabase.filter(p => p.schema_key === selectedSchema);
+        if (modelsInGama.length === 0) {
+            dom.gamaExportList.innerHTML = '<p class="text-gray-400" style="padding: 0.5rem;">No hay modelos en esta gama.</p>';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        modelsInGama.forEach(product => {
+            const item = document.createElement('div');
+            item.className = 'gama-export-item';
+            item.innerHTML = `
+                <span>${product.model}</span>
+                <button class="export-item-button" data-model="${product.model}">
+                    Descargar .txt
+                </button>
+            `;
+            fragment.appendChild(item);
+        });
+        dom.gamaExportList.appendChild(fragment);
+    }
+
+    /**
+     * Maneja el clic en un botón de descarga individual (Panel 2).
+     */
+    function handleGamaExportClick(e) {
+        const target = e.target.closest('.export-item-button');
+        if (!target) return;
+
+        const modelId = target.dataset.model;
+        const product = masterDatabase.find(p => p.model === modelId);
+
+        if (product) {
+            // Exporta el producto original tal cual
+            generateAndDownloadProductFile(product, product.model);
+        } else {
+            alert(`Error: No se pudo encontrar el modelo ${modelId} en la base de datos.`);
+        }
+    }
+
+
+    // --- Lógica del Editor (Panel 3) ---
+    
     function loadModelIntoEditor(product) {
         currentLoadedModel = product;
         currentLoadedSchemaKey = product.schema_key;
@@ -123,11 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dom.editorPlaceholder.style.display = 'none';
         dom.editorForm.innerHTML = '';
-        dom.productTitle.textContent = `Editando: ${product.model}`;
+        dom.productTitle.textContent = `3. Editando: ${product.model}`;
         dom.newModelIdInput.value = product.model;
         
         const fragment = document.createDocumentFragment();
-
         schema.forEach(group => {
             const groupTitle = document.createElement('h3');
             groupTitle.className = 'form-group-title';
@@ -136,27 +207,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             group.attrs.forEach(attr => {
                 const value = product.attributes[attr.code] || "";
-                
                 const row = document.createElement('div');
                 row.className = 'form-row';
-
                 const label = document.createElement('label');
                 label.className = 'futuristic-label';
                 label.htmlFor = `attr_${attr.code}`;
                 label.textContent = `${attr.desc} (${attr.code})`;
-
                 const textarea = document.createElement('textarea');
                 textarea.className = 'futuristic-textarea';
                 textarea.id = `attr_${attr.code}`;
                 textarea.name = attr.code;
                 textarea.rows = 1;
                 textarea.textContent = value;
-                
                 textarea.addEventListener('input', () => {
                     textarea.style.height = 'auto';
                     textarea.style.height = (textarea.scrollHeight) + 'px';
                 });
-
                 row.appendChild(label);
                 row.appendChild(textarea);
                 fragment.appendChild(row);
@@ -174,10 +240,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1);
     }
 
-    // --- Lógica de Exportación ---
-    function exportDataAsTxt() {
+    /**
+     * Maneja el clic en el botón "Exportar" del Editor (Panel 3).
+     */
+    function exportDataFromEditor() {
         if (!currentLoadedModel || !currentLoadedSchemaKey) {
-            alert("No hay ningún modelo cargado para exportar.");
+            alert("No hay ningún modelo cargado en el editor para exportar.");
             return;
         }
 
@@ -188,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Recoge los datos *modificados* del formulario
         const formData = new FormData(dom.editorForm);
         const newAttributes = {};
         for (const [key, value] of formData.entries()) {
@@ -195,18 +264,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 newAttributes[key] = value.trim();
             }
         }
+        
+        // Crea un objeto producto *temporal* con los nuevos datos
+        const modifiedProduct = {
+            model: newModelId,
+            schema_key: currentLoadedSchemaKey,
+            attributes: newAttributes
+        };
 
-        const variableName = `${newModelId.replace(/\./g, '_')}_DATA`;
+        generateAndDownloadProductFile(modifiedProduct, newModelId);
+    }
+
+
+    // --- [REFACTORIZADO] Lógica de Exportación Genérica ---
+    
+    /**
+     * Genera el contenido del archivo .js y lo descarga como .txt.
+     * @param {object} product - El objeto producto (original o modificado).
+     * @param {string} fileName - El nombre del modelo (Model ID) para el archivo.
+     */
+    function generateAndDownloadProductFile(product, fileName) {
+        
+        const variableName = `${fileName.replace(/\./g, '_')}_DATA`;
         
         const fileContent = `/**
- * Ficha de producto: ${newModelId}
- * (Generado por Admin Panel)
+ * Ficha de producto: ${product.model}
+ * (Generado por Admin Panel v2.8)
  */
 
 const ${variableName} = {
-    "model": "${newModelId}",
-    "schema_key": "${currentLoadedSchemaKey}",
-    "attributes": ${JSON.stringify(newAttributes, null, 4)}
+    "model": "${product.model}",
+    "schema_key": "${product.schema_key}",
+    "attributes": ${JSON.stringify(product.attributes, null, 4)}
 };
 
 // --- REGISTRO ---
@@ -221,7 +310,7 @@ if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
         const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `${newModelId}.js.txt`;
+        link.download = `${fileName}.js.txt`; // Exportar como .txt
         
         document.body.appendChild(link);
         link.click();
