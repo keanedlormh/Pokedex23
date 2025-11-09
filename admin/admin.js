@@ -1,5 +1,6 @@
 /*
- * Lógica del Panel de Administración v2.9.5
+ * Lógica del Panel de Administración v2.9.6
+ * ACTUALIZADO: Exportación de modelos individuales a .json
  * AÑADIDO: Exportar gama completa a JSON.
  */
 
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         allContentPanels: document.querySelectorAll('.content-panel'),
         allMenuDropdowns: document.querySelectorAll('.menu-dropdown'),
         allMenuItems: document.querySelectorAll('.menu-item'),
-        
+
         // Panel 1: Editar Modelo
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
@@ -23,38 +24,37 @@ document.addEventListener('DOMContentLoaded', () => {
         editorPlaceholder: document.getElementById('editor-placeholder'),
         newModelIdInput: document.getElementById('new-model-id'),
         exportButton: document.getElementById('export-btn'),
-        
+
         // Panel 2: Exportar Gama
         gamaExportSelect: document.getElementById('gama-export-select'),
         gamaExportList: document.getElementById('gama-export-list'),
         exportGamaJsonButton: document.getElementById('export-gama-json-btn') // [NUEVO]
     };
-
+    
     // --- Base de Datos Local ---
     let masterDatabase = [];
     let masterSchemaMap = {};
     let currentLoadedSchemaKey = null;
     let currentLoadedModel = null;
     let activeDropdown = null;
-
+    
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v2.9.5 inicializando...");
-        
+        console.log("Admin Panel v2.9.6 inicializando...");
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
-            
+
             if (masterDatabase.length === 0) console.warn("La base de datos está vacía.");
 
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-            
+
             setupEventListeners();
             renderSearchResults(masterDatabase);
             populateGamaSelector();
-            
+
             showPanel('edit-model'); // Mostrar panel por defecto
-            
+
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
             dom.exportButton.disabled = true;
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllDropdowns();
             }
         });
-
+        
         // Panel 1: Cargar en Editor
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
@@ -80,14 +80,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Panel 2: Exportar Gama
         dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
-        dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); // [NUEVO]
-        
+        dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); 
+        // [NUEVO]
+
         // Panel 1 (continuación): Editor
         dom.exportButton.addEventListener('click', exportDataFromEditor);
     }
 
     // --- Lógica de Navegación por Menús ---
-    
+
     function handleNavClick(e) {
         const menuTitle = e.target.closest('.menu-title');
         const menuItem = e.target.closest('.menu-item');
@@ -137,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const panelToShow = document.getElementById(`panel-${panelId}`);
         const menuItemToActivate = document.querySelector(`.menu-item[data-tab="${panelId}"]`);
-        
+
         if (panelToShow) panelToShow.classList.add('active');
         if (menuItemToActivate) {
             menuItemToActivate.classList.add('active');
@@ -145,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(parentTitle) parentTitle.classList.add('active'); // Mantiene el menú padre activo
         }
     }
-
 
     // --- Lógica de Búsqueda (Panel 1) ---
     function applySearch() {
@@ -186,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const model = target.dataset.model;
         if (!model) return;
-
         const product = masterDatabase.find(p => p.model === model);
         if (product) {
             loadModelIntoEditor(product);
@@ -195,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Lógica de Exportar Gama (Panel 2) ---
-    
+
     function populateGamaSelector() {
         if (!dom.gamaExportSelect) return;
         const fragment = document.createDocumentFragment();
@@ -206,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (key === 'tvs') friendlyName = "TVs";
             option.textContent = friendlyName;
             fragment.appendChild(option);
+    
         });
         dom.gamaExportSelect.appendChild(fragment);
     }
@@ -213,15 +213,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateGamaExportList() {
         const selectedSchema = dom.gamaExportSelect.value;
         dom.gamaExportList.innerHTML = '';
-        
+
         if (!selectedSchema) {
-            dom.exportGamaJsonButton.disabled = true; // [NUEVO] Deshabilitar botón
+            dom.exportGamaJsonButton.disabled = true; 
+            // [NUEVO] Deshabilitar botón
             return;
         }
 
-        dom.exportGamaJsonButton.disabled = false; // [NUEVO] Habilitar botón
+        dom.exportGamaJsonButton.disabled = false; 
+        // [NUEVO] Habilitar botón
         const modelsInGama = masterDatabase.filter(p => p.schema_key === selectedSchema);
-        
         if (modelsInGama.length === 0) {
             dom.gamaExportList.innerHTML = '<p class="text-gray-400" style="padding: 0.5rem;">No hay modelos en esta gama.</p>';
             return;
@@ -231,10 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
         modelsInGama.forEach(product => {
             const item = document.createElement('div');
             item.className = 'gama-export-item';
+            // [CAMBIO v2.9.6] El botón ahora dice "Descargar .json"
             item.innerHTML = `
                 <span>${product.model}</span>
                 <button class="export-item-button" data-model="${product.model}">
-                    Descargar .txt (JS)
+                    Descargar .json
                 </button>
             `;
             fragment.appendChild(item);
@@ -248,12 +250,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const modelId = target.dataset.model;
         const product = masterDatabase.find(p => p.model === modelId);
         if (product) {
+            // [CAMBIO v2.9.6] Esta función ahora genera .json
             generateAndDownloadProductFile(product, product.model);
         } else {
             alert(`Error: No se pudo encontrar el modelo ${modelId} en la base de datos.`);
         }
     }
-    
+
     // [NUEVA] Función para exportar la gama completa como JSON
     function exportGamaAsJson() {
         const selectedSchema = dom.gamaExportSelect.value;
@@ -264,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Filtrar la base de datos completa para esta gama
         const productsToExport = masterDatabase.filter(p => p.schema_key === selectedSchema);
-        
         if (productsToExport.length === 0) {
             alert("No hay productos en esta gama para exportar.");
             return;
@@ -272,17 +274,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Convertir el array de productos a un string JSON formateado
         const jsonString = JSON.stringify(productsToExport, null, 4);
-
+        
         // 3. Generar el nombre del archivo
-        const filename = `GAMA_${selectedSchema.toUpperCase()}.json.txt`;
-
+        // [CAMBIO v2.9.6] El nombre del archivo ya no necesita .txt
+        const filename = `GAMA_${selectedSchema.toUpperCase()}.json`;
+        
         // 4. Descargar el archivo
-        downloadFile(filename, jsonString, 'text/plain;charset=utf-8');
+        // [CAMBIO v2.9.6] Se usa el MimeType de JSON
+        downloadFile(filename, jsonString, 'application/json;charset=utf-8');
     }
 
-
     // --- Lógica del Editor (Panel 1) ---
-    
+
     function loadModelIntoEditor(product) {
         currentLoadedModel = product;
         currentLoadedSchemaKey = product.schema_key;
@@ -297,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.editorForm.innerHTML = '';
         dom.productTitle.textContent = `2. Editando: ${product.model}`;
         dom.newModelIdInput.value = product.model;
-        
+
         const fragment = document.createDocumentFragment();
         schema.forEach(group => {
             const groupTitle = document.createElement('h3');
@@ -307,11 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             group.attrs.forEach(attr => {
                 const value = product.attributes[attr.code] || "";
+ 
                 const row = document.createElement('div');
                 row.className = 'form-row';
                 const label = document.createElement('label');
                 label.className = 'futuristic-label';
                 label.htmlFor = `attr_${attr.code}`;
+         
                 label.textContent = `${attr.desc} (${attr.code})`;
                 const textarea = document.createElement('textarea');
                 textarea.className = 'futuristic-textarea';
@@ -360,56 +365,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 newAttributes[key] = value.trim();
             }
         }
-        
+
         const modifiedProduct = {
             model: newModelId,
             schema_key: currentLoadedSchemaKey,
             attributes: newAttributes
         };
-
+        
+        // [CAMBIO v2.9.6] Esta función ahora genera .json
         generateAndDownloadProductFile(modifiedProduct, newModelId);
     }
 
     // --- Lógica de Exportación Genérica ---
-    
+
     /**
-     * Genera el contenido de un archivo .js para un solo producto.
+     * [ACTUALIZADO v2.9.6] Genera el contenido de un archivo .json para un solo producto.
      */
     function generateAndDownloadProductFile(product, fileName) {
         
-        const variableName = `${fileName.replace(/\./g, '_')}_DATA`;
-        
-        const fileContent = `/**
- * Ficha de producto: ${product.model}
- * (Generado por Admin Panel v2.9.5)
- */
+        // 1. Convertir el objeto del producto a un string JSON formateado
+        const jsonString = JSON.stringify(product, null, 4);
 
-const ${variableName} = {
-    "model": "${product.model}",
-    "schema_key": "${product.schema_key}",
-    "attributes": ${JSON.stringify(product.attributes, null, 4)}
-};
+        // 2. Generar el nombre del archivo .json
+        const filename = `${fileName}.json`;
 
-// --- REGISTRO ---
-// Comprueba si la BD global existe y registra este producto
-if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
-    window.APP_DB.registerProduct(${variableName});
-} else {
-    console.error("Error: APP_DB no está inicializada. Asegúrate de que main.js se carga primero.");
-}
-`;
-        downloadFile(`${fileName}.js.txt`, fileContent);
+        // 3. Descargar el archivo usando el helper
+        downloadFile(filename, jsonString, 'application/json;charset=utf-8');
     }
 
     /**
-     * [NUEVO HELPER] Crea un blob y fuerza la descarga de un archivo de texto.
+     * [HELPER] Crea un blob y fuerza la descarga de un archivo de texto.
      */
     function downloadFile(filename, content, mimeType = 'text/plain;charset=utf-8') {
         const blob = new Blob([content], { type: mimeType });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = filename;
-        
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
