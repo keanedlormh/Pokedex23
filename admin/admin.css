@@ -1,6 +1,5 @@
 /* ==============================================
-   Estilos para el Admin Panel v2.6
-   (Basado en el style.css principal)
+   Estilos para el Admin Panel v2.8
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -28,7 +27,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
 
 /* ==============================================
-   Layout Básico
+   2. Layout Básico
    ============================================== */
 .container {
     width: 100%;
@@ -53,6 +52,9 @@ body {
     }
     .main-column {
         width: 66.666667%;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Espacio entre el panel de exportar y el editor */
     }
 }
 
@@ -61,7 +63,7 @@ body {
 .text-gray-400 { color: var(--color-text-secondary); }
 
 /* ==============================================
-   Header
+   3. Header
    ============================================== */
 .app-header {
     display: flex;
@@ -113,7 +115,7 @@ body {
 }
 
 /* ==============================================
-   Tarjetas y Paneles
+   4. Tarjetas y Paneles
    ============================================== */
 .futuristic-card {
     background-color: var(--color-bg-medium);
@@ -126,7 +128,7 @@ body {
 .search-panel {
     display: flex;
     flex-direction: column;
-    max-height: 80vh; /* Altura limitada */
+    max-height: 80vh;
 }
 .futuristic-title {
     font-size: 1.15rem;
@@ -144,7 +146,7 @@ body {
 }
 
 /* ==============================================
-   Inputs y Botones
+   5. Inputs y Botones
    ============================================== */
 .futuristic-input,
 .futuristic-select,
@@ -203,7 +205,7 @@ body {
 
 
 /* ==============================================
-   Lista de Búsqueda
+   6. Lista de Búsqueda (Sidebar)
    ============================================== */
 .futuristic-list {
     background-color: var(--color-bg-dark);
@@ -216,7 +218,6 @@ body {
     overflow-y: auto;
     border-radius: 4px;
     background-color: var(--color-bg-dark);
-    /* [NUEVO] Transición para colapsar */
     transition: all 0.3s ease;
 }
 
@@ -241,7 +242,6 @@ body {
     font-weight: 600;
 }
 
-/* [NUEVA CLASE] */
 .futuristic-list.list-collapsed {
     flex-grow: 0;
     max-height: 0;
@@ -251,7 +251,7 @@ body {
 }
 
 /* ==============================================
-   Panel Editor
+   7. Panel Editor (Ahora Panel 3)
    ============================================== */
 .editor-controls {
     display: flex;
@@ -300,4 +300,56 @@ body {
     font-size: 0.75rem;
     font-family: var(--font-mono);
     color: var(--color-text-secondary);
+}
+
+/* ==============================================
+   8. [NUEVO] Panel Exportar Gama (Panel 2)
+   ============================================== */
+.gama-export-controls {
+    margin-bottom: 1rem;
+}
+
+.gama-export-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.gama-export-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px dashed var(--color-border-light);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+.gama-export-item:last-child {
+    border-bottom: none;
+}
+.gama-export-item span {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.export-item-button {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    transition: all 0.15s ease;
+}
+.export-item-button:hover {
+    background-color: var(--color-border-light);
+    color: var(--color-cyan-accent);
+    border-color: var(--color-cyan-accent);
 }
