@@ -1,10 +1,9 @@
 /*
- * Lógica del Panel de Administración v2.6
- * (window.APP_DB se define en admin/index.html)
+ * Lógica del Panel de Administración v2.6.1
+ * AÑADIDO: La lista de modelos se oculta al seleccionar uno.
  */
 
-// --- [BLOQUE ELIMINADO] ---
-// Ya no definimos window.APP_DB aquí.
+// window.APP_DB se define en admin/index.html
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -22,16 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Base de Datos Local ---
     let masterDatabase = [];
     let masterSchemaMap = {};
-    let currentLoadedSchemaKey = null; // 'tvs' o 'soundbars'
-    let currentLoadedModel = null; // El modelo original cargado
+    let currentLoadedSchemaKey = null;
+    let currentLoadedModel = null;
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v2.6 inicializando...");
+        console.log("Admin Panel v2.6.1 inicializando...");
         
-        // Esperar un breve momento para que se carguen los scripts de ../db/
         setTimeout(() => {
-            // Ahora window.APP_DB debería estar lleno
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
             
@@ -42,12 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             
             setupEventListeners();
-            renderSearchResults(masterDatabase); // Mostrar todos al inicio
+            renderSearchResults(masterDatabase);
             
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
-            dom.exportButton.disabled = true; // Desactivar hasta que se cargue un modelo
-        }, 100); // 100ms de retardo para la carga de scripts
+            dom.exportButton.disabled = true;
+        }, 100);
     }
 
     function setupEventListeners() {
@@ -58,6 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica de Búsqueda ---
     function applySearch() {
+        // [MODIFICADO] Vuelve a mostrar la lista cuando el usuario escribe
+        dom.modelSearchResults.classList.remove('list-collapsed');
+        
         const textQuery = dom.modelSearchInput.value.toLowerCase().trim();
         if (textQuery === "") {
             renderSearchResults(masterDatabase);
@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const product = masterDatabase.find(p => p.model === model);
         if (product) {
             loadModelIntoEditor(product);
+            // [MODIFICADO] Oculta la lista después de la selección
+            dom.modelSearchResults.classList.add('list-collapsed');
         }
     }
 
@@ -120,9 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dom.editorPlaceholder.style.display = 'none';
-        dom.editorForm.innerHTML = ''; // Limpiar formulario
+        dom.editorForm.innerHTML = '';
         dom.productTitle.textContent = `Editando: ${product.model}`;
-        dom.newModelIdInput.value = product.model; // Poner el ID actual por defecto
+        dom.newModelIdInput.value = product.model;
         
         const fragment = document.createDocumentFragment();
 
