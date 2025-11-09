@@ -34,8 +34,8 @@
     <script src="db/tvs/55UA75006LA.js" defer></script>
     <script src="db/tvs/50NANO81A6A.js" defer></script>
     <script src="db/tvs/OLED42C45LA.js" defer></script>
-    <script src="db/tvs/OLED65C54LA.js" defer></script>
-
+    <script src="db/tvs/OLED65C54LA.AEU.js" defer></script>
+    
 </head>
 
 <body>
@@ -49,26 +49,29 @@
                 <div id="selected-model-display" class="model-chip-hidden"></div>
             </div>
 
-            <div id="smart-filter-system" class="smart-filter-wrapper-v2">
-                <button id="smart-filter-toggle" class="smart-filter-summary">
-                    Filtros Inteligentes
-                </button>
+            <div class="header-right-controls">
                 
-                <div id="smart-filter-panel" class="smart-filter-content-hidden">
-    
-                    <div class="filter-schema-selector">
-                        <label for="schema-filter-select">Gama de Producto:</label>
-                        <select id="schema-filter-select" class="futuristic-select">
-                            <option value="all">Todas las Gamas</option>
-                            </select>
-                    </div>
+                <div id="smart-filter-system" class="smart-filter-wrapper-v2">
+                    <button id="smart-filter-toggle" class="smart-filter-summary">
+                        Filtros Inteligentes
+                    </button>
                     
-                    <div id="smart-filters-container" class="smart-filters-list">
+                    <div id="smart-filter-panel" class="smart-filter-content-hidden">
+                        <div class="filter-schema-selector">
+                            <label for="schema-filter-select">Gama de Producto:</label>
+                            <select id="schema-filter-select" class="futuristic-select">
+                                <option value="all">Todas las Gamas</option>
+                                </select>
                         </div>
+                        <div id="smart-filters-container" class="smart-filters-list">
+                            </div>
+                    </div>
                 </div>
-                </div>
-            </header>
+                <button id="palette-toggle-btn" class="palette-button" title="Generar nueva paleta">
+                    🎨
+                </button>
 
+            </div> </header>
         <div id="active-filters-bar" class="active-filters-bar-hidden">
             </div>
 
