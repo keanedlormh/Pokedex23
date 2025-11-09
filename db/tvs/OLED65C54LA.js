@@ -6,7 +6,7 @@
  */
 
 const OLED65C54LA_AEU_DATA = {
-    "model": "OLED65C54LA.AEU",
+    "model": "OLED65C54LA",
     "schema_key": "tvs",
     "attributes": {
         "display_tipo_pantalla": "4K OLED",
