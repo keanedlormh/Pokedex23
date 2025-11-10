@@ -14,7 +14,7 @@
         "tvs": [],
         "teleoperadores": [
             "db/products/TeleoperadorRandom.json",
-            "db/products/TeleoperadorVago.json",
+            "db/products/TeleoperadorRancio.json",
             "db/products/tst_l2_google_fu.json"
         ]
     }
