@@ -13,7 +13,7 @@
         "soundbars": [],
         "tvs": [],
         "teleoperadores": [
-            "db/products/tst_l1_script_bot.json",
+            "db/products/TeleoperadorRandom.json",
             "db/products/tst_l2_google_fu.json"
         ]
     }
