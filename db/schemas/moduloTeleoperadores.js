@@ -1,5 +1,5 @@
 /**
- * Modulo de Esquema: Activos de Wetware (Teleoperadores)
+ * Modulo de Esquema: Teleoperadores
  *
  * Define la ESTRUCTURA (grupos y atributos) para la gama "teleoperadores".
  * Estas unidades (biológicas, sintéticas o híbridas) son la primera línea
