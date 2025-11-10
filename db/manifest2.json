@@ -1,0 +1,14 @@
+{
+    "schemas": [
+        "db/schemas/moduloSoundbars.js",
+        "db/schemas/moduloTVs.js"
+    ],
+    "bulk_gamas": [
+        "db/gamas/soundbars.json",
+        "db/gamas/tvs.json"
+    ],
+    "products": {
+        "soundbars": [],
+        "tvs": []
+    }
+}
