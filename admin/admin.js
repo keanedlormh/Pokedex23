@@ -1,5 +1,6 @@
 /*
- * Lógica del Panel de Administración v3.0.0
+ * Lógica del Panel de Administración v3.0.1
+ * [ACTUALIZADO v3.0.1] El panel de editor de esquemas ahora se abre en modo fullscreen.
  * [NUEVO] Editor de Módulos de Esquema (Schema).
  * [ACTUALIZADO] Exportación de modelos individuales a .json
  * [AÑADIDO] Exportar gama completa a JSON.
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.0.0 inicializando...");
+        console.log("Admin Panel v3.0.1 inicializando...");
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
@@ -69,8 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Paneles
             renderSearchResults(masterDatabase);
-            populateGamaSelector();
-            populateSchemaList(); // [NUEVO v3.0.0]
+            populateGamaSelector(); // [NUEVO v3.0.0]
+            populateSchemaList(); 
 
             showPanel('edit-model'); // Mostrar panel por defecto
 
@@ -161,6 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * [ACTUALIZADO v3.0.1]
+     * Muestra un panel de contenido y añade una clase al body
+     * si el panel es el editor de esquemas.
+     */
     function showPanel(panelId) {
         // Ocultar todos los paneles
         dom.allContentPanels.forEach(panel => panel.classList.remove('active'));
@@ -169,11 +175,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Desactivar todos los títulos de menú
         document.querySelectorAll('.menu-title.active').forEach(title => title.classList.remove('active'));
 
+        // [NUEVO v3.0.1] Lógica Fullscreen
+        // Primero, limpiar la clase fullscreen del body
+        document.body.classList.remove('fullscreen-editor-active');
 
         const panelToShow = document.getElementById(`panel-${panelId}`);
         const menuItemToActivate = document.querySelector(`.menu-item[data-tab="${panelId}"]`);
 
-        if (panelToShow) panelToShow.classList.add('active');
+        if (panelToShow) {
+            panelToShow.classList.add('active');
+            
+            // [NUEVO v3.0.1] Si es el editor de esquemas, añadir clase al body
+            if (panelId === 'edit-schema') {
+                document.body.classList.add('fullscreen-editor-active');
+            }
+        }
+        
         if (menuItemToActivate) {
             menuItemToActivate.classList.add('active');
             // Activar el título del menú padre
@@ -697,7 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.0.0)
+ * (Generado por Admin Panel v3.0.1)
  */
 
 const ${schemaConstantName} = ${schemaJSON};
