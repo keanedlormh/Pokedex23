@@ -9,10 +9,8 @@
     ],
     "products": {
         "teleoperadores": [
-        "db/teleoperadores/.json",
-        "db/teleoperadores/.json",
-        "db/teleoperadores/.json",
-        "db/teleoperadores/.json"
+        "db/teleoperadores/tst_l1_script_bot.json",
+        "db/teleoperadores/tst_l2_google_fu.json"
         ]
     }
 }
