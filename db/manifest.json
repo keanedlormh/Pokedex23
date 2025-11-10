@@ -16,6 +16,9 @@
             "db/products/TeleoperadorRandom.json",
             "db/products/TeleoperadorRancio.json",
             "db/products/TeleoperadorFurioso.json",
+            "db/products/TeleoperadorCuantico.json",
+            "db/products/TeleoperadorFriki.json",
+            "db/products/TeleoperadorTirano.json",
             "db/products/tst_l2_google_fu.json"
         ]
     }
