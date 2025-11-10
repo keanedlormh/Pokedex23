@@ -2,15 +2,16 @@
     "schemas": [
         "db/schemas/moduloSoundbars.js",
         "db/schemas/moduloTVs.js"
+        "db/schemas/moduloTeleoperadores..js"
     ],
     "bulk_gamas": [
         "db/gamas/soundbars.json",
         "db/gamas/tvs.json"
     ],
     "products": {
-        "soundbars": [
-        ],
-        "tvs": [
+        "teleoperadores": [
+        "db/teleoperadores/tst_l1_script_bot.json",
+        "db/teleoperadores/tst_l2_google_fu.json"
         ]
     }
 }
