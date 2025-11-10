@@ -35,7 +35,7 @@ const TELEOPERADOR_SCHEMA_GROUPS = [
             { "code": "diag_check_fisico", "desc": "Escaneo de conexión física." },
             { "code": "diag_escalado_ia_superior", "desc": "Protocolo de escalado a IA superior." },
             { "code": "diag_busqueda_kb", "desc": "Consulta a la Datacripta interna." },
-            { "code": "diag_error_capa_8", "desc": "Detección de error Capa 8." },
+            { "code": "diag_error_capa_8", "desc": "Detección de error." },
             { "code": "diag_protocolo_exterminatus", "desc": "Protocolo 'Exterminatus' de servicio." }
         ]
     },
