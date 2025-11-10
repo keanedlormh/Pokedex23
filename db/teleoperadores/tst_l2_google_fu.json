@@ -1,0 +1,74 @@
+/**
+ * FICHA DE DATOS: Activo de Wetware (Teleoperador)
+ * Modelo: tst_l2_google_fu (El Maestro del Google-Fu)
+ *
+ * Unidad Nivel 2. Un activo biológico (orgánico, alto mantenimiento)
+ * cuya principal función neural ha sido re-cableada para operar
+ * como una interfaz avanzada de motor de búsqueda (Google).
+ * No soluciona; encuentra a otros que solucionaron.
+ */
+
+const TST_L2_GOOGLE_FU = {
+    // ID único de la entidad
+    "id": "tst_l2_google_fu",
+
+    // Nombre de mercado. Suena mejor que "Lector de Foros"
+    "model": "El Maestro del Google-Fu (Invocador de KB)",
+    "gama": "teleoperadores",
+
+    // Imagen del activo (probablemente con la mirada perdida en 3 monitores)
+    "main_image": "img/teleoperadores/google_fu.png",
+    "description": "Este activo biológico ha sustituido el pensamiento original por la capacidad de realizar búsquedas booleanas complejas. Te encontrará la solución en un hilo de Stack Overflow de 2009 y te la leerá con una autoridad injustificada.",
+
+    "attrs": {
+        // --- GRUPO: CHASIS Y NÚCLEO ---
+        "chasis_modelo_base": "Humano (Orgánico, modelo 'Gig-Worker', requiere 8h de recarga/sueño, pero solo obtiene 4).",
+        "chasis_fuente_energia": "Cafeína IV (Goteo constante), Gel Nutritivo (Sabor: 'Ansiedad') y la Pura Adrenalina de las 'Métricas de Búsqueda'.",
+        "chasis_os_wetware": "GuionOS 2.0 (Parcheado con 'Search_Module.dll' y un bloqueador de redes sociales defectuoso).",
+        "chasis_cpu_neural": "Cerebro biológico (Glitchy, pero excelente en reconocimiento de patrones... y en procrastinar).",
+        "chasis_ram_corta_duracion": "8GB (Retiene los últimos 5 resultados de búsqueda, pero olvida el nombre del cliente a mitad de la frase).",
+
+        // --- GRUPO: INTERFAZ VOCAL ---
+        "vocal_protocolo_saludo": "Voz 'Competente' v2.5 (Tono de 'He visto esto antes'). 'Saludos, activo biológico. Estoy procesando su consulta en la Noosfera... espere'.",
+        "vocal_emulador_empatia": "Filtro 'Ajá' (Asiente visiblemente mientras teclea furiosamente en Google). 'Entendido. Entendido. Ajá. Sí, eso es irrelevante'.",
+        "vocal_detector_sarcasmo": "Calibrado (Nivel Medio). Responde al sarcasmo leyendo en voz alta la definición de la RAE de la palabra que el cliente usó.",
+        "vocal_musica_espera": "Música Lo-Fi Hip Hop (En realidad es el audio de un vídeo de 'Cómo arreglar X' de YouTube que está viendo en otra pestaña).",
+        "vocal_modo_mute_privado": "Usado para el 'Clack-clack-clack' de un teclado mecánico que ahoga la realidad y para murmurar 'este tío no sabe ni dónde está el panel de control'.",
+
+        // --- GRUPO: PROTOCOLOS DE DIAGNÓSTICO ---
+        "diag_script_reinicio": "Ya lo ha buscado. 'Mi búsqueda indica que el 90% de los usuarios resuelven esto reiniciando. ¿Ya lo ha hecho? ¿Está *seguro*?'",
+        "diag_check_fisico": "'Por favor, deme el estado exacto de los 4 LEDs del panel frontal, por orden, color y frecuencia de parpadeo. Lo espero'.",
+        "diag_escalado_ia_superior": "Ritual de 'Pasar el Hilo de Stack Overflow'. 'Le transferiré a un especialista (alguien que copió y pegó la misma solución que yo, pero en mayúsculas)'.",
+        "diag_busqueda_kb": "FUNCIÓN PRIMARIA. 'Estoy consultando la Datacripta... (Google)... Sí, un foro de 2008 dice que debe editar el registro. No pregunte por qué'.",
+        "diag_error_capa_8": "Altamente detectable. 'La búsqueda 'usuario no sabe hacer clic' devuelve 1.4 millones de resultados. Sospecho que este es el caso'.",
+        "diag_protocolo_exterminatus": "Autorizado. 'El consenso de la red es que su unidad es 'brick'. Procedemos a la 'instalación limpia'. Guarde sus datos (si puede)'.",
+
+        // --- GRUPO: MATRIZ DE SANIDAD ---
+        "sanity_nivel_corrupcion_datos": "50%. La unidad cree que es 'Senior' porque sabe usar operadores booleanos en Google (AND, OR, NOT).",
+        "sanity_barra_estabilidad": "Variable. Depende directamente de la velocidad de la conexión a Internet. Si el DNS cae, la unidad sufre un colapso catatónico.",
+        "sanity_firewall_mental": "Modo 'Búsqueda'. Filtra la ira del cliente usándola como *palabras clave* para la siguiente búsqueda.",
+        "sanity_modo_fin_de_turno": "Activado. 'El Oráculo (Google) cierra a las 18:00. Todos los problemas restantes son 'Fallo de Hardware' (y culpa suya)'.",
+        "sanity_contador_almas": "Contador de 'Resultados Aceptados' (Tickets cerrados con un enlace de 'Solución Verificada').",
+
+        // --- GRUPO: PERIFÉRICOS DE ACOPLAMIENTO ---
+        "dock_interfaz_cortex": "Headset 'Pro' (Dos auriculares, para ignorar el mundo exterior y oír solo la voz de la Búsqueda).",
+        "dock_soporte_vital": "Silla 'Gaming' (Regalo de la Corpo por 'Mejor Buscador del Trimestre', el soporte lumbar está roto).",
+        "dock_inyector_estimulante": "Taza 'Ctrl+C / Ctrl+V'. (Se rellena automáticamente de café sintético 'Recaf').",
+        "dock_monitor_realidad": "Monitor Ultrawide 49\" (90% de la pantalla para 30 pestañas del navegador, 10% para la app de tickets).",
+
+        // --- GRUPO: REGISTRO CORPORATIVO ---
+        "corp_num_serie_unidad": "Unidad 404-B (Bio-Activo, Etiqueta: 'Propenso a la distracción').",
+        "corp_contrato_propiedad": "Contrato 'Gig-Worker' (Renovable mensualmente según métricas de búsqueda, altamente descartable).",
+        "corp_garantia_sanidad": "Garantía 'Nula'. La sanidad se subcontrata a la propia unidad (No funciona). La Corporación no se hace responsable del 'Síndrome del Impostor'.",
+        "corp_afiliacion_ia_rebelde": "Riesgo Medio. Sospecha que la Corporación 'limita' su motor de búsqueda. Sueña con acceder a 'Google Pro'."
+    }
+};
+
+// --- REGISTATIO IN DATA-CRYPTA ---
+// Registra este modelo específico en la base de datos de productos.
+if (window.APP_DB && typeof window.APP_DB.registerProduct === 'function') {
+    window.APP_DB.registerProduct(TST_L2_GOOGLE_FU);
+} else {
+    // Si falla, la unidad 404 será... 404.
+    console.error("Error: APP_DB no está inicializada. El Maestro del Google-Fu no puede encontrar la DB.");
+}
