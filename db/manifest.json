@@ -19,6 +19,7 @@
             "db/products/TeleoperadorCuantico.json",
             "db/products/TeleoperadorFriki.json",
             "db/products/TeleoperadorTirano.json",
+            "db/products/TeleoperadorNostalgico.json",
             "db/products/tst_l2_google_fu.json"
         ]
     }
