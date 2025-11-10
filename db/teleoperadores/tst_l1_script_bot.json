@@ -1,10 +1,7 @@
 {
-  "id": "tst_l1_script_bot",
-  "model": "El Lector de Guiones (Autómata Nivel 1)",
-  "gama": "teleoperadores",
-  "main_image": "img/teleoperadores/script_bot.png",
-  "description": "El activo más prescindible de la Corporación. Una unidad autómata diseñada con un único propósito: leer el guion de la base de datos. Cualquier desviación resulta en un bucle 'por-favor-repita-su-consulta'.",
-  "attrs": {
+  "model": "tst_l1_script_bot",
+  "schema_key": "teleoperadores",
+  "attributes": {
     "chasis_modelo_base": "Sintético (Modelo 'Maniquí' Serie-3, excedente de almacén).",
     "chasis_fuente_energia": "Batería de Litio (Inflamable, garantía de 6 meses) y Pura Electricidad Estática.",
     "chasis_os_wetware": "GuionOS 1.0 (Versión 'Solo Lectura').",
