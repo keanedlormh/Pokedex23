@@ -1,5 +1,5 @@
 {
-  "model": "Teleoperador vago",
+  "model": "Teleoperador Vago",
   "schema_key": "teleoperadores",
   "attributes": {
     "chasis_modelo_base": "Humano (Orgánico, modelo 'Gig-Worker', requiere 8h de recarga/sueño, pero solo obtiene 4).",
