@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v2.9.7</title>
+    <title>Admin - Enciclopedia Técnica v3.0.0</title>
 
-    <!-- Hoja de estilos del panel de administración -->
+    <!-- [CAMBIO v3.0.0] Se ha añadido 'admin-schema.css' -->
     <link rel="stylesheet" href="/admin/admin.css">
 
-    <!-- ====================================================== -->
-    <!-- [ACTUALIZADO] Bootloader v2.9.6 (Carga .json)        -->
-    <!-- ====================================================== -->
+
+    <!-- ============================================== -->
+    <!-- [ACTUALIZADO v3.0.0] Bootloader v2.9.6 (Versión Admin)-->
+    <!-- Sigue cargando .json individuales -->
+    <!-- ============================================== -->
     <script>
         // 1. Definir la BD global
         window.APP_DB = {
@@ -36,7 +38,7 @@
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
 
-            // 5. Cargar y registrar las gamas JSON a granel (SÍNCRONO)
+            // 5. [NUEVO] Cargar y registrar las gamas JSON a granel (SÍNCRONO)
             manifest.bulk_gamas.forEach(jsonPath => {
                 const jsonXhr = new XMLHttpRequest();
                 jsonXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
@@ -52,7 +54,7 @@
                 }
             });
 
-            // 6. [CAMBIO v2.9.6] Cargar y registrar los productos .json individuales (SÍNCRONO)
+            // 6. [ACTUALIZADO v2.9.6] Cargar y registrar los productos .json individuales (SÍNCRONO)
             Object.values(manifest.products).forEach(productList => {
                 productList.forEach(jsonPath => {
                     const jsonProductXhr = new XMLHttpRequest();
@@ -78,7 +80,7 @@
     <!-- FIN DEL BOOTLOADER                           -->
     <!-- ============================================== -->
 
-    <!-- Lógica del panel de administración -->
+    <!-- [CAMBIO v3.0.0] Actualizado el nombre del script de JS -->
     <script src="/admin/admin.js" defer></script>
 </head>
 
@@ -88,7 +90,8 @@
     <header class="admin-header">
         <div class="header-content">
             <div class="header-left">
-                <h1 class="app-title">Administrador <span class="app-version">v2.9.7</span></h1>
+                <!-- [CAMBIO v3.0.0] Versión actualizada -->
+                <h1 class="app-title">Administrador <span class="app-version">v3.0.0</span></h1>
             </div>
             <a href="/" class="header-link">Volver a la Enciclopedia</a>
         </div>
@@ -102,6 +105,10 @@
             <div id="menu-edit" class="menu-dropdown">
                 <button class="menu-item" data-tab="edit-model">
                     Editar Modelo
+                </button>
+                <!-- [CAMBIO v3.0.0] Nuevo panel de editor de esquemas -->
+                <button class="menu-item" data-tab="edit-schema">
+                    Módulo de gama
                 </button>
             </div>
         </div>
@@ -140,7 +147,7 @@
                                 <label for="new-model-id" class="futuristic-label">Nuevo Model ID (para exportar):</label>
                                 <input type="text" id="new-model-id" class="futuristic-input w-full" placeholder="Ej: NUEVOMODELO">
                             </div>
-                            <!-- [CAMBIO v2.9.6] El botón ahora dice "Exportar a .json" -->
+                            <!-- [CAMBIO v2.9.6] Botón actualizado a .json -->
                             <button id="export-btn" class="futuristic-button">Exportar a .json</button>
                         </div>
                         <form id="editor-form" class="editor-form-fields">
@@ -175,6 +182,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- [CAMBIO v3.0.0] Panel 3: Editor de Esquemas (Oculto por defecto) -->
+        <div id="panel-edit-schema" class="content-panel">
+            <div class="panel-layout-2col">
+                <!-- Col 1: Cargar/Crear -->
+                <aside class="sidebar-column">
+                    <div class="futuristic-card search-panel">
+                        <h2 class="futuristic-title">1. Cargar Esquema</h2>
+                        <div id="schema-results-list" class="futuristic-list full-list-visible">
+                            <!-- Relleno por JS -->
+                        </div>
+                        <h2 class="futuristic-title" style="margin-top: 1rem;">2. Crear Nuevo</h2>
+                        <div class="control-group" style="padding: 0.5rem; background: var(--color-bg-dark); border-radius: 4px;">
+                             <label for="new-schema-key" class="futuristic-label">Nueva Clave de Esquema (ej: monitores):</label>
+                             <input type="text" id="new-schema-key" class="futuristic-input w-full" placeholder="monitores">
+                             <button id="create-schema-btn" class="futuristic-button" style="margin-top: 0.5rem; width: 100%;">Crear Nuevo Esquema</button>
+                        </div>
+                    </div>
+                </aside>
+                
+                <!-- Col 2: Editor -->
+                <main class="main-column">
+                    <div class="futuristic-card sticky-panel">
+                         <h2 id="schema-title" class="spec-title">3. Editor de Esquema</h2>
+                         <div class="editor-controls">
+                            <div class="control-group">
+                                <label for="schema-key-display" class="futuristic-label">Clave de Esquema (Schema Key):</label>
+                                <input type="text" id="schema-key-display" class="futuristic-input w-full" placeholder="Carga o crea un esquema..." readonly style="background-color: var(--color-border); cursor: not-allowed;">
+                            </div>
+                            <button id="export-schema-btn" class="futuristic-button">Exportar a .js</button>
+                        </div>
+                        
+                        <!-- Contenedor para grupos dinámicos -->
+                        <div id="schema-editor-form" class="editor-form-fields">
+                             <p id="schema-editor-placeholder" class="text-gray-400">Selecciona un esquema de la izquierda para cargarlo o crea uno nuevo.</p>
+                             <!-- Relleno dinámicamente por JS -->
+                        </div>
+                        
+                        <button id="add-group-btn" class="futuristic-button schema-add-group-btn" style="margin-top: 1rem;">+ Añadir Grupo</button>
+                    </div>
+                </main>
+            </div>
+        </div>
+
 
     </main>
 
