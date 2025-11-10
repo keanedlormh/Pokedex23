@@ -1,6 +1,5 @@
 /* ==============================================
-   Estilos para el Admin Panel v2.9.6
-   (Actualizado para v3.0.0)
+   Estilos para el Admin Panel v3.0.1
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -186,6 +185,8 @@ body {
     padding: 1.5rem;
     max-width: 1400px;
     margin: 0 auto;
+    /* [NUEVO v3.0.1] Transición para suavizar el cambio a fullscreen */
+    transition: all 0.2s ease-in-out;
 }
 .content-panel {
     display: none;
@@ -575,4 +576,78 @@ body {
 }
 .schema-attr-row .schema-remove-btn {
     flex-shrink: 0;
+}
+
+
+/* ==============================================
+   10. MODO FULLSCREEN EDITOR (NUEVO v3.0.1)
+   ============================================== */
+
+/* Cuando el body tiene esta clase... */
+body.fullscreen-editor-active .admin-content-area {
+    /* ...elimina el max-width y el padding del contenedor principal */
+    max-width: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* El panel activo ahora debe gestionar su propio padding y altura */
+body.fullscreen-editor-active #panel-edit-schema.content-panel.active {
+    /* Ocupar toda la altura disponible (viewport - headers) */
+    height: calc(100vh - var(--header-height) - var(--navbar-height));
+    padding: 1rem; /* Añadir padding interno, más amigable en móvil */
+    box-sizing: border-box;
+    display: flex; /* Para que el layout-2col pueda crecer */
+    flex-direction: column;
+}
+
+/* Ajustar el layout de 2 columnas para que ocupe toda la altura */
+body.fullscreen-editor-active #panel-edit-schema .panel-layout-2col {
+   height: 100%;
+   gap: 1rem;
+   flex-grow: 1; /* Hacer que el layout crezca */
+}
+
+/* Ajustar la columna de la barra lateral (search-panel) */
+body.fullscreen-editor-active #panel-edit-schema .search-panel {
+    height: 100%;
+    max-height: none; /* Sobreescribir el max-height original */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ajustar la columna principal (sticky-panel) */
+body.fullscreen-editor-active #panel-edit-schema .sticky-panel {
+    height: 100%;
+    max-height: none;
+    top: 0; /* El sticky-panel ahora se pega al_top de su panel padre (que es 0) */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ajustar el contenedor del formulario para que sea scrollable y ocupe el espacio */
+body.fullscreen-editor-active #panel-edit-schema .editor-form-fields {
+    flex-grow: 1; /* Ocupar todo el espacio vertical disponible */
+    max-height: none; /* Sobreescribir el max-height original */
+    /* overflow-y: auto; ya lo tiene */
+}
+
+/* En móvil (donde el layout es de 1 columna), los ajustes de altura deben resetearse */
+@media (max-width: 1023px) {
+    body.fullscreen-editor-active #panel-edit-schema.content-panel.active {
+        height: auto; /* Dejar que el contenido defina la altura */
+        padding: 1rem; /* Mantener padding pequeño */
+    }
+    
+    body.fullscreen-editor-active #panel-edit-schema .panel-layout-2col,
+    body.fullscreen-editor-active #panel-edit-schema .search-panel,
+    body.fullscreen-editor-active #panel-edit-schema .sticky-panel {
+        height: auto; /* Resetear altura en móvil */
+    }
+    
+    body.fullscreen-editor-active #panel-edit-schema .editor-form-fields {
+         flex-grow: 0;
+         /* Dejar que el max-height original se aplique si es necesario */
+         max-height: calc(100vh - var(--header-height) - var(--navbar-height) - 270px);
+    }
 }
