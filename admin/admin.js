@@ -1,9 +1,9 @@
 /*
- * Lógica del Panel de Administración v3.0.1
- * [ACTUALIZADO v3.0.1] El panel de editor de esquemas ahora se abre en modo fullscreen.
- * [NUEVO] Editor de Módulos de Esquema (Schema).
- * [ACTUALIZADO] Exportación de modelos individuales a .json
- * [AÑADIDO] Exportar gama completa a JSON.
+ * Lógica del Panel de Administración v3.1.0
+ * [REFACTOR] Eliminada navbar, introducido panel general.
+ * [REFACTOR] Editores (Modelo, Esquema) en modo fullscreen.
+ * [REFACTOR] Botón "Guardar" contextual en la cabecera.
+ * [REFACTOR] Campos clave (Model ID, Schema Key) movidos al formulario.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -13,51 +13,58 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Almacenamiento de Elementos del DOM ---
     const dom = {
         // Controles de Navegación
-        adminNavbar: document.querySelector('.admin-navbar'),
+        homeBtn: document.getElementById('home-btn'),
+        saveBtn: document.getElementById('save-btn'),
         allContentPanels: document.querySelectorAll('.content-panel'),
-        allMenuDropdowns: document.querySelectorAll('.menu-dropdown'),
-        allMenuItems: document.querySelectorAll('.menu-item'),
+        
+        // Panel General
+        panelGeneral: document.getElementById('panel-general'),
+        navCardButtons: document.querySelectorAll('.nav-card'),
 
-        // Panel 1: Editar Modelo
+        // Panel Hub: Modelo
+        panelModelHub: document.getElementById('panel-model-hub'),
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
-        productTitle: document.getElementById('product-title'),
-        editorForm: document.getElementById('editor-form'),
-        editorPlaceholder: document.getElementById('editor-placeholder'),
-        newModelIdInput: document.getElementById('new-model-id'),
-        exportButton: document.getElementById('export-btn'),
 
-        // Panel 2: Exportar Gama
-        gamaExportSelect: document.getElementById('gama-export-select'),
-        gamaExportList: document.getElementById('gama-export-list'),
-        exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
-
-        // [NUEVO v3.0.0] Panel 3: Editor de Esquemas
+        // Panel Hub: Esquema
+        panelSchemaHub: document.getElementById('panel-schema-hub'),
         schemaResultsList: document.getElementById('schema-results-list'),
         newSchemaKeyInput: document.getElementById('new-schema-key'),
         createSchemaBtn: document.getElementById('create-schema-btn'),
+
+        // Panel Editor: Modelo
+        panelEditModel: document.getElementById('panel-edit-model'),
+        productTitle: document.getElementById('product-title'),
+        editorForm: document.getElementById('editor-form'),
+        editorPlaceholder: document.getElementById('editor-placeholder'),
+        editModelIdInput: document.getElementById('edit-model-id'),
+        editSchemaKeyDisplay: document.getElementById('edit-schema-key-display'),
+
+        // Panel Editor: Esquema
+        panelEditSchema: document.getElementById('panel-edit-schema'),
         schemaTitle: document.getElementById('schema-title'),
-        schemaKeyDisplay: document.getElementById('schema-key-display'),
-        exportSchemaBtn: document.getElementById('export-schema-btn'),
         schemaEditorForm: document.getElementById('schema-editor-form'),
         schemaEditorPlaceholder: document.getElementById('schema-editor-placeholder'),
-        addGroupBtn: document.getElementById('add-group-btn')
+        editSchemaKeyInput: document.getElementById('edit-schema-key'),
+        addGroupBtn: document.getElementById('add-group-btn'),
+
+        // Panel Exportar Gama
+        panelExportGama: document.getElementById('panel-export-gama'),
+        gamaExportSelect: document.getElementById('gama-export-select'),
+        gamaExportList: document.getElementById('gama-export-list'),
+        exportGamaJsonButton: document.getElementById('export-gama-json-btn')
     };
     
     // --- Base de Datos Local ---
     let masterDatabase = [];
     let masterSchemaMap = {};
-    let currentLoadedSchemaKey = null;
-    let currentLoadedModel = null;
-    let activeDropdown = null;
-
-    // [NUEVO v3.0.0] Estado del editor de esquemas
-    let currentEditingSchemaKey = null;
+    let currentLoadedSchemaKey = null; // Solo para el editor de modelos
+    let currentActivePanel = 'general'; // Estado para el botón Guardar
 
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.0.1 inicializando...");
+        console.log("Admin Panel v3.1.0 inicializando...");
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
@@ -68,140 +75,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setupEventListeners();
             
-            // Paneles
+            // Rellenar listas de hubs
             renderSearchResults(masterDatabase);
-            populateGamaSelector(); // [NUEVO v3.0.0]
             populateSchemaList(); 
+            populateGamaSelector(); 
 
-            showPanel('edit-model'); // Mostrar panel por defecto
+            // Mostrar panel de inicio
+            showPanel('general');
 
             console.log(`Admin DB cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
             
             // Deshabilitar botones por defecto
-            dom.exportButton.disabled = true;
             dom.exportGamaJsonButton.disabled = true;
-            dom.exportSchemaBtn.disabled = true; // [NUEVO v3.0.0]
-            dom.addGroupBtn.disabled = true; // [NUEVO v3.0.0]
+            dom.addGroupBtn.disabled = true; 
         }, 100);
     }
 
     function setupEventListeners() {
-        // Navegación
-        if (dom.adminNavbar) {
-            dom.adminNavbar.addEventListener('click', handleNavClick);
-        }
-        document.addEventListener('click', (e) => {
-            if (dom.adminNavbar && !dom.adminNavbar.contains(e.target)) {
-                closeAllDropdowns();
-            }
+        // Navegación principal
+        dom.homeBtn.addEventListener('click', () => showPanel('general'));
+        dom.saveBtn.addEventListener('click', handleSaveClick);
+
+        // Tarjetas de navegación del Panel General
+        dom.navCardButtons.forEach(card => {
+            card.addEventListener('click', () => {
+                const panelId = card.dataset.panel;
+                showPanel(panelId);
+            });
         });
         
-        // Panel 1: Cargar en Editor
+        // Panel Hub: Modelo
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
         
-        // Panel 2: Exportar Gama
+        // Panel Hub: Esquema
+        dom.schemaResultsList.addEventListener('click', handleSchemaLoadClick);
+        dom.createSchemaBtn.addEventListener('click', handleSchemaCreateClick);
+
+        // Panel Editor: Esquema (botones dinámicos)
+        dom.addGroupBtn.addEventListener('click', () => addGroupToEditor()); // Añadir grupo vacío
+        dom.schemaEditorForm.addEventListener('click', handleSchemaEditorClicks);
+
+        // Panel Exportar Gama
         dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); 
-
-        // Panel 1 (continuación): Editor
-        dom.exportButton.addEventListener('click', exportDataFromEditor);
-
-        // [NUEVO v3.0.0] Panel 3: Editor de Esquemas
-        dom.schemaResultsList.addEventListener('click', handleSchemaLoadClick);
-        dom.createSchemaBtn.addEventListener('click', handleSchemaCreateClick);
-        dom.exportSchemaBtn.addEventListener('click', handleSchemaExportClick);
-        dom.addGroupBtn.addEventListener('click', () => addGroupToEditor()); // Añadir grupo vacío
-        dom.schemaEditorForm.addEventListener('click', handleSchemaEditorClicks);
     }
 
-    // --- Lógica de Navegación por Menús ---
+    // --- Lógica de Navegación y Estado ---
 
-    function handleNavClick(e) {
-        const menuTitle = e.target.closest('.menu-title');
-        const menuItem = e.target.closest('.menu-item');
-
-        if (menuTitle) {
-            e.stopPropagation();
-            const dropdownId = menuTitle.dataset.dropdown;
-            toggleDropdown(dropdownId);
-            return;
-        }
-
-        if (menuItem) {
-            e.stopPropagation();
-            const tabId = menuItem.dataset.tab;
-            if (tabId) {
-                showPanel(tabId);
-                closeAllDropdowns();
-            }
-            return;
-        }
-    }
-
-    function toggleDropdown(dropdownId) {
-        const dropdownToToggle = document.getElementById(dropdownId);
-        if (!dropdownToToggle) return;
-
-        if (dropdownToToggle.classList.contains('active')) {
-            dropdownToToggle.classList.remove('active');
-            activeDropdown = null;
-        } else {
-            closeAllDropdowns();
-            dropdownToToggle.classList.add('active');
-            activeDropdown = dropdownToToggle;
-        }
-    }
-
-    function closeAllDropdowns() {
-        if (activeDropdown) {
-            activeDropdown.classList.remove('active');
-            activeDropdown = null;
+    /**
+     * Maneja el clic en el botón "Guardar" de la cabecera.
+     * Delega a la función de guardado correcta según el panel activo.
+     */
+    function handleSaveClick() {
+        if (currentActivePanel === 'edit-model') {
+            exportDataFromEditor();
+        } else if (currentActivePanel === 'edit-schema') {
+            handleSchemaExportClick();
         }
     }
 
     /**
-     * [ACTUALIZADO v3.0.1]
-     * Muestra un panel de contenido y añade una clase al body
-     * si el panel es el editor de esquemas.
+     * Muestra un panel de contenido por su ID y gestiona el estado de la UI.
      */
     function showPanel(panelId) {
+        currentActivePanel = panelId;
+        
         // Ocultar todos los paneles
         dom.allContentPanels.forEach(panel => panel.classList.remove('active'));
-        // Desactivar todos los items de menú
-        dom.allMenuItems.forEach(button => button.classList.remove('active'));
-        // Desactivar todos los títulos de menú
-        document.querySelectorAll('.menu-title.active').forEach(title => title.classList.remove('active'));
-
-        // [NUEVO v3.0.1] Lógica Fullscreen
-        // Primero, limpiar la clase fullscreen del body
+        
+        // Limpiar clases del body y botón Guardar
         document.body.classList.remove('fullscreen-editor-active');
+        dom.saveBtn.style.display = 'none';
 
         const panelToShow = document.getElementById(`panel-${panelId}`);
-        const menuItemToActivate = document.querySelector(`.menu-item[data-tab="${panelId}"]`);
-
-        if (panelToShow) {
-            panelToShow.classList.add('active');
-            
-            // [NUEVO v3.0.1] Si es el editor de esquemas, añadir clase al body
-            if (panelId === 'edit-schema') {
-                document.body.classList.add('fullscreen-editor-active');
-            }
+        if (!panelToShow) {
+            console.error(`Panel con ID 'panel-${panelId}' no encontrado.`);
+            return;
         }
-        
-        if (menuItemToActivate) {
-            menuItemToActivate.classList.add('active');
-            // Activar el título del menú padre
-            const parentTitle = menuItemToActivate.closest('.menu-group').querySelector('.menu-title');
-            if(parentTitle) parentTitle.classList.add('active');
+
+        panelToShow.classList.add('active');
+
+        // Configurar UI para editores
+        if (panelId === 'edit-model' || panelId === 'edit-schema') {
+            document.body.classList.add('fullscreen-editor-active');
+            dom.saveBtn.style.display = 'block';
         }
     }
 
-    // --- Lógica de Búsqueda (Panel 1) ---
+    // --- Lógica de "Hubs" (Carga y Creación) ---
+
+    // (Panel Hub: Modelo)
     function applySearch() {
-        dom.modelSearchResults.classList.remove('list-collapsed');
         const textQuery = dom.modelSearchInput.value.toLowerCase().trim();
         const filteredProducts = (textQuery === "") ?
             masterDatabase :
@@ -209,6 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSearchResults(filteredProducts);
     }
 
+    // (Panel Hub: Modelo)
     function renderSearchResults(results) {
         dom.modelSearchResults.innerHTML = '';
         if (results.length === 0) {
@@ -229,26 +197,89 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.modelSearchResults.appendChild(fragment);
     }
 
+    // (Panel Hub: Modelo) -> Clic en un modelo
     function handleResultClick(e) {
         const target = e.target.closest('.list-item');
         if (!target) return;
 
-        document.querySelectorAll('#model-results-list .list-item.active').forEach(item => item.classList.remove('active'));
-        target.classList.add('active');
-
         const model = target.dataset.model;
         if (!model) return;
         const product = masterDatabase.find(p => p.model === model);
+        
         if (product) {
             loadModelIntoEditor(product);
-            dom.modelSearchResults.classList.add('list-collapsed');
+            showPanel('edit-model'); // Navegar al editor
         }
     }
+
+    // (Panel Hub: Esquema)
+    function populateSchemaList() {
+        if (!dom.schemaResultsList) return;
+        dom.schemaResultsList.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        Object.keys(masterSchemaMap).forEach(key => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.dataset.schemaKey = key;
+            item.innerHTML = `<span style="font-weight: 600;">${key}</span>`;
+            fragment.appendChild(item);
+        });
+        dom.schemaResultsList.appendChild(fragment);
+    }
+
+    // (Panel Hub: Esquema) -> Clic en un esquema
+    function handleSchemaLoadClick(e) {
+        const target = e.target.closest('.list-item');
+        if (!target) return;
+
+        const schemaKey = target.dataset.schemaKey;
+        if (!schemaKey || !masterSchemaMap[schemaKey]) {
+            alert(`Error: No se pudo encontrar el esquema ${schemaKey}.`);
+            return;
+        }
+
+        const schemaToLoad = JSON.parse(JSON.stringify(masterSchemaMap[schemaKey]));
+        loadSchemaIntoEditor(schemaKey, schemaToLoad);
+        showPanel('edit-schema'); // Navegar al editor
+    }
+
+    // (Panel Hub: Esquema) -> Clic en "Crear"
+    function handleSchemaCreateClick() {
+        const newKey = dom.newSchemaKeyInput.value.trim().toLowerCase();
+        
+        if (newKey === "") {
+            alert("Por favor, introduce una clave para el nuevo esquema (ej: monitores).");
+            dom.newSchemaKeyInput.focus();
+            return;
+        }
+        if (/\s/.test(newKey)) {
+            alert("La clave del esquema no puede contener espacios.");
+            dom.newSchemaKeyInput.focus();
+            return;
+        }
+        if (masterSchemaMap[newKey]) {
+            if (!confirm(`El esquema "${newKey}" ya existe. ¿Deseas cargarlo y sobrescribirlo?`)) {
+                return;
+            }
+            // Cargar el esquema existente
+            const schemaToLoad = JSON.parse(JSON.stringify(masterSchemaMap[newKey]));
+            loadSchemaIntoEditor(newKey, schemaToLoad);
+            showPanel('edit-schema'); // Navegar al editor
+            return;
+        }
+
+        // Cargar un esquema vacío
+        loadSchemaIntoEditor(newKey, []);
+        dom.newSchemaKeyInput.value = '';
+        showPanel('edit-schema'); // Navegar al editor
+    }
+
 
     // --- Lógica de Exportar Gama (Panel 2) ---
 
     function populateGamaSelector() {
         if (!dom.gamaExportSelect) return;
+        dom.gamaExportSelect.innerHTML = '<option value="">-- Seleccionar --</option>'; // Resetear
         const fragment = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
             const option = document.createElement('option');
@@ -257,7 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (key === 'tvs') friendlyName = "TVs";
             option.textContent = friendlyName;
             fragment.appendChild(option);
-    
         });
         dom.gamaExportSelect.appendChild(fragment);
     }
@@ -282,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modelsInGama.forEach(product => {
             const item = document.createElement('div');
             item.className = 'gama-export-item';
-            // [CAMBIO v2.9.6] El botón ahora dice "Descargar .json"
             item.innerHTML = `
                 <span>${product.model}</span>
                 <button class="export-item-button" data-model="${product.model}">
@@ -300,7 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const modelId = target.dataset.model;
         const product = masterDatabase.find(p => p.model === modelId);
         if (product) {
-            // [CAMBIO v2.9.6] Esta función ahora genera .json
             generateAndDownloadProductFile(product, product.model);
         } else {
             alert(`Error: No se pudo encontrar el modelo ${modelId} en la base de datos.`);
@@ -313,23 +341,20 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Por favor, selecciona una gama primero.");
             return;
         }
-
         const productsToExport = masterDatabase.filter(p => p.schema_key === selectedSchema);
         if (productsToExport.length === 0) {
             alert("No hay productos en esta gama para exportar.");
             return;
         }
-
         const jsonString = JSON.stringify(productsToExport, null, 4);
         const filename = `GAMA_${selectedSchema.toUpperCase()}.json`;
         downloadFile(filename, jsonString, 'application/json;charset=utf-8');
     }
 
-    // --- Lógica del Editor (Panel 1) ---
+    // --- Lógica del Editor de Modelo (Panel 1) ---
 
     function loadModelIntoEditor(product) {
-        currentLoadedModel = product;
-        currentLoadedSchemaKey = product.schema_key;
+        currentLoadedSchemaKey = product.schema_key; // Guardar para construir formulario
         const schema = masterSchemaMap[product.schema_key];
 
         if (!schema) {
@@ -338,9 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dom.editorPlaceholder.style.display = 'none';
-        dom.editorForm.innerHTML = '';
-        dom.productTitle.textContent = `2. Editando: ${product.model}`;
-        dom.newModelIdInput.value = product.model;
+        dom.editorForm.innerHTML = ''; // Limpiar solo el formulario
+        
+        // Rellenar campos clave
+        dom.productTitle.textContent = `Editando: ${product.model}`;
+        dom.editModelIdInput.value = product.model;
+        dom.editSchemaKeyDisplay.value = product.schema_key;
 
         const fragment = document.createDocumentFragment();
         schema.forEach(group => {
@@ -351,13 +379,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             group.attrs.forEach(attr => {
                 const value = product.attributes[attr.code] || "";
- 
                 const row = document.createElement('div');
                 row.className = 'form-row';
                 const label = document.createElement('label');
                 label.className = 'futuristic-label';
                 label.htmlFor = `attr_${attr.code}`;
-         
                 label.textContent = `${attr.desc} (${attr.code})`;
                 const textarea = document.createElement('textarea');
                 textarea.className = 'futuristic-textarea';
@@ -375,8 +401,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Insertar campos clave al principio del formulario
+        const keyFields = dom.editorForm.querySelector('.editor-key-fields');
         dom.editorForm.appendChild(fragment);
-        dom.exportButton.disabled = false;
+        // Mover los campos clave al inicio del formulario (si ya existen)
+        if (keyFields) {
+            dom.editorForm.prepend(keyFields);
+        }
 
         setTimeout(() => {
             dom.editorForm.querySelectorAll('textarea').forEach(textarea => {
@@ -387,154 +418,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function exportDataFromEditor() {
-        if (!currentLoadedModel || !currentLoadedSchemaKey) {
-            alert("No hay ningún modelo cargado en el editor para exportar.");
+        if (!currentLoadedSchemaKey) {
+            alert("No hay ningún modelo cargado en el editor para guardar.");
             return;
         }
 
-        const newModelId = dom.newModelIdInput.value.trim().toUpperCase();
+        const newModelId = dom.editModelIdInput.value.trim().toUpperCase();
         if (newModelId === "") {
-            alert("Por favor, introduce un 'Nuevo Model ID' para la exportación.");
-            dom.newModelIdInput.focus();
+            alert("Por favor, introduce un 'Model ID' para guardar.");
+            dom.editModelIdInput.focus();
             return;
         }
 
         const formData = new FormData(dom.editorForm);
         const newAttributes = {};
         for (const [key, value] of formData.entries()) {
-            if (value.trim() !== "") {
-                newAttributes[key] = value.trim();
+            // Evitar guardar los campos de clave como atributos
+            if (key !== 'edit-model-id' && key !== 'edit-schema-key-display') {
+                 if (value.trim() !== "") {
+                    newAttributes[key] = value.trim();
+                }
             }
         }
 
         const modifiedProduct = {
             model: newModelId,
-            schema_key: currentLoadedSchemaKey,
+            schema_key: currentLoadedSchemaKey, // Usar la clave guardada
             attributes: newAttributes
         };
         
         generateAndDownloadProductFile(modifiedProduct, newModelId);
+        alert(`Modelo "${newModelId}" guardado como .json.`);
+        // Actualizar título por si cambió el nombre
+        dom.productTitle.textContent = `Editando: ${newModelId}`;
     }
 
     // --- Lógica de Exportación Genérica ---
 
-    /**
-     * [ACTUALIZADO v2.9.6] Genera el contenido de un archivo .json para un solo producto.
-     */
     function generateAndDownloadProductFile(product, fileName) {
         const jsonString = JSON.stringify(product, null, 4);
         const filename = `${fileName}.json`;
         downloadFile(filename, jsonString, 'application/json;charset=utf-8');
     }
 
-    /**
-     * [HELPER] Crea un blob y fuerza la descarga de un archivo de texto.
-     */
     function downloadFile(filename, content, mimeType = 'text/plain;charset=utf-8') {
         const blob = new Blob([content], { type: mimeType });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = filename;
-
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
 
-    // --- [NUEVO v3.0.0] Lógica del Editor de Esquemas (Panel 3) ---
+    // --- Lógica del Editor de Esquemas (Panel 3) ---
 
-    /**
-     * Rellena la lista de esquemas existentes en el Panel 3.
-     */
-    function populateSchemaList() {
-        if (!dom.schemaResultsList) return;
-        dom.schemaResultsList.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        Object.keys(masterSchemaMap).forEach(key => {
-            const item = document.createElement('div');
-            item.className = 'list-item';
-            item.dataset.schemaKey = key;
-            item.innerHTML = `<span style="font-weight: 600;">${key}</span>`;
-            fragment.appendChild(item);
-        });
-        dom.schemaResultsList.appendChild(fragment);
-    }
-
-    /**
-     * Maneja el clic en un esquema de la lista para cargarlo.
-     */
-    function handleSchemaLoadClick(e) {
-        const target = e.target.closest('.list-item');
-        if (!target) return;
-
-        document.querySelectorAll('#schema-results-list .list-item.active').forEach(item => item.classList.remove('active'));
-        target.classList.add('active');
-
-        const schemaKey = target.dataset.schemaKey;
-        if (!schemaKey || !masterSchemaMap[schemaKey]) {
-            alert(`Error: No se pudo encontrar el esquema ${schemaKey}.`);
-            return;
-        }
-
-        // Cargar el esquema (una copia profunda para evitar mutaciones)
-        const schemaToLoad = JSON.parse(JSON.stringify(masterSchemaMap[schemaKey]));
-        loadSchemaIntoEditor(schemaKey, schemaToLoad);
-    }
-
-    /**
-     * Maneja el clic en "Crear Nuevo Esquema".
-     */
-    function handleSchemaCreateClick() {
-        const newKey = dom.newSchemaKeyInput.value.trim().toLowerCase();
-        
-        // Validación simple
-        if (newKey === "") {
-            alert("Por favor, introduce una clave para el nuevo esquema (ej: monitores).");
-            dom.newSchemaKeyInput.focus();
-            return;
-        }
-        if (/\s/.test(newKey)) {
-            alert("La clave del esquema no puede contener espacios.");
-            dom.newSchemaKeyInput.focus();
-            return;
-        }
-        if (masterSchemaMap[newKey]) {
-            if (!confirm(`El esquema "${newKey}" ya existe. ¿Deseas cargarlo y sobrescribirlo?`)) {
-                return;
-            }
-            // Cargar el esquema existente
-            const schemaToLoad = JSON.parse(JSON.stringify(masterSchemaMap[newKey]));
-            loadSchemaIntoEditor(newKey, schemaToLoad);
-            // Activar el item en la lista si existe
-            document.querySelector(`#schema-results-list .list-item[data-schema-key="${newKey}"]`)?.classList.add('active');
-            return;
-        }
-
-        // Cargar un esquema vacío
-        loadSchemaIntoEditor(newKey, []);
-        dom.newSchemaKeyInput.value = '';
-        // Desactivar items de la lista
-        document.querySelectorAll('#schema-results-list .list-item.active').forEach(item => item.classList.remove('active'));
-    }
-
-    /**
-     * Carga un esquema (array de grupos) en la interfaz del editor.
-     * @param {string} key - La clave del esquema (ej: "tvs").
-     * @param {Array} schema - El array de grupos de atributos.
-     */
     function loadSchemaIntoEditor(key, schema) {
-        currentEditingSchemaKey = key;
-        
         // Actualizar UI
-        dom.schemaTitle.textContent = `3. Editando Esquema: ${key}`;
-        dom.schemaKeyDisplay.value = key;
+        dom.schemaTitle.textContent = `Editando Esquema: ${key}`;
         dom.schemaEditorPlaceholder.style.display = 'none';
         dom.schemaEditorForm.innerHTML = ''; // Limpiar editor
         
+        // Rellenar campo clave
+        dom.editSchemaKeyInput.value = key;
+
         // Habilitar controles
-        dom.exportSchemaBtn.disabled = false;
         dom.addGroupBtn.disabled = false;
+
+        // Insertar campo clave al principio del formulario
+        const keyFields = dom.panelEditSchema.querySelector('.editor-key-fields');
+         if (keyFields) {
+            dom.schemaEditorForm.appendChild(keyFields.cloneNode(true));
+            // Rellenar el valor en el campo clonado
+            dom.schemaEditorForm.querySelector('#edit-schema-key').value = key;
+        }
 
         // Rellenar el editor
         if (schema.length > 0) {
@@ -544,11 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Añade un bloque de "Grupo" al editor de esquemas.
-     * Si se proporciona un objeto `group`, rellena los campos.
-     * @param {Object | null} group - El objeto de grupo (ej: { group: "GENERAL", attrs: [...] }).
-     */
     function addGroupToEditor(group = null) {
         const groupElement = document.createElement('div');
         groupElement.className = 'schema-group-box';
@@ -570,23 +523,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Rellenar los atributos existentes
         const attributesContainer = groupElement.querySelector('.schema-attributes-container');
         if (groupAttrs.length > 0) {
             groupAttrs.forEach(attr => {
                 addAttributeToGroup(attr, attributesContainer);
             });
         }
-
         dom.schemaEditorForm.appendChild(groupElement);
     }
 
-    /**
-     * Añade una fila de "Atributo" a un elemento de grupo.
-     * Si se proporciona un objeto `attr`, rellena los campos.
-     * @param {Object | null} attr - El objeto de atributo (ej: { code: "...", desc: "..." }).
-     * @param {HTMLElement} groupContainer - El elemento DOM del contenedor de atributos del grupo.
-     */
     function addAttributeToGroup(attr = null, groupContainer) {
         const attrElement = document.createElement('div');
         attrElement.className = 'schema-attr-row';
@@ -599,13 +544,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="text" class="futuristic-input" data-type="attr-desc" value="${attrDesc}" placeholder="Descripción del atributo">
             <button class="schema-action-btn schema-remove-btn schema-remove-attr-btn" title="Eliminar Atributo">✕</button>
         `;
-        
         groupContainer.appendChild(attrElement);
     }
 
-    /**
-     * Manejador de eventos global para los botones dinámicos del editor de esquemas.
-     */
     function handleSchemaEditorClicks(e) {
         const addAttrBtn = e.target.closest('.schema-add-attr-btn');
         const removeAttrBtn = e.target.closest('.schema-remove-attr-btn');
@@ -614,31 +555,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (addAttrBtn) {
             e.preventDefault();
             const attributesContainer = addAttrBtn.closest('.schema-group-box').querySelector('.schema-attributes-container');
-            addAttributeToGroup(null, attributesContainer); // Añadir fila vacía
+            addAttributeToGroup(null, attributesContainer);
             return;
         }
-
         if (removeAttrBtn) {
             e.preventDefault();
-            removeAttrBtn.closest('.schema-attr-row').remove(); // Eliminar fila de atributo
+            removeAttrBtn.closest('.schema-attr-row').remove();
             return;
         }
-
         if (removeGroupBtn) {
             e.preventDefault();
             if (confirm("¿Estás seguro de que quieres eliminar este grupo y todos sus atributos?")) {
-                removeGroupBtn.closest('.schema-group-box').remove(); // Eliminar bloque de grupo
+                removeGroupBtn.closest('.schema-group-box').remove();
             }
             return;
         }
     }
 
-    /**
-     * Recoge los datos del editor de esquemas, los valida y genera un fichero .js.
-     */
     function handleSchemaExportClick() {
-        if (!currentEditingSchemaKey) {
-            alert("No hay ningún esquema cargado para exportar.");
+        // Leer la clave del esquema DESDE EL FORMULARIO
+        const schemaKeyInput = dom.schemaEditorForm.querySelector('#edit-schema-key');
+        const schemaKey = schemaKeyInput ? schemaKeyInput.value.trim().toLowerCase() : '';
+
+        if (schemaKey === "") {
+            alert("No se puede guardar. La 'Schema Key' no puede estar vacía.");
+            if(schemaKeyInput) schemaKeyInput.focus();
+            return;
+        }
+        if (/\s/.test(schemaKey)) {
+            alert("La clave del esquema no puede contener espacios.");
+            if(schemaKeyInput) schemaKeyInput.focus();
             return;
         }
 
@@ -689,11 +635,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     isValid = false;
                     return;
                 }
-
                 newGroup.attrs.push({ code, desc });
             });
 
-            if (!isValid) return; // Salir del bucle de grupos
+            if (!isValid) return; 
             newSchema.push(newGroup);
         });
 
@@ -701,20 +646,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (errorMsg) alert(errorMsg);
             return;
         }
-
         if (newSchema.length === 0) {
-            alert("No se puede exportar un esquema vacío. Añade al menos un grupo.");
+            alert("No se puede guardar un esquema vacío. Añade al menos un grupo.");
             return;
         }
 
-        // Si todo es válido, generar el fichero .js
-        const schemaKey = currentEditingSchemaKey;
+        // Generar el fichero .js
         const schemaConstantName = `${schemaKey.toUpperCase()}_SCHEMA_GROUPS`;
         const schemaJSON = JSON.stringify(newSchema, null, 4); // Formateado
 
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.0.1)
+ * (Generado por Admin Panel v3.1.0)
  */
 
 const ${schemaConstantName} = ${schemaJSON};
@@ -728,11 +671,11 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     console.error("Error: APP_DB no está inicializada. Asegúrate de que main.js se carga primero.");
 }
 `;
-        // Generar y descargar el archivo
         const filename = `modulo${schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1)}.js`;
         downloadFile(filename, fileContent, 'text/javascript;charset=utf-8');
 
-        alert(`¡Esquema "${schemaKey}" exportado como "${filename}"!\n\nNo olvides añadirlo a 'db/schemas/' y actualizar 'db/manifest.json'.`);
+        alert(`¡Módulo de gama "${schemaKey}" guardado como "${filename}"!\n\nNo olvides añadirlo a 'db/schemas/' y actualizar 'db/manifest.json'.`);
+        dom.schemaTitle.textContent = `Editando Esquema: ${schemaKey}`;
     }
 
     // --- Ejecución ---
