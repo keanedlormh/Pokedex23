@@ -1,7 +1,7 @@
 /*
- * Lógica del Panel de Administración v3.1.4
- * [CAMBIO v3.1.4] Añadido menú de Ajustes con cambio
- * de tema (color aleatorio) y modal de información.
+ * Lógica del Panel de Administración v3.1.10
+ * [CAMBIO v3.1.10] Implementada la lógica de tema
+ * claro/oscuro de la app principal.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn: document.getElementById('save-btn'),
         allContentPanels: document.querySelectorAll('.content-panel'),
         
-        // [NUEVO v3.1.4] Controles de Ajustes
+        // Controles de Ajustes
         settingsBtn: document.getElementById('settings-btn'),
         settingsMenu: document.getElementById('settings-menu'),
         themeBtn: document.getElementById('theme-btn'),
@@ -68,12 +68,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLoadedSchemaKey = null; // Solo para el editor de modelos
     let currentActivePanel = 'general'; // Estado para el botón Guardar
 
+    
+    // --- [NUEVO v3.1.10] Lógica de Tema (Portado de main.js) ---
+    const darkPaletteHSL = {
+        accent: { h: 188, s: 96, l: 41 }, 
+        dark:   { h: 210, s: 29, l: 8 },  
+        medium: { h: 210, s: 19, l: 11 }, 
+        border: { h: 210, s: 16, l: 15 }, 
+        textP:  { h: 210, s: 29, l: 92 }, 
+        textS:  { h: 210, s: 12, l: 67 }  
+    };
+    const lightPaletteHSL = {
+        accent: { h: 188, s: 86, l: 40 }, 
+        dark:   { h: 210, s: 20, l: 98 }, 
+        medium: { h: 210, s: 19, l: 94 }, 
+        border: { h: 210, s: 16, l: 85 }, 
+        textP:  { h: 210, s: 29, l: 10 }, 
+        textS:  { h: 210, s: 12, l: 40 }  
+    };
+    const hueDifference = darkPaletteHSL.dark.h - darkPaletteHSL.accent.h;
+    let isLightMode = false;
+    let currentAccentHue = darkPaletteHSL.accent.h;
+
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.4 inicializando..."); // [CAMBIO v3.1.4]
+        console.log("Admin Panel v3.1.10 inicializando...");
         
-        applySavedTheme(); // [NUEVO v3.1.4]
+        // [CAMBIO v3.1.10] Aplicar tema oscuro por defecto
+        updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+        dom.themeBtn.innerHTML = '🎨 Tema'; // Poner texto estático
 
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
@@ -107,12 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
         dom.saveBtn.addEventListener('click', handleSaveClick);
 
-        // [NUEVO v3.1.4] Navegación de Ajustes
+        // Navegación de Ajustes
         dom.settingsBtn.addEventListener('click', toggleSettingsMenu);
-        dom.themeBtn.addEventListener('click', changeRandomTheme);
+        // [CAMBIO v3.1.10] El botón de tema ahora llama a handleThemeToggle
+        dom.themeBtn.addEventListener('click', handleThemeToggle); 
         dom.infoBtn.addEventListener('click', showInfoModal);
         dom.closeInfoModalBtn.addEventListener('click', hideInfoModal);
-        dom.modalOverlay.addEventListener('click', hideInfoModal);
+        dom.modalOverlay.addEventListener('click', () => {
+            hideInfoModal();
+            toggleSettingsMenu(false); // Forzar cierre del menú
+        });
         
         // Clic fuera del menú de ajustes
         document.addEventListener('click', (e) => {
@@ -120,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  if (dom.settingsMenu.style.display === 'block' && 
                     !dom.settingsMenu.contains(e.target) && 
                     !dom.settingsBtn.contains(e.target)) {
-                    dom.settingsMenu.style.display = 'none';
+                    toggleSettingsMenu(false); // Forzar cierre
                 }
             }
         });
@@ -173,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.saveBtn.style.display = 'none';
 
         // Ocultar menú de ajustes si está abierto
-        if (dom.settingsMenu) dom.settingsMenu.style.display = 'none';
+        toggleSettingsMenu(false); // Forzar cierre
 
         const panelToShow = document.getElementById(`panel-${panelId}`);
         if (!panelToShow) {
@@ -190,40 +218,100 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- [NUEVO v3.1.4] Lógica de Ajustes, Tema y Modal ---
+    // --- [REFACTORIZADO v3.1.10] Lógica de Ajustes, Tema y Modal ---
 
-    function toggleSettingsMenu() {
-        dom.settingsMenu.style.display = (dom.settingsMenu.style.display === 'block') ? 'none' : 'block';
+    /**
+     * @param {boolean} [forceState] - Opcional. true para abrir, false para cerrar.
+     */
+    function toggleSettingsMenu(forceState) {
+        const currentState = dom.settingsMenu.style.display === 'block';
+        const newState = (forceState !== undefined) ? forceState : !currentState;
+        
+        dom.settingsMenu.style.display = newState ? 'block' : 'none';
+        
+        // Sincronizar overlay
+        if (newState) {
+            hideInfoModal(); // Cierra el modal si está abierto
+            dom.modalOverlay.style.display = 'block';
+        } else if (dom.infoModal.style.display === 'none') {
+            dom.modalOverlay.style.display = 'none';
+        }
     }
 
     function showInfoModal() {
         dom.infoModal.style.display = 'block';
         dom.modalOverlay.style.display = 'block';
-        dom.settingsMenu.style.display = 'none'; // Ocultar menú
+        toggleSettingsMenu(false); // Forzar cierre del menú
     }
 
     function hideInfoModal() {
         dom.infoModal.style.display = 'none';
-        dom.modalOverlay.style.display = 'none';
-    }
-
-    function applySavedTheme() {
-        const savedHue = localStorage.getItem('admin-theme-hue');
-        if (savedHue) {
-            const newColor = `hsl(${savedHue}, 95%, 43%)`;
-            const newGlow = `hsla(${savedHue}, 95%, 43%, 0.25)`;
-            document.documentElement.style.setProperty('--color-cyan-accent', newColor);
-            document.documentElement.style.setProperty('--color-cyan-glow', newGlow);
+        if (dom.settingsMenu.style.display === 'none') {
+             dom.modalOverlay.style.display = 'none';
         }
     }
 
-    function changeRandomTheme() {
-        const randomHue = Math.floor(Math.random() * 360);
-        localStorage.setItem('admin-theme-hue', randomHue);
-        applySavedTheme(); // Aplica el HUE recién guardado
-        dom.settingsMenu.style.display = 'none'; // Ocultar menú
+    // --- Lógica de Tema (Portado de main.js) ---
+
+    function handleThemeToggle() {
+        isLightMode = !isLightMode; // Alternar estado
+
+        if (isLightMode) {
+            // CAMBIANDO A MODO CLARO
+            document.body.classList.add('light-mode');
+            updatePaletteCSS(lightPaletteHSL, currentAccentHue);
+        } else {
+            // CAMBIANDO A MODO OSCURO
+            document.body.classList.remove('light-mode');
+            currentAccentHue = Math.floor(Math.random() * 360); // Nuevo color al volver a oscuro
+            updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+        }
+        
+        // No cerrar el menú
+        // toggleSettingsMenu(false); 
     }
 
+    function updatePaletteCSS(baseHSL, accentHue) {
+        const p = baseHSL;
+        const newOtherHue = (accentHue + hueDifference + 360) % 360; 
+
+        const newColors = {
+            accent: `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
+            bgDark: `hsl(${newOtherHue}, ${p.dark.s}%, ${p.dark.l}%)`,
+            bgMedium: `hsl(${newOtherHue}, ${p.medium.s}%, ${p.medium.l}%)`,
+            border: `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l}%)`,
+            textPrimary: `hsl(${newOtherHue}, ${p.textP.s}%, ${p.textP.l}%)`,
+            textSecondary: `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`
+        };
+
+        const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
+        newColors.glow = `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`;
+        
+        const root = document.documentElement;
+        root.style.setProperty('--color-cyan-accent', newColors.accent);
+        root.style.setProperty('--color-cyan-glow', newColors.glow);
+        root.style.setProperty('--color-bg-dark', newColors.bgDark);
+        root.style.setProperty('--color-bg-medium', newColors.bgMedium);
+        root.style.setProperty('--color-border', newColors.border);
+        root.style.setProperty('--color-border-light', `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`);
+        root.style.setProperty('--color-text-primary', newColors.textPrimary);
+        root.style.setProperty('--color-text-secondary', newColors.textSecondary);
+        root.style.setProperty('--color-text-dim', `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`);
+    }
+
+    function hslToRgb(h, s, l) {
+        s /= 100;
+        l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n =>
+            l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        return {
+            r: Math.round(255 * f(0)),
+            g: Math.round(255 * f(8)),
+            b: Math.round(255 * f(4))
+        };
+    }
 
     // --- Lógica de "Hubs" (Carga y Creación) ---
 
@@ -413,11 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica del Editor de Modelo (Panel 1) ---
 
-    /**
-     * [CORREGIDO v3.1.2]
-     * Carga un modelo en el editor. Ahora solo limpia el contenido dinámico,
-     * dejando los campos clave (que están en el HTML) intactos.
-     */
     function loadModelIntoEditor(product) {
         currentLoadedSchemaKey = product.schema_key; // Guardar para construir formulario
         const schema = masterSchemaMap[product.schema_key];
@@ -479,11 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1);
     }
 
-    /**
-     * [CORREGIDO v3.1.2]
-     * Lee los datos del editor de modelo y exporta un .json.
-     * Lee el Model ID del input que ahora SÍ está en el formulario.
-     */
     function exportDataFromEditor() {
         if (!currentLoadedSchemaKey) {
             alert("No hay ningún modelo cargado en el editor para guardar.");
@@ -542,11 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica del Editor de Esquemas (Panel 3) ---
 
-    /**
-     * [CORREGIDO v3.1.2]
-     * Carga un esquema en el editor. Ahora solo limpia el contenido dinámico,
-     * dejando el campo clave (que está en el HTML) intacto.
-     */
     function loadSchemaIntoEditor(key, schema) {
         // Rellenar campo clave (que ahora está fijo en el div)
         dom.schemaTitle.textContent = `Editando Esquema: ${key}`;
@@ -567,10 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * [CORREGIDO v3.1.2]
-     * Añade un grupo al contenedor correcto.
-     */
     function addGroupToEditor(group = null) {
         const groupElement = document.createElement('div');
         groupElement.className = 'schema-group-box';
@@ -642,11 +711,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * [CORREGIDO v3.1.2]
-     * Lee los datos del editor de esquema y exporta un .js.
-     * Lee el Schema Key del input que ahora SÍ está en el formulario.
-     */
     function handleSchemaExportClick() {
         // Leer la clave del esquema DESDE EL FORMULARIO
         const schemaKeyInput = dom.schemaEditorForm.querySelector('#edit-schema-key');
@@ -733,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.4)
+ * (Generado por Admin Panel v3.1.10)
  */
 
 const ${schemaConstantName} = ${schemaJSON};
