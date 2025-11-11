@@ -1,7 +1,7 @@
 /*
- * Lógica del Panel de Administración v3.1.5
- * [PARCHE] Corregido el bug que hacía que los botones
- * del menú de ajustes no funcionaran (propagación de clic).
+ * Lógica del Panel de Administración v3.1.6
+ * [PARCHE] Refactorizada la lógica de popups (Ajustes/Modal)
+ * para evitar conflictos y que los botones funcionen.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gamaExportList: document.getElementById('gama-export-list'),
         exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
 
-        // [NUEVO v3.1.4] Menú de Ajustes, Modal y Overlay
+        // v3.1.4 Menú de Ajustes, Modal y Overlay
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeEditor = null; // 'model' o 'schema'
 
     
-    // --- 3. [NUEVO v3.1.4] Lógica de Tema ---
+    // --- 3. Lógica de Tema ---
     const darkPaletteHSL = {
         accent: { h: 188, s: 96, l: 41 }, 
         dark:   { h: 210, s: 29, l: 8 },  
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.5 inicializando...");
+        console.log("Admin Panel v3.1.6 inicializando...");
         
         // Esperar a que los scripts del bootloader carguen la BD
         setTimeout(() => {
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Mostrar panel general
             showPanel('panel-general'); 
 
-            // [NUEVO v3.1.4] Aplicar tema
+            // Aplicar tema
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
             dom.paletteToggleButton.innerHTML = '🎨 Tema';
 
@@ -149,17 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson);
         
-        // [NUEVO v3.1.4] Listeners de Ajustes, Modal y Overlay
+        // Listeners de Ajustes, Modal y Overlay
         dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
         dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
         dom.infoToggleButton.addEventListener('click', showReadmeInfo);
         
         dom.filterOverlay.addEventListener('click', closeAllPopups);
         dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
-
-        // [PARCHE v3.1.5] Detener la propagación del clic en el panel
-        // para evitar que el overlay lo cierre.
-        dom.settingsMenuPanel.addEventListener('click', (e) => e.stopPropagation());
     }
 
 
@@ -198,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSchemaList();
         }
 
-        closeAllPopups(); // [NUEVO v3.1.4] Cerrar popups al navegar
+        closeAllPopups(); // Cerrar popups al navegar
     }
 
     function handleSaveClick() {
@@ -618,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.5)
+ * (Generado por Admin Panel v3.1.6)
  */
 
 const ${variableName} = ${schemaString};
@@ -655,7 +651,7 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
         document.body.removeChild(link);
     }
     
-    // --- 11. [NUEVO v3.1.4] Lógica de Ajustes, Tema y Modal ---
+    // --- 11. [REFACTORIZADO v3.1.6] Lógica de Ajustes, Tema y Modal ---
     
     function closeAllPopups() {
         closeSettingsMenu();
@@ -720,7 +716,7 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     // --- Modal / Overlay ---
     function openSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
-        closeReadmeModal();
+        closeReadmeModal(); // Cierra el otro popup si está abierto
         dom.settingsMenuPanel.className = 'settings-menu-panel-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.settingsMenuToggle.classList.add('active');
@@ -728,32 +724,41 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     function closeSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
         dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
+        dom.settingsMenuToggle.classList.remove('active');
+        
+        // Solo oculta el overlay si el modal TAMPOCO está visible
         if (dom.readmeModal.className === 'modal-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
-        dom.settingsMenuToggle.classList.remove('active');
     }
     function toggleSettingsMenu() {
         if (!dom.settingsMenuPanel) return;
-        dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu();
+        const isHidden = dom.settingsMenuPanel.className === 'settings-menu-panel-hidden';
+        if (isHidden) {
+            openSettingsMenu();
+        } else {
+            closeSettingsMenu();
+        }
     }
     
     function openReadmeModal() {
         if (!dom.readmeModal || !dom.filterOverlay) return;
-        closeSettingsMenu();
+        closeSettingsMenu(); // Cierra el otro popup si está abierto
         dom.readmeModal.className = 'modal-visible';
         dom.filterOverlay.className = 'overlay-visible';
     }
     function closeReadmeModal() {
         if (!dom.readmeModal || !dom.filterOverlay) return;
         dom.readmeModal.className = 'modal-hidden';
+
+        // Solo oculta el overlay si el panel de ajustes TAMPOCO está visible
         if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
     }
     
     async function showReadmeInfo() {
-        closeSettingsMenu();
+        // [CAMBIO v3.1.6] Ya no llama a closeSettingsMenu. openReadmeModal se encarga.
         openReadmeModal();
 
         if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
