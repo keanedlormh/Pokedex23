@@ -1,13 +1,16 @@
 /* ==============================================
-   Estilos para el Admin Panel v3.1.10
-   [CAMBIO v3.1.10] Añadido modo claro
+   Estilos para el Admin Panel v3.1.5
+   [CAMBIO v3.1.5] Añadidos estilos para
+   el modo claro/oscuro y transiciones.
    ============================================== */
+
+/* :root define el tema oscuro por defecto */
 :root {
     --color-bg-dark: #0D1117;
     --color-bg-medium: #161B22;
     --color-border: #21262D;
     --color-border-light: #2a3038;
-    --color-text-primary: #e2e8f0;
+    --color-text-primary: #e2e8f0; /* Texto claro */
     --color-text-secondary: #9ca3af;
     --color-text-dim: #6b7280;
     --color-cyan-accent: #06b6d4;
@@ -17,18 +20,20 @@
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
     --header-height: 50px;
+}
 
-    /* Transición de tema */
-    transition: 
-        --color-bg-dark 0.3s ease,
-        --color-bg-medium 0.3s ease,
-        --color-border 0.3s ease,
-        --color-border-light 0.3s ease,
-        --color-text-primary 0.3s ease,
-        --color-text-secondary 0.3s ease,
-        --color-text-dim 0.3s ease,
-        --color-cyan-accent 0.3s ease, 
-        --color-cyan-glow 0.3s ease;
+/* [NUEVO v3.1.5] Tema Claro */
+html.light-mode {
+    --color-bg-dark: #ffffff; /* Blanco */
+    --color-bg-medium: #f8f9fa; /* Gris muy claro */
+    --color-border: #dee2e6; /* Borde claro */
+    --color-border-light: #e9ecef;
+    --color-text-primary: #212529; /* Texto oscuro */
+    --color-text-secondary: #495057;
+    --color-text-dim: #868e96;
+    --color-cyan-accent: #0c8599; /* Cyan más oscuro para contraste */
+    --color-cyan-glow: rgba(12, 133, 153, 0.15);
+    /* Green/Red se mantienen, tienen buen contraste */
 }
 
 
@@ -38,7 +43,7 @@ body {
     font-family: var(--font-sans);
     line-height: 1.5;
     padding-top: var(--header-height); 
-    /* [NUEVO v3.1.10] Transición de fondo para el body */
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -57,15 +62,16 @@ body {
     justify-content: space-between;
     padding: 0 1rem;
     height: var(--header-height);
-    background-color: var(--color-bg-dark); /* Usa variable para transicionar */
-    border-bottom: 1px solid var(--color-border); /* Usa variable para transicionar */
+    background-color: var(--color-bg-dark);
+    border-bottom: 1px solid var(--color-border);
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 101;
     box-sizing: border-box;
-    transition: background-color 0.3s ease, border-bottom-color 0.3s ease;
+    /* [NUEVO v3.1.5] Transición de tema */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 @media (min-width: 768px) {
     .admin-header { padding: 0 1.5rem; }
@@ -109,11 +115,12 @@ body {
     font-family: var(--font-mono);
     color: var(--color-cyan-accent);
     background-color: var(--color-bg-medium);
-    border-radius: 4px;
     border: 1px solid var(--color-border);
+    border-radius: 4px;
     position: relative;
     top: -1px; /* Ajustado */
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    /* [NUEVO v3.1.5] Transición de tema */
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 .header-link {
     font-size: 0.8rem;
@@ -123,6 +130,7 @@ body {
     border-radius: 4px;
     transition: all 0.2s ease;
     white-space: nowrap;
+    /* [CAMBIO v3.1.1] Botón más corto y centrado perfecto */
     height: 34px;
     padding: 0 0.8rem;
     display: inline-flex;
@@ -133,7 +141,13 @@ body {
     background-color: var(--color-cyan-glow);
     color: #fff;
 }
+/* Modo claro necesita texto oscuro en hover */
+html.light-mode .header-link:hover {
+    color: var(--color-text-primary);
+}
 
+
+/* [NUEVO v3.1.4] Botón de icono en cabecera */
 .header-icon-btn {
     background: none;
     border: 1px solid var(--color-border);
@@ -156,9 +170,12 @@ body {
 
 
 .header-save-btn {
+    /* [CAMBIO v3.1.1] Botón más corto */
     height: 34px;
     padding: 0 1.2rem;
     margin-left: auto;
+    /* [CAMBIO v3.1.4] margen derecho eliminado, lo da el icon-btn */
+    /* margin-right: 0.75rem; */
     background-color: var(--color-green-accent);
     border-color: var(--color-green-accent);
 }
@@ -191,7 +208,8 @@ body {
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.5rem;
-    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+    /* [NUEVO v3.1.5] Transición de tema */
+    transition: border-color 0.3s ease, color 0.3s ease;
 }
 
 
@@ -221,7 +239,7 @@ body {
     padding: 1.5rem;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
     border-bottom: 3px solid var(--color-border);
 }
 .nav-card:hover {
@@ -240,11 +258,13 @@ body {
     font-weight: 600;
     color: var(--color-text-primary);
     margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
 }
 .nav-card p {
     font-size: 0.9rem;
     color: var(--color-text-secondary);
     line-height: 1.4;
+    transition: color 0.3s ease;
 }
 
 
@@ -258,7 +278,8 @@ body {
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: border-left-color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    /* [MODIFICADO v3.1.5] Transición de tema */
+    transition: background-color 0.3s ease, border-color 0.3s ease, border-left-color 0.3s ease;
 }
 .search-panel {
     display: flex;
@@ -273,14 +294,17 @@ body {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.4rem;
     flex-shrink: 0;
-    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+    /* [NUEVO v3.1.5] Transición de tema */
+    transition: border-color 0.3s ease, color 0.3s ease;
 }
 .spec-title {
+    /* [CAMBIO v3.1.1] Título del editor más pequeño y con menos margen */
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 0.75rem;
     flex-shrink: 0;
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: color 0.3s ease;
 }
 
@@ -332,6 +356,7 @@ body {
     transition: all 0.2s ease-in-out;
     cursor: pointer;
     box-sizing: border-box;
+    /* [CAMBIO v3.1.1] Centrado perfecto y altura reducida */
     height: 34px;
     padding: 0 1rem;
     display: inline-flex;
@@ -342,8 +367,18 @@ body {
 }
 .futuristic-button:hover {
     background-color: #0891b2; /* Color fijo, no depende de HSL */
+    border-color: #0891b2;
     box-shadow: 0 0 15px var(--color-cyan-glow);
 }
+/* Modo claro necesita texto oscuro */
+html.light-mode .futuristic-button {
+    color: #ffffff;
+}
+html.light-mode .futuristic-button:hover {
+    background-color: #0c8599;
+    border-color: #0c8599;
+}
+
 .futuristic-button:disabled {
     background-color: var(--color-border);
     border-color: var(--color-border-light);
@@ -359,6 +394,7 @@ body {
     background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border-light);
     border-radius: 4px;
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .full-list-visible {
@@ -373,7 +409,7 @@ body {
     padding: 0.45rem 0.75rem;
     border-bottom: 1px dashed var(--color-border);
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.15s ease-in-out, background-color 0.3s, color 0.3s, border-color 0.3s;
     font-size: 0.85rem;
     font-family: var(--font-mono);
 }
@@ -400,19 +436,21 @@ body {
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .editor-key-fields {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; 
-    padding: 0.75rem; 
+    gap: 0.75rem; /* Reducido */
+    padding: 0.75rem; /* Reducido */
     background: var(--color-bg-dark);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    margin-bottom: 0.75rem; 
+    margin-bottom: 0.75rem; /* Reducido */
     flex-shrink: 0; 
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 @media (min-width: 768px) {
@@ -424,6 +462,11 @@ body {
 .control-group {
     flex-grow: 1;
 }
+/* Input deshabilitado */
+#edit-schema-key-display {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
 
 .editor-form-fields {
     overflow-y: auto;
@@ -440,6 +483,7 @@ body {
     margin: 1rem 0 0.75rem 0;
     padding-left: 0.75rem;
     border-radius: 4px;
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 .form-row {
@@ -475,6 +519,7 @@ body {
     border: 1px solid var(--color-border);
     border-radius: 4px;
     padding: 0.5rem;
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .gama-export-item {
@@ -485,10 +530,11 @@ body {
     border-bottom: 1px dashed var(--color-border-light);
     font-family: var(--font-mono);
     font-size: 0.85rem;
-    transition: border-bottom-color 0.3s ease;
+    transition: border-color 0.3s ease;
 }
 .gama-export-item span {
     color: var(--color-text-primary);
+    font-weight: 600;
     transition: color 0.3s ease;
 }
 .export-item-button {
@@ -501,7 +547,7 @@ body {
     border-radius: 4px;
     cursor: pointer;
     padding: 0.3rem 0.6rem;
-    transition: all 0.15s ease;
+    transition: all 0.15s ease, background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 .export-item-button:hover {
     background-color: var(--color-border-light);
@@ -529,6 +575,7 @@ body {
     border-radius: 4px;
     margin-bottom: 1rem;
     padding: 0.75rem;
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .schema-group-header {
@@ -546,7 +593,8 @@ body {
     border: 1px solid;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, background-color 0.3s;
+    /* [CAMBIO v3.1.1] Centrado y altura */
     height: 30px;
     padding: 0 0.6rem;
     display: inline-flex;
@@ -579,7 +627,7 @@ body {
     gap: 0.5rem;
     padding-left: 1rem;
     border-left: 2px solid var(--color-border);
-    transition: border-left-color 0.3s ease;
+    transition: border-color 0.3s ease;
 }
 .schema-attr-row {
     display: flex;
@@ -595,6 +643,7 @@ body {
 }
 
 .schema-attr-row .futuristic-input {
+    /* [CAMBIO v3.1.1] Altura reducida */
     height: 30px;
     padding: 0.4rem 0.6rem;
     font-size: 0.8rem;
@@ -611,7 +660,7 @@ body {
     flex-shrink: 0;
 }
 .w-full { width: 100%; }
-.text-gray-400 { color: var(--color-text-secondary); }
+.text-gray-400 { color: var(--color-text-secondary); transition: color 0.3s ease; }
 
 
 /* ==============================================
@@ -620,28 +669,35 @@ body {
 body.fullscreen-editor-active .admin-content-area {
     max-width: none;
     margin: 0;
+    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0;
 }
 
+/* El panel activo (ya sea editor de modelo o esquema) */
 body.fullscreen-editor-active .content-panel.active {
     height: calc(100vh - var(--header-height));
+    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0; 
     box-sizing: border-box;
     display: flex; 
     flex-direction: column;
 }
 
+/* La tarjeta interior que contiene el editor */
 body.fullscreen-editor-active .editor-card {
     height: 100%;
     max-height: none;
     display: flex;
     flex-direction: column;
+    /* [CAMBIO v3.1.1] Controla el único padding */
     padding: 0.75rem;
+    /* [CAMBIO v3.1.1] Elimina estilos de "tarjeta" */
     border: 0;
     border-radius: 0;
     box-shadow: none;
     background-color: transparent; /* Fondo transparente, usa el del body */
 }
+/* Padding un poco más grande en desktop */
 @media (min-width: 768px) {
     body.fullscreen-editor-active .editor-card {
         padding: 1rem;
@@ -649,6 +705,7 @@ body.fullscreen-editor-active .editor-card {
 }
 
 
+/* El contenedor del formulario (scrollable) */
 body.fullscreen-editor-active .editor-form-fields {
     flex-grow: 1; /* Ocupa todo el espacio vertical */
     max-height: none; /* Sobrescribe cualquier max-height */
@@ -663,16 +720,17 @@ body.fullscreen-editor-active .editor-form-fields {
 /* Menú desplegable */
 .settings-dropdown {
     position: fixed;
-    top: calc(var(--header-height) - 1px); 
+    top: calc(var(--header-height) - 1px); /* Justo debajo de la cabecera */
     right: 1rem;
-    z-index: 102; 
+    z-index: 102; /* Encima del contenido, debajo del modal */
     background-color: var(--color-bg-medium);
     border: 1px solid var(--color-border);
-    border-top: none; 
+    border-top: none; /* Unido a la cabecera */
     border-radius: 0 0 0.5rem 0.5rem;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     min-width: 220px;
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -688,7 +746,7 @@ body.fullscreen-editor-active .editor-form-fields {
     border-bottom: 1px solid var(--color-border);
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, background-color 0.3s, color 0.3s, border-color 0.3s;
     text-decoration: none;
     box-sizing: border-box;
 }
@@ -710,7 +768,13 @@ body.fullscreen-editor-active .editor-form-fields {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     z-index: 200;
+    /* [NUEVO v3.1.5] Transición para desvanecer */
+    transition: background-color 0.3s ease;
 }
+html.light-mode .modal-overlay {
+    background: rgba(255, 255, 255, 0.7);
+}
+
 
 .modal-container {
     position: fixed;
@@ -723,7 +787,8 @@ body.fullscreen-editor-active .editor-form-fields {
 }
 
 .info-modal-content {
-    padding: 0; 
+    /* Usa el estilo .futuristic-card */
+    padding: 0; /* Quitamos padding para ponerlo en header/body */
 }
 
 .modal-header {
@@ -732,7 +797,7 @@ body.fullscreen-editor-active .editor-form-fields {
     align-items: center;
     padding: 1rem;
     border-bottom: 1px solid var(--color-border);
-    transition: border-bottom-color 0.3s ease;
+    transition: border-color 0.3s ease;
 }
 .modal-header .futuristic-title {
     margin-bottom: 0;
@@ -778,55 +843,7 @@ body.fullscreen-editor-active .editor-form-fields {
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--color-text-secondary);
-    white-space: pre-wrap; 
+    white-space: pre-wrap; /* Mantiene formato y ajusta línea */
+    /* [NUEVO v3.1.5] Transición de tema */
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-}
-
-/* ==============================================
-   12. [NUEVO v3.1.10] MODO CLARO
-   ============================================== */
-body.light-mode {
-    --color-bg-dark: #FFFFFF;
-    --color-bg-medium: #F3F4F6;
-    --color-border: #E5E7EB;
-    --color-border-light: #D1D5DB;
-    --color-text-primary: #111827;
-    --color-text-secondary: #4B5563;
-    --color-text-dim: #9CA3AF;
-}
-
-/* Ajustes específicos para modo claro */
-.light-mode .futuristic-input,
-.light-mode .futuristic-select,
-.light-mode .futuristic-textarea {
-    background-color: #FFFFFF;
-}
-
-.light-mode .futuristic-list,
-.light-mode .full-list-visible {
-    background-color: #FFFFFF;
-}
-
-.light-mode .futuristic-list .list-item:hover {
-    background-color: var(--color-border);
-}
-
-.light-mode .form-group-title {
-    background: var(--color-border-light);
-}
-
-.light-mode .gama-export-list,
-.light-mode .schema-group-box,
-.light-mode .modal-body pre {
-    background-color: #FFFFFF;
-}
-
-.light-mode .settings-dropdown-btn:hover {
-    background-color: var(--color-bg-dark);
-}
-
-.light-mode .header-icon-btn:hover {
-    border-color: var(--color-cyan-accent);
-    color: var(--color-cyan-accent);
-    background-color: var(--color-cyan-glow);
 }
