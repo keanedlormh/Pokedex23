@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enciclopedia Técnica v3.1.0</title>
+    <title>Admin - Enciclopedia Técnica v3.1.2</title>
 
     <link rel="stylesheet" href="/admin/admin.css">
 
 
     <!-- ============================================== -->
-    <!-- Bootloader v3.1.0 (Sin cambios funcionales)  -->
+    <!-- Bootloader v3.1.2 (Sin cambios funcionales)  -->
     <!-- ============================================== -->
     <script>
         // 1. Definir la BD global
@@ -82,17 +82,15 @@
 
 <body>
 
-    <!-- [CAMBIO v3.1.0] Cabecera Única -->
+    <!-- Cabecera Única -->
     <header class="admin-header">
         <div class="header-content">
             <div class="header-left">
-                <!-- El título ahora es un botón de "inicio" -->
                 <button id="home-btn" class="app-title-btn">
-                    <h1 class="app-title">Administrador <span class="app-version">v3.1.0</span></h1>
+                    <h1 class="app-title">Administrador <span class="app-version">v3.1.2</span></h1>
                 </button>
             </div>
             
-            <!-- Botón contextual de Guardar (oculto por defecto) -->
             <button id="save-btn" class="header-save-btn futuristic-button" style="display: none;">
                 Guardar
             </button>
@@ -100,12 +98,10 @@
         </div>
     </header>
 
-    <!-- [CAMBIO v3.1.0] Barra de Menús Eliminada -->
-
     <!-- Área de Contenido Principal -->
     <main class="admin-content-area">
 
-        <!-- [NUEVO v3.1.0] Panel General (Inicio) -->
+        <!-- Panel General (Inicio) -->
         <div id="panel-general" class="content-panel active">
             <h2 class="main-panel-title">Panel General</h2>
             <div class="nav-card-grid">
@@ -131,7 +127,7 @@
             </div>
         </div>
 
-        <!-- [NUEVO v3.1.0] Panel "Hub" para Cargar Modelos -->
+        <!-- Panel "Hub" para Cargar Modelos -->
         <div id="panel-model-hub" class="content-panel">
             <div class="futuristic-card search-panel" style="max-width: 800px; margin: 0 auto;">
                 <h2 class="futuristic-title">Cargar Modelo para Edición</h2>
@@ -142,7 +138,7 @@
             </div>
         </div>
         
-        <!-- [NUEVO v3.1.0] Panel "Hub" para Cargar/Crear Esquemas -->
+        <!-- Panel "Hub" para Cargar/Crear Esquemas -->
         <div id="panel-schema-hub" class="content-panel">
             <div class="futuristic-card search-panel" style="max-width: 800px; margin: 0 auto;">
                 <h2 class="futuristic-title">1. Cargar Esquema Existente</h2>
@@ -162,8 +158,11 @@
         <div id="panel-edit-model" class="content-panel">
             <div class="editor-card">
                 <h2 id="product-title" class="spec-title">Editor de Modelo</h2>
+                
+                <!-- [CAMBIO v3.1.2] El formulario AHORA ENVUELVE los campos clave -->
                 <form id="editor-form" class="editor-form-fields">
-                    <!-- [CAMBIO v3.1.0] Controles reubicados dentro del form -->
+                    
+                    <!-- Movido DENTRO del form -->
                     <div class="editor-key-fields">
                         <div class="control-group">
                             <label for="edit-model-id" class="futuristic-label">Model ID (Editable):</label>
@@ -174,7 +173,10 @@
                             <input type="text" id="edit-schema-key-display" class="futuristic-input w-full" placeholder="..." readonly style="background-color: var(--color-border); cursor: not-allowed;">
                         </div>
                     </div>
+                    
+                    <!-- Movido DENTRO del form -->
                     <p id="editor-placeholder" class="text-gray-400">Carga un modelo desde el panel "Editar Modelo" para empezar.</p>
+                    
                     <!-- Relleno por JS con los atributos del modelo -->
                 </form>
             </div>
@@ -185,16 +187,20 @@
             <div class="editor-card">
                  <h2 id="schema-title" class="spec-title">Editor de Módulo de Gama</h2>
                  
-                <!-- Contenedor para grupos dinámicos -->
+                <!-- [CAMBIO v3.1.2] El div AHORA ENVUELVE los campos clave -->
                 <div id="schema-editor-form" class="editor-form-fields">
-                    <!-- [CAMBIO v3.1.0] Controles reubicados dentro del form -->
+                    
+                    <!-- Movido DENTRO del div -->
                     <div class="editor-key-fields">
                         <div class="control-group">
                             <label for="edit-schema-key" class="futuristic-label">Schema Key (Editable):</label>
                             <input type="text" id="edit-schema-key" class="futuristic-input w-full" placeholder="Cargar o crear un esquema...">
                         </div>
                     </div>
+                    
+                    <!-- Movido DENTRO del div -->
                     <p id="schema-editor-placeholder" class="text-gray-400">Carga un módulo o crea uno nuevo desde el panel "Editar Módulo de Gama".</p>
+                    
                     <!-- Relleno dinámicamente por JS -->
                 </div>
                 
@@ -202,7 +208,7 @@
             </div>
         </div>
 
-        <!-- Panel de Exportar Gama (Sin cambios, no es un editor) -->
+        <!-- Panel de Exportar Gama (Sin cambios) -->
         <div id="panel-export-gama" class="content-panel">
             <div class="futuristic-card" style="max-width: 800px; margin: 0 auto;">
                 <h2 class="futuristic-title">Exportar Gama Completa</h2>
