@@ -1,7 +1,7 @@
 /*
- * Lógica del Panel de Administración v3.1.4
- * [ACTUALIZACIÓN] Añadido menú de ajustes,
- * lógica de tema (claro/oscuro) y modal de README.
+ * Lógica del Panel de Administración v3.1.5
+ * [PARCHE] Corregido el bug que hacía que los botones
+ * del menú de ajustes no funcionaran (propagación de clic).
  */
 
 // window.APP_DB se define en admin/index.html
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.4 inicializando...");
+        console.log("Admin Panel v3.1.5 inicializando...");
         
         // Esperar a que los scripts del bootloader carguen la BD
         setTimeout(() => {
@@ -156,6 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         dom.filterOverlay.addEventListener('click', closeAllPopups);
         dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
+
+        // [PARCHE v3.1.5] Detener la propagación del clic en el panel
+        // para evitar que el overlay lo cierre.
+        dom.settingsMenuPanel.addEventListener('click', (e) => e.stopPropagation());
     }
 
 
@@ -614,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.4)
+ * (Generado por Admin Panel v3.1.5)
  */
 
 const ${variableName} = ${schemaString};
