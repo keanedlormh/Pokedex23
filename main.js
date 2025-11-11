@@ -1,8 +1,7 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.0.0
- * [ACTUALIZACIÓN] Añadido modo Claro/Oscuro.
- * El botón de tema ahora alterna entre claro/oscuro.
- * Se genera una nueva paleta aleatoria CADA VEZ que se vuelve al modo oscuro.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.0.1
+ * [ACTUALIZACIÓN] El botón de tema ahora se llama "Tema" y
+ * no cierra el panel de ajustes al pulsarlo.
  */
 
 // PASO 1: Creación de la base de datos global
@@ -90,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v3.0.0 inicializando...");
+        console.log("Enciclopedia v3.0.1 inicializando...");
 
         // [CORRECCIÓN] Esperar 100ms para que los scripts 'defer' de la BD se registren
         setTimeout(() => {
@@ -112,7 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Aplicar tema inicial (oscuro por defecto)
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
-            dom.paletteToggleButton.innerHTML = '🎨 Modo Claro';
+            
+            // [CAMBIO] Texto del botón ahora es estático
+            dom.paletteToggleButton.innerHTML = '🎨 Tema';
 
             console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
@@ -604,28 +605,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Función de ciclo del tema.
-     * 1. Oscuro (A) -> Claro (A)
-     * 2. Claro (A) -> Oscuro (B) [Aleatorio]
-     * 3. Oscuro (B) -> Claro (B)
-     * 4. Claro (B) -> Oscuro (C) [Aleatorio]
      */
     function handleThemeToggle() {
         isLightMode = !isLightMode; // Alternar estado
 
         if (isLightMode) {
             // CAMBIANDO A MODO CLARO
-            // Usamos la paleta clara y mantenemos el color de acento actual
             updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-            dom.paletteToggleButton.innerHTML = '🎨 Modo Oscuro (Nuevo)';
+            // [CAMBIO] Texto del botón ya no se actualiza
         } else {
             // CAMBIANDO A MODO OSCURO
-            // Generamos un NUEVO color de acento aleatorio
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
-            dom.paletteToggleButton.innerHTML = '🎨 Modo Claro';
+            // [CAMBIO] Texto del botón ya no se actualiza
         }
         
-        closeSettingsMenu();
+        // [CAMBIO] Ya no se cierra el panel de ajustes
+        // closeSettingsMenu();
     }
 
     /**
