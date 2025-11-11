@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- [CAMBIO v3.1.4] Título actualizado -->
-    <title>Admin - Enciclopedia Técnica v3.1.4</title>
+    <!-- [CAMBIO v3.1.10] Título actualizado -->
+    <title>Admin - Enciclopedia Técnica v3.1.10</title>
 
     <link rel="stylesheet" href="/admin/admin.css">
 
@@ -88,8 +88,8 @@
         <div class="header-content">
             <div class="header-left">
                 <button id="home-btn" class="app-title-btn">
-                    <!-- [CAMBIO v3.1.4] Versión actualizada -->
-                    <h1 class="app-title">Administrador <span class="app-version">v3.1.4</span></h1>
+                    <!-- [CAMBIO v3.1.10] Versión actualizada -->
+                    <h1 class="app-title">Administrador <span class="app-version">v3.1.10</span></h1>
                 </button>
             </div>
             
@@ -97,12 +97,10 @@
                 Guardar
             </button>
             
-            <!-- [NUEVO v3.1.4] Botón de Ajustes -->
+            <!-- Botón de Ajustes -->
             <button id="settings-btn" class="header-icon-btn" title="Ajustes">
                 ⚙️
             </button>
-
-            <!-- [MOVIDO v3.1.4] El enlace "Ver Enciclopedia" se mueve al menú de ajustes -->
             
         </div>
     </header>
@@ -168,10 +166,8 @@
             <div class="editor-card">
                 <h2 id="product-title" class="spec-title">Editor de Modelo</h2>
                 
-                <!-- [CAMBIO v3.1.2] El formulario AHORA ENVUELVE los campos clave -->
                 <form id="editor-form" class="editor-form-fields">
                     
-                    <!-- Movido DENTRO del form -->
                     <div class="editor-key-fields">
                         <div class="control-group">
                             <label for="edit-model-id" class="futuristic-label">Model ID (Editable):</label>
@@ -183,7 +179,6 @@
                         </div>
                     </div>
                     
-                    <!-- Movido DENTRO del form -->
                     <p id="editor-placeholder" class="text-gray-400">Carga un modelo desde el panel "Editar Modelo" para empezar.</p>
                     
                     <!-- Relleno por JS con los atributos del modelo -->
@@ -196,10 +191,8 @@
             <div class="editor-card">
                  <h2 id="schema-title" class="spec-title">Editor de Módulo de Gama</h2>
                  
-                <!-- [CAMBIO v3.1.2] El div AHORA ENVUELVE los campos clave -->
                 <div id="schema-editor-form" class="editor-form-fields">
                     
-                    <!-- Movido DENTRO del div -->
                     <div class="editor-key-fields">
                         <div class="control-group">
                             <label for="edit-schema-key" class="futuristic-label">Schema Key (Editable):</label>
@@ -207,7 +200,6 @@
                         </div>
                     </div>
                     
-                    <!-- Movido DENTRO del div -->
                     <p id="schema-editor-placeholder" class="text-gray-400">Carga un módulo o crea uno nuevo desde el panel "Editar Módulo de Gama".</p>
                     
                     <!-- Relleno dinámicamente por JS -->
@@ -243,10 +235,11 @@
 
     </main>
 
-    <!-- [NUEVO v3.1.4] Menú desplegable de Ajustes -->
+    <!-- Menú desplegable de Ajustes -->
     <div id="settings-menu" class="settings-dropdown" style="display: none;">
+        <!-- [CAMBIO v3.1.10] Texto del botón actualizado -->
         <button id="theme-btn" class="settings-dropdown-btn">
-            🎨 Cambiar Tema
+            🎨 Tema
         </button>
         <button id="info-btn" class="settings-dropdown-btn">
             ℹ️ Info del Proyecto
@@ -256,7 +249,7 @@
         </a>
     </div>
 
-    <!-- [NUEVO v3.1.4] Modal de Información -->
+    <!-- Modal de Información -->
     <div id="modal-overlay" class="modal-overlay" style="display: none;"></div>
     <div id="info-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
@@ -265,7 +258,8 @@
                 <button id="close-info-modal-btn" class="modal-close-btn">✕</button>
             </div>
             <div class="modal-body">
-                <h3>Enciclopedia Técnica - Admin Panel v3.1.4</h3>
+                <!-- [CAMBIO v3.1.10] Versión actualizada -->
+                <h3>Enciclopedia Técnica - Admin Panel v3.1.10</h3>
                 <p>Este panel permite la gestión de la base de datos de la enciclopedia.</p>
                 <pre>
 README.md (Placeholder)
