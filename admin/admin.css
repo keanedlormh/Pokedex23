@@ -1,6 +1,5 @@
 /* ==============================================
-   Estilos para el Admin Panel v3.1.1
-   (Optimización de espacio en editores)
+   Estilos para el Admin Panel v3.1.0
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -16,8 +15,8 @@
     --color-red-accent: #f43f5e;
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    /* [CAMBIO v3.1.1] Cabecera más fina */
-    --header-height: 50px;
+    --header-height: 60px;
+    /* --navbar-height: 45px; */ /* Eliminada en v3.1.0 */
 }
 
 
@@ -26,6 +25,7 @@ body {
     color: var(--color-text-secondary);
     font-family: var(--font-sans);
     line-height: 1.5;
+    /* [CAMBIO v3.1.0] Solo padding para la cabecera principal */
     padding-top: var(--header-height); 
 }
 
@@ -36,13 +36,13 @@ body {
 
 
 /* ==============================================
-   1. Encabezado Fijo (v3.1.1)
+   1. Encabezado Fijo (v3.1.0)
    ============================================== */
 .admin-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
+    padding: 0 1rem; /* Reducido para móviles */
     height: var(--header-height);
     background-color: var(--color-bg-dark);
     border-bottom: 1px solid var(--color-border);
@@ -71,6 +71,7 @@ body {
     gap: 0.75rem;
 }
 
+/* [NUEVO v3.1.0] Botón de Título (Inicio) */
 .app-title-btn {
     background: none;
     border: none;
@@ -80,7 +81,7 @@ body {
     text-align: left;
 }
 .app-title {
-    font-size: 1.15rem; /* Reducido */
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text-primary);
     transition: color 0.2s ease;
@@ -90,40 +91,33 @@ body {
 }
 
 .app-version {
-    font-size: 0.7rem; /* Reducido */
+    font-size: 0.75rem;
     padding: 0 0.3rem;
     font-family: var(--font-mono);
     color: var(--color-cyan-accent);
     background-color: var(--color-bg-medium);
     border-radius: 4px;
     border: 1px solid var(--color-border);
-    position: relative;
-    top: -1px; /* Ajustado */
 }
 .header-link {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--color-cyan-accent);
     text-decoration: none;
     border: 1px solid var(--color-cyan-accent);
+    padding: 0.4rem 0.8rem;
     border-radius: 4px;
     transition: all 0.2s ease;
     white-space: nowrap;
-    /* [CAMBIO v3.1.1] Botón más corto y centrado perfecto */
-    height: 34px;
-    padding: 0 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 .header-link:hover {
     background-color: var(--color-cyan-glow);
     color: #fff;
 }
 
+/* [NUEVO v3.1.0] Botón de Guardar en Cabecera */
 .header-save-btn {
-    /* [CAMBIO v3.1.1] Botón más corto */
-    height: 34px;
-    padding: 0 1.2rem;
+    height: 38px;
+    padding: 0.4rem 1.2rem;
     margin-left: auto;
     margin-right: 0.75rem;
     background-color: var(--color-green-accent);
@@ -151,6 +145,7 @@ body {
     display: block;
 }
 
+/* [NUEVO v3.1.0] Título de Panel Principal */
 .main-panel-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -228,6 +223,7 @@ body {
 .search-panel {
     display: flex;
     flex-direction: column;
+    /* [CAMBIO v3.1.0] Altura ajustada para nueva cabecera */
     max-height: calc(100vh - var(--header-height) - 3rem);
 }
 .futuristic-title {
@@ -240,11 +236,10 @@ body {
     flex-shrink: 0;
 }
 .spec-title {
-    /* [CAMBIO v3.1.1] Título del editor más pequeño y con menos margen */
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem; /* [NUEVO v3.1.0] Añadido margen inferior */
     flex-shrink: 0;
 }
 
@@ -290,19 +285,13 @@ body {
     font-weight: 600;
     font-size: 0.8rem;
     border-radius: 4px;
+    padding: 0.6rem 1.2rem;
     letter-spacing: 0.05em;
     border: 1px solid var(--color-cyan-accent);
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    height: 38px; /* Altura fija para alinear */
     box-sizing: border-box;
-    /* [CAMBIO v3.1.1] Centrado perfecto y altura reducida */
-    height: 34px;
-    padding: 0 1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    text-align: center;
 }
 .futuristic-button:hover {
     background-color: #0891b2;
@@ -357,24 +346,27 @@ body {
 /* ==============================================
    7. Panel Editor (Modelo)
    ============================================== */
+/* [NUEVO v3.1.0] Tarjeta contenedora del editor */
 .editor-card {
     background-color: var(--color-bg-medium);
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* [CAMBIO v3.1.0] Se gestiona con modo fullscreen */
 }
 
+/* [NUEVO v3.1.0] Campos de clave en la parte superior del editor */
 .editor-key-fields {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Reducido */
-    padding: 0.75rem; /* Reducido */
+    gap: 1rem;
+    padding: 1rem;
     background: var(--color-bg-dark);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    margin-bottom: 0.75rem; /* Reducido */
-    flex-shrink: 0; 
+    margin-bottom: 1rem;
+    flex-shrink: 0; /* No debe encogerse */
 }
 @media (min-width: 768px) {
     .editor-key-fields {
@@ -387,6 +379,7 @@ body {
 }
 
 .editor-form-fields {
+    /* [CAMBIO v3.1.0] Se gestiona con modo fullscreen */
     overflow-y: auto;
     padding-right: 0.5rem;
 }
@@ -475,8 +468,7 @@ body {
     background-color: var(--color-green-accent);
     border-color: var(--color-green-accent);
     width: 100%;
-    flex-shrink: 0; 
-    height: 34px; /* Altura estándar de botón */
+    flex-shrink: 0; /* No debe encogerse */
 }
 .schema-add-group-btn:hover {
     background-color: #059669;
@@ -500,20 +492,14 @@ body {
 .schema-action-btn {
     font-size: 0.75rem;
     font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    height: 32px;
+    box-sizing: border-box;
     border: 1px solid;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    /* [CAMBIO v3.1.1] Centrado y altura */
-    height: 30px;
-    padding: 0 0.6rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    text-align: center;
 }
-
 .schema-add-attr-btn {
     background-color: var(--color-bg-medium);
     border-color: var(--color-green-accent);
@@ -522,7 +508,6 @@ body {
 .schema-add-attr-btn:hover {
     background-color: rgba(16, 185, 129, 0.1);
 }
-
 .schema-remove-btn {
     background-color: var(--color-bg-medium);
     border-color: var(--color-red-accent);
@@ -550,11 +535,9 @@ body {
         align-items: center;
     }
 }
-
 .schema-attr-row .futuristic-input {
-    /* [CAMBIO v3.1.1] Altura reducida */
-    height: 30px;
-    padding: 0.4rem 0.6rem;
+    height: 32px;
+    padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
 }
 .schema-attr-row .futuristic-input[data-type="attr-code"] {
@@ -573,20 +556,18 @@ body {
 
 
 /* ==============================================
-   10. MODO FULLSCREEN EDITOR (ACTUALIZADO v3.1.1)
+   10. MODO FULLSCREEN EDITOR (ACTUALIZADO v3.1.0)
    ============================================== */
 body.fullscreen-editor-active .admin-content-area {
     max-width: none;
-    margin: 0;
-    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0;
+    margin: 0;
 }
 
 /* El panel activo (ya sea editor de modelo o esquema) */
 body.fullscreen-editor-active .content-panel.active {
     height: calc(100vh - var(--header-height));
-    /* [CAMBIO v3.1.1] Sin padding exterior */
-    padding: 0; 
+    padding: 1rem; 
     box-sizing: border-box;
     display: flex; 
     flex-direction: column;
@@ -598,18 +579,11 @@ body.fullscreen-editor-active .editor-card {
     max-height: none;
     display: flex;
     flex-direction: column;
-    /* [CAMBIO v3.1.1] Controla el único padding */
-    padding: 0.75rem;
-    /* [CAMBIO v3.1.1] Elimina estilos de "tarjeta" */
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    background-color: transparent; /* Fondo transparente, usa el del body */
+    padding: 1rem; /* Padding interno */
 }
-/* Padding un poco más grande en desktop */
 @media (min-width: 768px) {
     body.fullscreen-editor-active .editor-card {
-        padding: 1rem;
+        padding: 1.5rem;
     }
 }
 
