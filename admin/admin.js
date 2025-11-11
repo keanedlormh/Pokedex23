@@ -1,7 +1,7 @@
 /*
- * Lógica del Panel de Administración v3.1.7
- * [PARCHE DEFINITIVO] Corregido el bug de propagación de
- * clics en el menú de ajustes y sus botones internos.
+ * Lógica del Panel de Administración v3.1.8
+ * [PARCHE DEFINITIVO] Refactorizada la lógica de popups (Ajustes/Modal)
+ * para solucionar el bug de propagación de clics.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.7 inicializando...");
+        console.log("Admin Panel v3.1.8 inicializando...");
         
         // Esperar a que los scripts del bootloader carguen la BD
         setTimeout(() => {
@@ -149,22 +149,28 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson);
         
-        // Listeners de Ajustes, Modal y Overlay
         
-        // [PARCHE v3.1.7] Detener el clic en el botón de toggle
+        // --- [LÓGICA v3.1.8] Listeners de Ajustes, Modal y Overlay ---
+        
+        // 1. El botón de toggle abre/cierra su menú
         dom.settingsMenuToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleSettingsMenu();
+            e.stopPropagation(); // Evita que el clic active el overlay
+            toggleSettings();
         });
-        
+
+        // 2. Botones DENTRO del menú de ajustes
         dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
-        dom.infoToggleButton.addEventListener('click', showReadmeInfo);
+        dom.infoToggleButton.addEventListener('click', showReadme);
         
+        // 3. El Overlay cierra todo
         dom.filterOverlay.addEventListener('click', closeAllPopups);
-        dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
         
-        // [PARCHE v3.1.7] Detener el clic en el panel
+        // 4. El botón de cerrar el modal cierra todo
+        dom.readmeCloseButton.addEventListener('click', closeAllPopups);
+
+        // 5. Clics DENTRO de los popups no deben cerrarlos
         dom.settingsMenuPanel.addEventListener('click', (e) => e.stopPropagation());
+        dom.readmeModal.addEventListener('click', (e) => e.stopPropagation());
     }
 
 
@@ -623,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.7)
+ * (Generado por Admin Panel v3.1.8)
  */
 
 const ${variableName} = ${schemaString};
@@ -660,14 +666,51 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
         document.body.removeChild(link);
     }
     
-    // --- 11. [Refactorizado v3.1.6] Lógica de Ajustes, Tema y Modal ---
+    // --- 11. [REFACTORIZADO v3.1.8] Lógica de Ajustes, Tema y Modal ---
     
+    /**
+     * Cierra TODOS los popups y el overlay.
+     * Esta es la función de reseteo universal.
+     */
     function closeAllPopups() {
-        closeSettingsMenu();
-        closeReadmeModal();
+        dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
+        dom.settingsMenuToggle.classList.remove('active');
+        dom.readmeModal.className = 'modal-hidden';
+        dom.filterOverlay.className = 'overlay-hidden';
+    }
+
+    /**
+     * Abre o cierra el menú de ajustes.
+     */
+    function toggleSettings() {
+        const isOpen = dom.settingsMenuPanel.classList.contains('settings-menu-panel-open');
+        closeAllPopups(); // Cierra todo primero
+
+        if (!isOpen) {
+            // Si estaba cerrado, ábrelo
+            dom.settingsMenuPanel.className = 'settings-menu-panel-open';
+            dom.filterOverlay.className = 'overlay-visible';
+            dom.settingsMenuToggle.classList.add('active');
+        }
+        // Si estaba abierto, closeAllPopups() ya hizo el trabajo de cerrarlo.
     }
     
-    // --- Tema ---
+    /**
+     * Cierra el menú de ajustes y abre el modal del README.
+     */
+    function showReadme() {
+        closeAllPopups(); // Cierra el menú de ajustes
+
+        dom.readmeModal.className = 'modal-visible';
+        dom.filterOverlay.className = 'overlay-visible';
+        
+        loadReadmeContent(); // Carga el contenido async
+    }
+    
+    /**
+     * Alterna el tema (Claro/Oscuro) y genera nueva paleta.
+     * NO cierra el menú.
+     */
     function handleThemeToggle() {
         isLightMode = !isLightMode; 
 
@@ -677,9 +720,35 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
         }
-        // No cerrar el menú
     }
 
+    /**
+     * Carga el contenido del README.md en el modal.
+     */
+    async function loadReadmeContent() {
+        if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
+            try {
+                dom.readmeContent.textContent = "Cargando...";
+                const response = await fetch('README.md'); 
+                if (!response.ok) {
+                    const rootResponse = await fetch('../README.md');
+                    if (!rootResponse.ok) throw new Error('No se pudo encontrar README.md');
+                    const text = await rootResponse.text();
+                    dom.readmeContent.textContent = text;
+                } else {
+                     const text = await response.text();
+                     dom.readmeContent.textContent = text;
+                }
+            } catch (error) {
+                console.error("Error al cargar README.md:", error);
+                dom.readmeContent.textContent = "Error al cargar el archivo README.md.";
+            }
+        }
+    }
+
+    /**
+     * Aplica la paleta de colores a las variables CSS root.
+     */
     function updatePaletteCSS(baseHSL, accentHue) {
         const p = baseHSL;
         const newOtherHue = (accentHue + hueDifference + 360) % 360; 
@@ -708,6 +777,9 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
         root.style.setProperty('--color-text-dim', `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`);
     }
 
+    /**
+     * Convierte HSL a RGB (para el color --glow).
+     */
     function hslToRgb(h, s, l) {
         s /= 100;
         l /= 100;
@@ -720,75 +792,6 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
             g: Math.round(255 * f(8)),
             b: Math.round(255 * f(4))
         };
-    }
-
-    // --- Modal / Overlay ---
-    function openSettingsMenu() {
-        if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
-        closeReadmeModal(); // Cierra el otro popup si está abierto
-        dom.settingsMenuPanel.className = 'settings-menu-panel-open';
-        dom.filterOverlay.className = 'overlay-visible';
-        dom.settingsMenuToggle.classList.add('active');
-    }
-    function closeSettingsMenu() {
-        if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
-        dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
-        dom.settingsMenuToggle.classList.remove('active');
-        
-        // Solo oculta el overlay si el modal TAMPOCO está visible
-        if (dom.readmeModal.className === 'modal-hidden') {
-            dom.filterOverlay.className = 'overlay-hidden';
-        }
-    }
-    function toggleSettingsMenu() {
-        if (!dom.settingsMenuPanel) return;
-        const isHidden = dom.settingsMenuPanel.className === 'settings-menu-panel-hidden';
-        if (isHidden) {
-            openSettingsMenu();
-        } else {
-            closeSettingsMenu();
-        }
-    }
-    
-    function openReadmeModal() {
-        if (!dom.readmeModal || !dom.filterOverlay) return;
-        closeSettingsMenu(); // Cierra el otro popup si está abierto
-        dom.readmeModal.className = 'modal-visible';
-        dom.filterOverlay.className = 'overlay-visible';
-    }
-    function closeReadmeModal() {
-        if (!dom.readmeModal || !dom.filterOverlay) return;
-        dom.readmeModal.className = 'modal-hidden';
-
-        // Solo oculta el overlay si el panel de ajustes TAMPOCO está visible
-        if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
-            dom.filterOverlay.className = 'overlay-hidden';
-        }
-    }
-    
-    async function showReadmeInfo() {
-        openReadmeModal();
-
-        if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
-            try {
-                dom.readmeContent.textContent = "Cargando...";
-                // [IMPORTANTE] El README del admin está en la raíz del admin.
-                const response = await fetch('README.md'); 
-                if (!response.ok) {
-                    // Si no lo encuentra, busca el de la app principal
-                    const rootResponse = await fetch('../README.md');
-                    if (!rootResponse.ok) throw new Error('No se pudo encontrar README.md');
-                    const text = await rootResponse.text();
-                    dom.readmeContent.textContent = text;
-                } else {
-                     const text = await response.text();
-                     dom.readmeContent.textContent = text;
-                }
-            } catch (error) {
-                console.error("Error al cargar README.md:", error);
-                dom.readmeContent.textContent = "Error al cargar el archivo README.md.";
-            }
-        }
     }
 
     // --- 12. Ejecución ---
