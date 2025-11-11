@@ -1,5 +1,5 @@
 /*
- * Lógica del Panel de Administración v3.1.8
+ * Lógica del Panel de Administración v3.1.9
  * [PARCHE] Portada la lógica de popups funcional
  * de 'main.js' para arreglar los botones del menú.
  */
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.8 inicializando...");
+        console.log("Admin Panel v3.1.9 inicializando...");
         
         // Esperar a que los scripts del bootloader carguen la BD
         setTimeout(() => {
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson);
         
         
-        // --- [LÓGICA v3.1.8] Listeners de Ajustes (PORTADOS DE MAIN.JS) ---
+        // --- [LÓGICA v3.1.9] Listeners de Ajustes (PORTADOS DE MAIN.JS) ---
         
         if (dom.settingsMenuToggle) {
             dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             fragment.appendChild(item);
         });
-        dom.gamaExportList.appendChild(fragment);
+        dom.modelResultsList.appendChild(fragment);
     }
 
     function handleGamaExportClick(e) {
@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.8)
+ * (Generado por Admin Panel v3.1.9)
  */
 
 const ${variableName} = ${schemaString};
@@ -669,7 +669,7 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     }
     
     
-    // --- 11. [REFACTORIZADO v3.1.8] Lógica de Ajustes, Tema y Modal (Portado de main.js) ---
+    // --- 11. [REFACTORIZADO v3.1.9] Lógica de Ajustes (Portado de main.js) ---
     
     // --- Tema ---
     function handleThemeToggle() {
@@ -726,12 +726,12 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
         };
     }
 
-    // --- Funciones de Paneles (Filtros, Ajustes, Modal) ---
+    // --- Funciones de Paneles (Ajustes, Modal) ---
     // Esta lógica es la que usa main.js y que funciona.
+
     function openSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
-        // El admin no tiene 'closeFilterPanel()'
-        closeReadmeModal();
+        closeReadmeModal(); // Cierra el otro
         dom.settingsMenuPanel.className = 'settings-menu-panel-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.settingsMenuToggle.classList.add('active');
@@ -740,7 +740,6 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     function closeSettingsMenu() {
         if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
         dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
-        // El admin no tiene 'smartFilterPanel'
         if (dom.readmeModal.className === 'modal-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
@@ -754,8 +753,7 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     
     function openReadmeModal() {
         if (!dom.readmeModal || !dom.filterOverlay) return;
-        // El admin no tiene 'closeFilterPanel()'
-        closeSettingsMenu();
+        closeSettingsMenu(); // Cierra el otro
         dom.readmeModal.className = 'modal-visible';
         dom.filterOverlay.className = 'overlay-visible';
     }
@@ -763,7 +761,6 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     function closeReadmeModal() {
         if (!dom.readmeModal || !dom.filterOverlay) return;
         dom.readmeModal.className = 'modal-hidden';
-        // El admin no tiene 'smartFilterPanel'
         if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
@@ -771,12 +768,10 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
 
     /**
      * Carga el contenido de README.md en el modal.
-     * Esta versión es la de admin.js (con el fallback a ../README.md)
-     * pero usa la lógica de apertura de main.js
      */
     async function showReadmeInfo() {
-        closeSettingsMenu(); // Lógica de main.js
-        openReadmeModal();   // Lógica de main.js
+        closeSettingsMenu(); // Cierra el menú
+        openReadmeModal();   // Abre el modal
 
         if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
             try {
