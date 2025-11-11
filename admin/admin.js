@@ -1,9 +1,8 @@
 /*
- * Lógica del Panel de Administración v3.1.0
- * [REFACTOR] Eliminada navbar, introducido panel general.
- * [REFACTOR] Editores (Modelo, Esquema) en modo fullscreen.
- * [REFACTOR] Botón "Guardar" contextual en la cabecera.
- * [REFACTOR] Campos clave (Model ID, Schema Key) movidos al formulario.
+ * Lógica del Panel de Administración v3.1.2
+ * [CORRECCIÓN v3.1.2] Los campos clave (Model ID, Schema Key) ahora están
+ * correctamente anidados en sus formularios en el HTML, y las funciones
+ * de carga ya no los borran, solucionando el error al guardar.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -64,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.0 inicializando...");
+        console.log("Admin Panel v3.1.2 inicializando...");
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
@@ -125,10 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica de Navegación y Estado ---
 
-    /**
-     * Maneja el clic en el botón "Guardar" de la cabecera.
-     * Delega a la función de guardado correcta según el panel activo.
-     */
     function handleSaveClick() {
         if (currentActivePanel === 'edit-model') {
             exportDataFromEditor();
@@ -137,9 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Muestra un panel de contenido por su ID y gestiona el estado de la UI.
-     */
     function showPanel(panelId) {
         currentActivePanel = panelId;
         
@@ -353,6 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica del Editor de Modelo (Panel 1) ---
 
+    /**
+     * [CORREGIDO v3.1.2]
+     * Carga un modelo en el editor. Ahora solo limpia el contenido dinámico,
+     * dejando los campos clave (que están en el HTML) intactos.
+     */
     function loadModelIntoEditor(product) {
         currentLoadedSchemaKey = product.schema_key; // Guardar para construir formulario
         const schema = masterSchemaMap[product.schema_key];
@@ -362,13 +359,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        dom.editorPlaceholder.style.display = 'none';
-        dom.editorForm.innerHTML = ''; // Limpiar solo el formulario
-        
-        // Rellenar campos clave
+        // Rellenar campos clave (que ahora están fijos en el form)
         dom.productTitle.textContent = `Editando: ${product.model}`;
         dom.editModelIdInput.value = product.model;
         dom.editSchemaKeyDisplay.value = product.schema_key;
+
+        // Limpiar solo el contenido generado anteriormente
+        dom.editorForm.querySelectorAll('.form-group-title, .form-row').forEach(el => el.remove());
+        dom.editorPlaceholder.style.display = 'none';
 
         const fragment = document.createDocumentFragment();
         schema.forEach(group => {
@@ -400,15 +398,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 fragment.appendChild(row);
             });
         });
-
-        // Insertar campos clave al principio del formulario
-        const keyFields = dom.editorForm.querySelector('.editor-key-fields');
+        
+        // Añadir el nuevo contenido al formulario
         dom.editorForm.appendChild(fragment);
-        // Mover los campos clave al inicio del formulario (si ya existen)
-        if (keyFields) {
-            dom.editorForm.prepend(keyFields);
-        }
 
+        // Auto-ajustar textareas
         setTimeout(() => {
             dom.editorForm.querySelectorAll('textarea').forEach(textarea => {
                 textarea.style.height = 'auto';
@@ -417,12 +411,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1);
     }
 
+    /**
+     * [CORREGIDO v3.1.2]
+     * Lee los datos del editor de modelo y exporta un .json.
+     * Lee el Model ID del input que ahora SÍ está en el formulario.
+     */
     function exportDataFromEditor() {
         if (!currentLoadedSchemaKey) {
             alert("No hay ningún modelo cargado en el editor para guardar.");
             return;
         }
 
+        // Leer el Model ID desde el campo de entrada (que ahora está en el form)
         const newModelId = dom.editModelIdInput.value.trim().toUpperCase();
         if (newModelId === "") {
             alert("Por favor, introduce un 'Model ID' para guardar.");
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const modifiedProduct = {
             model: newModelId,
-            schema_key: currentLoadedSchemaKey, // Usar la clave guardada
+            schema_key: currentLoadedSchemaKey, // Usar la clave guardada al cargar
             attributes: newAttributes
         };
         
@@ -474,27 +474,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica del Editor de Esquemas (Panel 3) ---
 
+    /**
+     * [CORREGIDO v3.1.2]
+     * Carga un esquema en el editor. Ahora solo limpia el contenido dinámico,
+     * dejando el campo clave (que está en el HTML) intacto.
+     */
     function loadSchemaIntoEditor(key, schema) {
-        // Actualizar UI
+        // Rellenar campo clave (que ahora está fijo en el div)
         dom.schemaTitle.textContent = `Editando Esquema: ${key}`;
-        dom.schemaEditorPlaceholder.style.display = 'none';
-        dom.schemaEditorForm.innerHTML = ''; // Limpiar editor
-        
-        // Rellenar campo clave
         dom.editSchemaKeyInput.value = key;
+
+        // Limpiar solo los grupos generados anteriormente
+        dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(el => el.remove());
+        dom.schemaEditorPlaceholder.style.display = 'none';
 
         // Habilitar controles
         dom.addGroupBtn.disabled = false;
 
-        // Insertar campo clave al principio del formulario
-        const keyFields = dom.panelEditSchema.querySelector('.editor-key-fields');
-         if (keyFields) {
-            dom.schemaEditorForm.appendChild(keyFields.cloneNode(true));
-            // Rellenar el valor en el campo clonado
-            dom.schemaEditorForm.querySelector('#edit-schema-key').value = key;
-        }
-
-        // Rellenar el editor
+        // Rellenar el editor con los nuevos grupos
         if (schema.length > 0) {
             schema.forEach(group => {
                 addGroupToEditor(group);
@@ -502,6 +499,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * [CORREGIDO v3.1.2]
+     * Añade un grupo al contenedor correcto.
+     */
     function addGroupToEditor(group = null) {
         const groupElement = document.createElement('div');
         groupElement.className = 'schema-group-box';
@@ -529,6 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addAttributeToGroup(attr, attributesContainer);
             });
         }
+        // Añadir al contenedor del formulario
         dom.schemaEditorForm.appendChild(groupElement);
     }
 
@@ -572,6 +574,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * [CORREGIDO v3.1.2]
+     * Lee los datos del editor de esquema y exporta un .js.
+     * Lee el Schema Key del input que ahora SÍ está en el formulario.
+     */
     function handleSchemaExportClick() {
         // Leer la clave del esquema DESDE EL FORMULARIO
         const schemaKeyInput = dom.schemaEditorForm.querySelector('#edit-schema-key');
@@ -589,6 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const newSchema = [];
+        // Buscar los grupos dentro del contenedor del formulario
         const groupElements = dom.schemaEditorForm.querySelectorAll('.schema-group-box');
         let isValid = true;
         let errorMsg = '';
@@ -657,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.0)
+ * (Generado por Admin Panel v3.1.2)
  */
 
 const ${schemaConstantName} = ${schemaJSON};
