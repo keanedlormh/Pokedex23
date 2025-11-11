@@ -1,176 +1,89 @@
-Enciclopedia Técnica v2.9.7
+Enciclopedia Técnica - Admin Panel v3.2.0
+Panel de administración integral para la gestión de la base de datos de la Enciclopedia Técnica. Esta herramienta permite a los administradores crear, editar y exportar tanto la estructura de datos (esquemas) como los productos individuales (modelos) sin necesidad de editar código manualmente.
+🚀 Novedades en v3.2.0
+Creación de Modelos desde Cero: Ahora es posible crear un nuevo producto seleccionando una gama existente (ej: TVs, Monitores) e introduciendo un nuevo Model ID. El sistema genera una plantilla vacía lista para rellenar.
+Interfaz de Gestor de Modelos: El panel de búsqueda se ha rediseñado para acomodar tanto la búsqueda como la creación de nuevos items.
+Soporte de Temas: Inclusión de un selector de tema Claro/Oscuro (Light/Dark Mode) persistente.
+📋 Características Principales
+1. Gestión de Modelos (Product Data)
+Buscador en Tiempo Real: Filtra la base de datos cargada por nombre de modelo.
+Edición Dinámica: Al cargar un modelo, el formulario se genera automáticamente basándose en su "Esquema" (Schema) asociado.
+Creación de Nuevos Modelos: Genera nuevos archivos JSON para productos que no existen en la base de datos.
+Exportación Individual: Descarga el archivo .json del producto editado listo para subir a la carpeta /db/products/.
+2. Gestión de Esquemas (Data Structure)
+Editor Visual: Crea o modifica la estructura de atributos de una categoría (ej: qué campos tiene un "TV").
+Grupos y Atributos: Organiza los datos en secciones (ej: "Imagen", "Sonido", "Conectividad").
+Exportación de Módulos: Genera el archivo .js del esquema listo para incluir en el manifest.json.
+3. Herramientas de Gama
+Exportación Masiva: Permite descargar un único archivo JSON (bulk_gama.json) que contiene todos los productos de una categoría específica.
+4. Sistema (Core)
+Bootloader Inteligente: Carga síncrona de la base de datos distribuida (manifiesto + esquemas + productos sueltos + gamas bulk) al iniciar la aplicación.
+Interfaz Futurista: Diseño responsivo con efectos visuales, transiciones suaves y adaptabilidad móvil.
+🛠️ Instalación y Uso
+Debido a que la aplicación utiliza XMLHttpRequest para cargar módulos y archivos JSON locales, debe ejecutarse en un servidor web (no funcionará abriendo directamente el index.html por protocolo file:// debido a políticas de seguridad CORS).
+Opción A: Visual Studio Code (Recomendado)
+Instala la extensión "Live Server".
+Haz clic derecho en admin/index.html y selecciona "Open with Live Server".
+Opción B: Python
+Si tienes Python instalado, abre una terminal en la raíz del proyecto y ejecuta:
+python -m http.server 8000
 
-​Bienvenido a la Enciclopedia Técnica, una aplicación web estática diseñada para gestionar, buscar y comparar especificaciones de productos.
 
-​Esta aplicación se divide en dos componentes principales:
-
-​La Aplicación Pública (index.html): Una interfaz de solo lectura para que los usuarios puedan buscar, filtrar y ver las especificaciones de los productos.
-
-​El Panel de Administración (admin/index.html): Una interfaz para cargar, editar y exportar los datos de los productos.
-
-​La versión 2.9.7 estandariza el formato de datos en JSON. El sistema carga la base de datos a partir de dos fuentes definidas en manifest.json:
-
-​Ficheros JSON de Gama Completa (ej. db/gamas/tvs.json): Para una carga masiva y eficiente.
-​Ficheros JSON Individuales (ej. db/products/S95TR.json): Para añadir o sobrescribir modelos específicos fácilmente.
-
-​Estructura de Ficheros
-​La estructura del proyecto es fundamental, ya que manifest.json es el encargado de cargar todos los datos.
-
+Luego abre http://localhost:8000/admin/ en tu navegador.
+📂 Estructura del Proyecto
 /
-├── admin/
-│   ├── index.html         # Interfaz del panel de administración
-│   ├── admin.js           # Lógica del panel de administración
-│   └── admin.css          # Estilos del panel de administración
+├── admin/                  # Panel de Administración
+│   ├── index.html          # Punto de entrada (v3.2.0)
+│   ├── admin.js            # Lógica de la aplicación (Controladores, UI, Exportación)
+│   └── admin.css           # Estilos (Tema Claro/Oscuro)
 │
-├── db/
-│   ├── manifest.json      # ¡El fichero más importante! Define qué cargar
-│   │
-│   ├── gamas/
-│   │   ├── soundbars.json # Datos a granel para la gama "soundbars"
-│   │   └── tvs.json       # Datos a granel para la gama "tvs"
-│   │
-│   ├── schemas/
-│   │   ├── moduloSoundbars.js # Define la ESTRUCTURA de "soundbars"
-│   │   └── moduloTVs.js       # Define la ESTRUCTURA de "tvs"
-│   │
-│   └── products/
-│       │                    # Directorio para ficheros .json individuales
-│       └── (ej: S95TR.json)
+├── db/                     # Base de Datos (Simulada como sistema de archivos)
+│   ├── manifest.json       # Índice maestro (lista de esquemas y archivos a cargar)
+│   ├── schemas/            # Definiciones de estructura (.js)
+│   │   ├── moduloTvs.js
+│   │   └── ...
+│   └── products/           # Datos de productos (.json)
+│       ├── oled65c4.json
+│       └── ...
 │
-├── index.html             # Aplicación pública principal
-├── main.js                # Lógica de la aplicación pública
-├── style.css              # Estilos de la aplicación pública
-└── README.md              # Este fichero
+└── index.html              # (Opcional) Frontend público de la enciclopedia
 
 
-🚀 Cómo Ejecutar el Proyecto
+📖 Guía de Flujo de Trabajo
+Cómo añadir un NUEVO producto (v3.2.0)
+Ve al Gestor de Modelos.
+En la sección "2. Crear Nuevo Modelo", selecciona la Gama (ej: TVs).
+Escribe el Model ID (ej: OLED55G4).
+Pulsa Crear y Editar.
+Rellena los campos en el formulario que aparecerá.
+Pulsa Guardar (arriba a la derecha) para descargar el .json.
+Mueve ese archivo a /db/products/ y regístralo en /db/manifest.json.
+Cómo crear una NUEVA categoría (Gama)
+Ve a Editar Módulo de Gama.
+En "Crear Nuevo Esquema", escribe una clave única (ej: barras_sonido).
+Pulsa Crear y Editar.
+Añade grupos (ej: "Audio") y atributos (ej: "Potencia", "Canales").
+Pulsa Guardar para descargar el .js.
+Mueve el archivo a /db/schemas/ y regístralo en /db/manifest.json.
+📜 Historial de Versiones (Changelog)
+v3.2.0 (Actual)
+NEW: Implementada la creación de modelos vacíos desde el panel.
+UI: Rediseño del panel "Hub de Modelos" para separar búsqueda y creación.
+FIX: Unificación de la lógica de selectores de gama.
+v3.1.5
+UI: Sistema de temas Light/Dark persistente (localStorage).
+DOC: Modal de información actualizado.
+v3.1.4
+UI: Menú de ajustes desplegable en la cabecera.
+UX: Movido el enlace "Ver Enciclopedia" al menú de ajustes.
+v3.1.2
+CORE: Bootloader para carga síncrona de dependencias.
+FIX: Corrección en la exportación de JSON (Model ID ahora es editable).
+FIX: Corrección en la generación de módulos JS de esquemas.
+v3.1.0
+NEW: Panel General con tarjetas de navegación.
+NEW: Diseño "Futuristic" inicial.
 
-¡Importante! Este proyecto no funcionará si abres index.html directamente desde el sistema de archivos (ej. file:///...).
-
-Utiliza un servidor web local. Los bootloaders (tanto en index.html como en admin/index.html) usan XMLHttpRequest de forma síncrona para cargar el manifest.json y los ficheros de datos. Los navegadores bloquean estas solicitudes por razones de seguridad (CORS) cuando se ejecutan desde file:///.
-
-La forma más sencilla de iniciarlo es usando la extensión "Live Server" en Visual Studio Code.
-
-📖 Instrucciones de Uso
-
-1. Aplicación Pública (index.html)
-
-La interfaz principal permite a los usuarios encontrar productos:
-
-Buscar: Utiliza la barra "Búsqueda por Modelo" para encontrar un producto específico por su nombre.
-
-Filtrar por Gama: Selecciona una "Gama de Producto" (ej. "TVs") para ver los filtros disponibles para esa categoría.
-
-Filtrar por Atributos: Una vez seleccionada una gama, puedes usar los "Filtros Inteligentes" para acotar la búsqueda por especificaciones.
-
-Ver Detalles: Haz clic en un modelo de la lista de resultados para cargar su ficha técnica completa en el panel principal.
-
-2. Panel de Administración (admin/index.html)
-
-El panel de administración es el centro de control de la base de datos.
-
-Editar un Modelo
-
-Abre el panel de administración (ej. http://localhost:5500/admin/).
-
-En el panel "1. Cargar Modelo", busca el producto que deseas editar (ej. "S95TR").
-
-Haz clic sobre él en la lista. Sus datos se cargarán en el "2. Editor de Producto".
-
-Modifica los valores que necesites en los campos de texto.
-
-Asegúrate de que el campo "Nuevo Model ID" contiene el nombre de modelo correcto (ya sea el original para sobrescribir o uno nuevo para crear una copia).
-
-Haz clic en "Exportar a .json". Esto descargará un fichero individual (ej. S95TR.json).
-
-Exportar una Gama Completa (JSON)
-
-En la barra de menú superior, ve a Exportar > Exportar Gama.
-
-Selecciona la gama que deseas exportar (ej. "soundbars") en el desplegable.
-
-La lista se poblará con todos los modelos de esa gama.
-
-Haz clic en el botón "Exportar Gama a JSON".
-
-Esto descargará un único fichero JSON que contiene todos los productos de esa gama (ej. GAMA_SOUNDBARS.json).
-
-🔄 Flujo de Trabajo: Actualizar la Base de Datos
-
-Existen dos métodos para actualizar la información. El Método A (Bulk JSON) es el recomendado para cambios masivos, mientras que el Método B (Individual JSON) es ideal para añadir o modificar un solo producto.
-
-Método A: Actualización Masiva (Recomendado)
-
-Este método actualiza una gama entera de una sola vez.
-
-Edita: Ve al Admin Panel y edita todos los modelos que necesites usando el editor. (No necesitas exportarlos uno por uno).
-
-Exporta: Ve al panel "Exportar Gama", selecciona la gama y haz clic en "Exportar Gama a JSON".
-
-Renombra: Obtendrás un fichero como GAMA_SOUNDBARS.json. Renómbralo al nombre de fichero correspondiente en la base de datos (ej. soundbars.json).
-
-Reemplaza: Copia este nuevo fichero y reemplaza el antiguo en la carpeta db/gamas/.
-
-¡Listo! El manifest.json ya está configurado para cargar db/gamas/soundbars.json. Simplemente recarga la aplicación pública para ver los cambios.
-
-Método B: Actualización Individual (.json)
-
-Este método es para añadir o actualizar un único fichero .json a la vez.
-
-Edita y Exporta: Sigue los pasos de "Editar un Modelo" y descarga el fichero .json (ej. S95TR.json).
-
-Mueve: Coloca este fichero en la carpeta de productos (ej. db/products/S95TR.json).
-
-Actualiza el Manifest: Este es el paso crucial. Abre db/manifest.json y añade manualmente la ruta a tu nuevo fichero en la lista de products correspondiente.
-
-// db/manifest.json
-{
-    ...
-    "products": {
-        "soundbars": [
-            "db/products/S95TR.json" // <-- Añadir la ruta aquí
-        ],
-        "tvs": []
-    }
-}
-
-
-Recarga la aplicación. El bootloader ahora cargará tanto los ficheros JSON masivos como este fichero individual. Si un modelo existe en ambos, el fichero individual tendrá prioridad.
-
-🧩 Flujo de Trabajo: Añadir una Nueva Categoría (Schema)
-
-Si quieres añadir una categoría completamente nueva (ej. "Monitores"):
-
-Crear el Schema: Crea un nuevo fichero db/schemas/moduloMonitors.js. Puedes copiar moduloTVs.js y modificar los grupos y atributos ("group", "code", "desc").
-
-Crear el Fichero de Datos: Crea un fichero JSON vacío en db/gamas/monitors.json.
-
-Actualizar el Manifest: Edita db/manifest.json para que el sistema reconozca la nueva categoría.
-
-// db/manifest.json
-{
-    "schemas": [
-        "db/schemas/moduloSoundbars.js",
-        "db/schemas/moduloTVs.js",
-        "db/schemas/moduloMonitors.js"  // <-- Añadir aquí
-    ],
-    "bulk_gamas": [
-        "db/gamas/soundbars.json",
-        "db/gamas/tvs.json",
-        "db/gamas/monitors.json"      // <-- Añadir aquí
-    ],
-    "products": {
-        "soundbars": [],
-        "tvs": [],
-        "monitors": []                  // <-- Añadir aquí
-    }
-}
-
-
-Empezar a Añadir Datos:
-
-Ve al Admin Panel. "Monitors" aparecerá ahora en el desplegable de "Exportar Gama".
-
-Carga un modelo existente (de cualquier gama), cambia sus datos y "Nuevo Model ID", y expórtalo como un fichero .json individual (ej. MONITOR_MODELO1.json).
-
-Añade ese fichero al manifest usando el Método B para empezar a poblar tu nueva categoría.
+⚠️ Notas Técnicas
+Persistencia: Este panel NO escribe directamente en el servidor (es una aplicación client-side). Al "Guardar", se genera una descarga de archivo. El administrador debe mover manualmente los archivos descargados a las carpetas correspondientes.
+Base de Datos Global: La aplicación expone window.APP_DB como punto de acceso a todos los datos cargados en memoria.
