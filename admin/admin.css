@@ -1,7 +1,6 @@
 /* ==============================================
-   Estilos para el Admin Panel v3.1.4
-   [CAMBIO v3.1.4] Añadidos estilos para el
-   menú de ajustes y el modal de info.
+   Estilos para el Admin Panel v3.1.10
+   [CAMBIO v3.1.10] Añadido modo claro
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -17,11 +16,19 @@
     --color-red-accent: #f43f5e;
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    /* [CAMBIO v3.1.1] Cabecera más fina */
     --header-height: 50px;
 
-    /* [NUEVO v3.1.4] Transición de tema */
-    transition: --color-cyan-accent 0.3s ease, --color-cyan-glow 0.3s ease;
+    /* Transición de tema */
+    transition: 
+        --color-bg-dark 0.3s ease,
+        --color-bg-medium 0.3s ease,
+        --color-border 0.3s ease,
+        --color-border-light 0.3s ease,
+        --color-text-primary 0.3s ease,
+        --color-text-secondary 0.3s ease,
+        --color-text-dim 0.3s ease,
+        --color-cyan-accent 0.3s ease, 
+        --color-cyan-glow 0.3s ease;
 }
 
 
@@ -31,6 +38,8 @@ body {
     font-family: var(--font-sans);
     line-height: 1.5;
     padding-top: var(--header-height); 
+    /* [NUEVO v3.1.10] Transición de fondo para el body */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 
@@ -48,14 +57,15 @@ body {
     justify-content: space-between;
     padding: 0 1rem;
     height: var(--header-height);
-    background-color: var(--color-bg-dark);
-    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-dark); /* Usa variable para transicionar */
+    border-bottom: 1px solid var(--color-border); /* Usa variable para transicionar */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 101;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, border-bottom-color 0.3s ease;
 }
 @media (min-width: 768px) {
     .admin-header { padding: 0 1.5rem; }
@@ -103,6 +113,7 @@ body {
     border: 1px solid var(--color-border);
     position: relative;
     top: -1px; /* Ajustado */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 .header-link {
     font-size: 0.8rem;
@@ -112,7 +123,6 @@ body {
     border-radius: 4px;
     transition: all 0.2s ease;
     white-space: nowrap;
-    /* [CAMBIO v3.1.1] Botón más corto y centrado perfecto */
     height: 34px;
     padding: 0 0.8rem;
     display: inline-flex;
@@ -124,7 +134,6 @@ body {
     color: #fff;
 }
 
-/* [NUEVO v3.1.4] Botón de icono en cabecera */
 .header-icon-btn {
     background: none;
     border: 1px solid var(--color-border);
@@ -147,12 +156,9 @@ body {
 
 
 .header-save-btn {
-    /* [CAMBIO v3.1.1] Botón más corto */
     height: 34px;
     padding: 0 1.2rem;
     margin-left: auto;
-    /* [CAMBIO v3.1.4] margen derecho eliminado, lo da el icon-btn */
-    /* margin-right: 0.75rem; */
     background-color: var(--color-green-accent);
     border-color: var(--color-green-accent);
 }
@@ -185,6 +191,7 @@ body {
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.5rem;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
 
 
@@ -251,8 +258,7 @@ body {
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    /* [NUEVO v3.1.4] Transición para borde */
-    transition: border-left-color 0.3s ease;
+    transition: border-left-color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 .search-panel {
     display: flex;
@@ -267,14 +273,15 @@ body {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.4rem;
     flex-shrink: 0;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
 .spec-title {
-    /* [CAMBIO v3.1.1] Título del editor más pequeño y con menos margen */
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 0.75rem;
     flex-shrink: 0;
+    transition: color 0.3s ease;
 }
 
 
@@ -312,6 +319,7 @@ body {
     color: var(--color-text-secondary);
     margin-bottom: 0.25rem;
     display: block;
+    transition: color 0.3s ease;
 }
 .futuristic-button {
     background-color: var(--color-cyan-accent);
@@ -324,7 +332,6 @@ body {
     transition: all 0.2s ease-in-out;
     cursor: pointer;
     box-sizing: border-box;
-    /* [CAMBIO v3.1.1] Centrado perfecto y altura reducida */
     height: 34px;
     padding: 0 1rem;
     display: inline-flex;
@@ -352,6 +359,7 @@ body {
     background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border-light);
     border-radius: 4px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .full-list-visible {
     margin-top: 0.75rem;
@@ -392,18 +400,20 @@ body {
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .editor-key-fields {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Reducido */
-    padding: 0.75rem; /* Reducido */
+    gap: 0.75rem; 
+    padding: 0.75rem; 
     background: var(--color-bg-dark);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    margin-bottom: 0.75rem; /* Reducido */
+    margin-bottom: 0.75rem; 
     flex-shrink: 0; 
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 @media (min-width: 768px) {
     .editor-key-fields {
@@ -430,6 +440,7 @@ body {
     margin: 1rem 0 0.75rem 0;
     padding-left: 0.75rem;
     border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 .form-row {
     margin-bottom: 0.75rem;
@@ -464,6 +475,7 @@ body {
     border: 1px solid var(--color-border);
     border-radius: 4px;
     padding: 0.5rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .gama-export-item {
     display: flex;
@@ -473,10 +485,11 @@ body {
     border-bottom: 1px dashed var(--color-border-light);
     font-family: var(--font-mono);
     font-size: 0.85rem;
+    transition: border-bottom-color 0.3s ease;
 }
 .gama-export-item span {
     color: var(--color-text-primary);
-    font-weight: 600;
+    transition: color 0.3s ease;
 }
 .export-item-button {
     background-color: var(--color-bg-medium);
@@ -516,6 +529,7 @@ body {
     border-radius: 4px;
     margin-bottom: 1rem;
     padding: 0.75rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .schema-group-header {
     display: flex;
@@ -533,7 +547,6 @@ body {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    /* [CAMBIO v3.1.1] Centrado y altura */
     height: 30px;
     padding: 0 0.6rem;
     display: inline-flex;
@@ -566,6 +579,7 @@ body {
     gap: 0.5rem;
     padding-left: 1rem;
     border-left: 2px solid var(--color-border);
+    transition: border-left-color 0.3s ease;
 }
 .schema-attr-row {
     display: flex;
@@ -581,7 +595,6 @@ body {
 }
 
 .schema-attr-row .futuristic-input {
-    /* [CAMBIO v3.1.1] Altura reducida */
     height: 30px;
     padding: 0.4rem 0.6rem;
     font-size: 0.8rem;
@@ -607,35 +620,28 @@ body {
 body.fullscreen-editor-active .admin-content-area {
     max-width: none;
     margin: 0;
-    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0;
 }
 
-/* El panel activo (ya sea editor de modelo o esquema) */
 body.fullscreen-editor-active .content-panel.active {
     height: calc(100vh - var(--header-height));
-    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0; 
     box-sizing: border-box;
     display: flex; 
     flex-direction: column;
 }
 
-/* La tarjeta interior que contiene el editor */
 body.fullscreen-editor-active .editor-card {
     height: 100%;
     max-height: none;
     display: flex;
     flex-direction: column;
-    /* [CAMBIO v3.1.1] Controla el único padding */
     padding: 0.75rem;
-    /* [CAMBIO v3.1.1] Elimina estilos de "tarjeta" */
     border: 0;
     border-radius: 0;
     box-shadow: none;
     background-color: transparent; /* Fondo transparente, usa el del body */
 }
-/* Padding un poco más grande en desktop */
 @media (min-width: 768px) {
     body.fullscreen-editor-active .editor-card {
         padding: 1rem;
@@ -643,7 +649,6 @@ body.fullscreen-editor-active .editor-card {
 }
 
 
-/* El contenedor del formulario (scrollable) */
 body.fullscreen-editor-active .editor-form-fields {
     flex-grow: 1; /* Ocupa todo el espacio vertical */
     max-height: none; /* Sobrescribe cualquier max-height */
@@ -658,16 +663,17 @@ body.fullscreen-editor-active .editor-form-fields {
 /* Menú desplegable */
 .settings-dropdown {
     position: fixed;
-    top: calc(var(--header-height) - 1px); /* Justo debajo de la cabecera */
+    top: calc(var(--header-height) - 1px); 
     right: 1rem;
-    z-index: 102; /* Encima del contenido, debajo del modal */
+    z-index: 102; 
     background-color: var(--color-bg-medium);
     border: 1px solid var(--color-border);
-    border-top: none; /* Unido a la cabecera */
+    border-top: none; 
     border-radius: 0 0 0.5rem 0.5rem;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     min-width: 220px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .settings-dropdown-btn {
@@ -717,8 +723,7 @@ body.fullscreen-editor-active .editor-form-fields {
 }
 
 .info-modal-content {
-    /* Usa el estilo .futuristic-card */
-    padding: 0; /* Quitamos padding para ponerlo en header/body */
+    padding: 0; 
 }
 
 .modal-header {
@@ -727,6 +732,7 @@ body.fullscreen-editor-active .editor-form-fields {
     align-items: center;
     padding: 1rem;
     border-bottom: 1px solid var(--color-border);
+    transition: border-bottom-color 0.3s ease;
 }
 .modal-header .futuristic-title {
     margin-bottom: 0;
@@ -758,6 +764,7 @@ body.fullscreen-editor-active .editor-form-fields {
     color: var(--color-text-primary);
     font-weight: 600;
     margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
 }
 .modal-body p {
     font-size: 0.9rem;
@@ -771,5 +778,55 @@ body.fullscreen-editor-active .editor-form-fields {
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--color-text-secondary);
-    white-space: pre-wrap; /* Mantiene formato y ajusta línea */
+    white-space: pre-wrap; 
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* ==============================================
+   12. [NUEVO v3.1.10] MODO CLARO
+   ============================================== */
+body.light-mode {
+    --color-bg-dark: #FFFFFF;
+    --color-bg-medium: #F3F4F6;
+    --color-border: #E5E7EB;
+    --color-border-light: #D1D5DB;
+    --color-text-primary: #111827;
+    --color-text-secondary: #4B5563;
+    --color-text-dim: #9CA3AF;
+}
+
+/* Ajustes específicos para modo claro */
+.light-mode .futuristic-input,
+.light-mode .futuristic-select,
+.light-mode .futuristic-textarea {
+    background-color: #FFFFFF;
+}
+
+.light-mode .futuristic-list,
+.light-mode .full-list-visible {
+    background-color: #FFFFFF;
+}
+
+.light-mode .futuristic-list .list-item:hover {
+    background-color: var(--color-border);
+}
+
+.light-mode .form-group-title {
+    background: var(--color-border-light);
+}
+
+.light-mode .gama-export-list,
+.light-mode .schema-group-box,
+.light-mode .modal-body pre {
+    background-color: #FFFFFF;
+}
+
+.light-mode .settings-dropdown-btn:hover {
+    background-color: var(--color-bg-dark);
+}
+
+.light-mode .header-icon-btn:hover {
+    border-color: var(--color-cyan-accent);
+    color: var(--color-cyan-accent);
+    background-color: var(--color-cyan-glow);
 }
