@@ -1,6 +1,6 @@
 /* ==============================================
-   Estilos para el Admin Panel v3.1.1
-   (Optimización de espacio en editores)
+   Estilos para el Admin Panel v3.1.3
+   (Corrección de altura de lista en horizontal)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -16,7 +16,6 @@
     --color-red-accent: #f43f5e;
     --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    /* [CAMBIO v3.1.1] Cabecera más fina */
     --header-height: 50px;
 }
 
@@ -80,7 +79,7 @@ body {
     text-align: left;
 }
 .app-title {
-    font-size: 1.15rem; /* Reducido */
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--color-text-primary);
     transition: color 0.2s ease;
@@ -90,7 +89,7 @@ body {
 }
 
 .app-version {
-    font-size: 0.7rem; /* Reducido */
+    font-size: 0.7rem;
     padding: 0 0.3rem;
     font-family: var(--font-mono);
     color: var(--color-cyan-accent);
@@ -98,7 +97,7 @@ body {
     border-radius: 4px;
     border: 1px solid var(--color-border);
     position: relative;
-    top: -1px; /* Ajustado */
+    top: -1px;
 }
 .header-link {
     font-size: 0.8rem;
@@ -108,7 +107,6 @@ body {
     border-radius: 4px;
     transition: all 0.2s ease;
     white-space: nowrap;
-    /* [CAMBIO v3.1.1] Botón más corto y centrado perfecto */
     height: 34px;
     padding: 0 0.8rem;
     display: inline-flex;
@@ -121,7 +119,6 @@ body {
 }
 
 .header-save-btn {
-    /* [CAMBIO v3.1.1] Botón más corto */
     height: 34px;
     padding: 0 1.2rem;
     margin-left: auto;
@@ -228,7 +225,8 @@ body {
 .search-panel {
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - var(--header-height) - 3rem);
+    /* [CAMBIO v3.1.3] Eliminada la altura máxima de vh que rompía la vista horizontal */
+    /* max-height: calc(100vh - var(--header-height) - 3rem); */
 }
 .futuristic-title {
     font-size: 1.15rem;
@@ -240,7 +238,6 @@ body {
     flex-shrink: 0;
 }
 .spec-title {
-    /* [CAMBIO v3.1.1] Título del editor más pequeño y con menos margen */
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--color-text-primary);
@@ -295,7 +292,6 @@ body {
     transition: all 0.2s ease-in-out;
     cursor: pointer;
     box-sizing: border-box;
-    /* [CAMBIO v3.1.1] Centrado perfecto y altura reducida */
     height: 34px;
     padding: 0 1rem;
     display: inline-flex;
@@ -326,7 +322,9 @@ body {
 }
 .full-list-visible {
     margin-top: 0.75rem;
-    flex-grow: 1;
+    /* [CAMBIO v3.1.3] Reemplaza flex-grow por max-height para un scroll robusto */
+    /* flex-grow: 1; */
+    max-height: 25rem; /* ~400px, altura de scroll generosa */
     overflow-y: auto;
     border-radius: 4px;
     background-color: var(--color-bg-dark);
@@ -368,12 +366,12 @@ body {
 .editor-key-fields {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Reducido */
-    padding: 0.75rem; /* Reducido */
+    gap: 0.75rem;
+    padding: 0.75rem;
     background: var(--color-bg-dark);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    margin-bottom: 0.75rem; /* Reducido */
+    margin-bottom: 0.75rem;
     flex-shrink: 0; 
 }
 @media (min-width: 768px) {
@@ -476,7 +474,7 @@ body {
     border-color: var(--color-green-accent);
     width: 100%;
     flex-shrink: 0; 
-    height: 34px; /* Altura estándar de botón */
+    height: 34px;
 }
 .schema-add-group-btn:hover {
     background-color: #059669;
@@ -504,7 +502,6 @@ body {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    /* [CAMBIO v3.1.1] Centrado y altura */
     height: 30px;
     padding: 0 0.6rem;
     display: inline-flex;
@@ -552,7 +549,6 @@ body {
 }
 
 .schema-attr-row .futuristic-input {
-    /* [CAMBIO v3.1.1] Altura reducida */
     height: 30px;
     padding: 0.4rem 0.6rem;
     font-size: 0.8rem;
@@ -578,46 +574,37 @@ body {
 body.fullscreen-editor-active .admin-content-area {
     max-width: none;
     margin: 0;
-    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0;
 }
 
-/* El panel activo (ya sea editor de modelo o esquema) */
 body.fullscreen-editor-active .content-panel.active {
     height: calc(100vh - var(--header-height));
-    /* [CAMBIO v3.1.1] Sin padding exterior */
     padding: 0; 
     box-sizing: border-box;
     display: flex; 
     flex-direction: column;
 }
 
-/* La tarjeta interior que contiene el editor */
 body.fullscreen-editor-active .editor-card {
     height: 100%;
     max-height: none;
     display: flex;
     flex-direction: column;
-    /* [CAMBIO v3.1.1] Controla el único padding */
     padding: 0.75rem;
-    /* [CAMBIO v3.1.1] Elimina estilos de "tarjeta" */
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    background-color: transparent; /* Fondo transparente, usa el del body */
+    background-color: transparent;
 }
-/* Padding un poco más grande en desktop */
 @media (min-width: 768px) {
     body.fullscreen-editor-active .editor-card {
         padding: 1rem;
     }
 }
 
-
-/* El contenedor del formulario (scrollable) */
 body.fullscreen-editor-active .editor-form-fields {
-    flex-grow: 1; /* Ocupa todo el espacio vertical */
-    max-height: none; /* Sobrescribe cualquier max-height */
+    flex-grow: 1;
+    max-height: none;
     overflow-y: auto;
-    padding-right: 0.5rem; /* Mantiene el padding del scroll */
+    padding-right: 0.5rem;
 }
