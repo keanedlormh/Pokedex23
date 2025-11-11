@@ -1,7 +1,7 @@
 /*
- * Lógica del Panel de Administración v3.1.6
- * [PARCHE] Refactorizada la lógica de popups (Ajustes/Modal)
- * para evitar conflictos y que los botones funcionen.
+ * Lógica del Panel de Administración v3.1.7
+ * [PARCHE DEFINITIVO] Corregido el bug de propagación de
+ * clics en el menú de ajustes y sus botones internos.
  */
 
 // window.APP_DB se define en admin/index.html
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. Inicialización ---
     function initialize() {
-        console.log("Admin Panel v3.1.6 inicializando...");
+        console.log("Admin Panel v3.1.7 inicializando...");
         
         // Esperar a que los scripts del bootloader carguen la BD
         setTimeout(() => {
@@ -150,12 +150,21 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson);
         
         // Listeners de Ajustes, Modal y Overlay
-        dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
+        
+        // [PARCHE v3.1.7] Detener el clic en el botón de toggle
+        dom.settingsMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSettingsMenu();
+        });
+        
         dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
         dom.infoToggleButton.addEventListener('click', showReadmeInfo);
         
         dom.filterOverlay.addEventListener('click', closeAllPopups);
         dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
+        
+        // [PARCHE v3.1.7] Detener el clic en el panel
+        dom.settingsMenuPanel.addEventListener('click', (e) => e.stopPropagation());
     }
 
 
@@ -614,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fileContent = `/**
  * Modulo de Esquema: ${schemaKey}
- * (Generado por Admin Panel v3.1.6)
+ * (Generado por Admin Panel v3.1.7)
  */
 
 const ${variableName} = ${schemaString};
@@ -651,7 +660,7 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
         document.body.removeChild(link);
     }
     
-    // --- 11. [REFACTORIZADO v3.1.6] Lógica de Ajustes, Tema y Modal ---
+    // --- 11. [Refactorizado v3.1.6] Lógica de Ajustes, Tema y Modal ---
     
     function closeAllPopups() {
         closeSettingsMenu();
@@ -758,7 +767,6 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     }
     
     async function showReadmeInfo() {
-        // [CAMBIO v3.1.6] Ya no llama a closeSettingsMenu. openReadmeModal se encarga.
         openReadmeModal();
 
         if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
