@@ -1,6 +1,8 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v2.9.1
- * CORREGIDO: Añadido setTimeout a initialize() para esperar la carga de scripts del manifest.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.0.0
+ * [ACTUALIZACIÓN] Añadido modo Claro/Oscuro.
+ * El botón de tema ahora alterna entre claro/oscuro.
+ * Se genera una nueva paleta aleatoria CADA VEZ que se vuelve al modo oscuro.
  */
 
 // PASO 1: Creación de la base de datos global
@@ -14,21 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
         body: document.body,
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
-        
+
         // --- Sistema de Filtros ---
         smartFilterToggle: document.getElementById('smart-filter-toggle'),
         smartFilterPanel: document.getElementById('smart-filter-panel'),
         filterOverlay: document.getElementById('filter-overlay'),
         smartFilterContainer: document.getElementById('smart-filters-container'),
         schemaFilterSelect: document.getElementById('schema-filter-select'),
-        
+
         // --- Menú de Ajustes ---
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
         infoToggleButton: document.getElementById('info-toggle-btn'),
         adminLinkButton: document.getElementById('admin-link-btn'),
-        
+
         // --- Modal README ---
         readmeModal: document.getElementById('readme-modal'),
         readmeContent: document.getElementById('readme-content'),
@@ -36,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Barra de Filtros Activos ---
         activeFiltersBar: document.getElementById('active-filters-bar'),
-        
+
         // --- Panel de Specs ---
         productDisplayPlaceholder: document.getElementById('product-placeholder'),
         productTitle: document.getElementById('product-title'),
@@ -54,22 +56,42 @@ document.addEventListener('DOMContentLoaded', () => {
     let masterSchemaMap = {};
     let filterValueCache = {};
     let attrCodeToDescMap = {};
-    
-    const originalPalette = {
-        accent: { h: 188, s: 96, l: 41 }, 
-        dark:   { h: 210, s: 29, l: 8 },  
-        medium: { h: 210, s: 19, l: 11 },
-        border: { h: 210, s: 16, l: 15 },
-        textP:  { h: 210, s: 29, l: 92 },
-        textS:  { h: 210, s: 12, l: 67 } 
-    };
-    const hueDifference = originalPalette.dark.h - originalPalette.accent.h;
 
-    // --- 3. Inicialización de la Aplicación ---
+    // --- 3. [NUEVO] Lógica de Tema ---
+
+    // Paleta base para MODO OSCURO (Valores S y L)
+    const darkPaletteHSL = {
+        accent: { h: 188, s: 96, l: 41 }, // color-cyan-accent
+        dark:   { h: 210, s: 29, l: 8 },  // color-bg-dark
+        medium: { h: 210, s: 19, l: 11 }, // color-bg-medium
+        border: { h: 210, s: 16, l: 15 }, // color-border
+        textP:  { h: 210, s: 29, l: 92 }, // color-text-primary
+        textS:  { h: 210, s: 12, l: 67 }  // color-text-secondary
+    };
+
+    // Paleta base para MODO CLARO (Valores S y L)
+    const lightPaletteHSL = {
+        accent: { h: 188, s: 86, l: 40 }, // Un acento ligeramente más oscuro para contraste
+        dark:   { h: 210, s: 20, l: 98 }, // color-bg-dark -> bg-light
+        medium: { h: 210, s: 19, l: 94 }, // color-bg-medium -> bg-medium-light
+        border: { h: 210, s: 16, l: 85 }, // color-border -> border-light
+        textP:  { h: 210, s: 29, l: 10 }, // color-text-primary -> text-dark-primary
+        textS:  { h: 210, s: 12, l: 40 }  // color-text-secondary -> text-dark-secondary
+    };
+    
+    // Diferencia de Matiz (Hue) base entre acento y fondos
+    const hueDifference = darkPaletteHSL.dark.h - darkPaletteHSL.accent.h;
+    
+    // Estado actual del tema
+    let isLightMode = false;
+    let currentAccentHue = darkPaletteHSL.accent.h;
+
+
+    // --- 4. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v2.9.1 inicializando...");
-        
+        console.log("Enciclopedia v3.0.0 inicializando...");
+
         // [CORRECCIÓN] Esperar 100ms para que los scripts 'defer' de la BD se registren
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
@@ -88,9 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSmartFilters('all');
             populateFullModelList(); 
 
+            // Aplicar tema inicial (oscuro por defecto)
+            updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+            dom.paletteToggleButton.innerHTML = '🎨 Modo Claro';
+
             console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
             console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
-        }, 100); // 100ms de retardo (igual que en admin.js)
+        }, 100); // 100ms de retardo
     }
 
     function setupEventListeners() {
@@ -105,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyFiltersAndSearch();
             });
         }
-        
+
         if (dom.smartFilterContainer) {
             dom.smartFilterContainer.addEventListener('change', applyFiltersAndSearch);
             dom.smartFilterContainer.addEventListener('click', (e) => {
@@ -117,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        
+
         if (dom.activeFiltersBar) {
             dom.activeFiltersBar.addEventListener('click', (e) => {
                 if (e.target.classList.contains('chip-remove-btn')) {
@@ -125,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        
+
         if (dom.modelSearchResults) {
             dom.modelSearchResults.addEventListener('click', handleResultClick);
         }
@@ -158,15 +184,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listeners de botones de Ajustes
         if (dom.paletteToggleButton) {
-            dom.paletteToggleButton.addEventListener('click', generateRandomPalette);
+            // [CAMBIO] Llama a la nueva función de ciclo
+            dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
         }
         if (dom.infoToggleButton) {
             dom.infoToggleButton.addEventListener('click', showReadmeInfo);
         }
     }
 
-    // --- 4. Lógica de Búsqueda y Filtro ---
-    
+    // --- 5. Lógica de Búsqueda y Filtro ---
+
     function populateFullModelList() {
         renderSearchResults(masterDatabase, dom.modelSearchResults);
     }
@@ -217,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             option.value = key;
             let friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
             if (key === 'tvs') friendlyName = "TVs";
-            
+
             option.textContent = friendlyName;
             fragment.appendChild(option);
         });
@@ -258,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 groupWrapper.appendChild(title);
                 const rowsContainer = document.createElement('div');
                 rowsContainer.className = 'filter-rows-container collapsed';
-                let hasFiltersInGroup = false;
+                let hasFiltersInGroup = false; 
                 group.attrs.forEach(attr => {
                     const values = filterValueCache[attr.code];
                     if (values && values.length > 0) {
@@ -359,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 5. Lógica de Renderizado ---
+    // --- 6. Lógica de Renderizado ---
     function renderActiveFilters(filters) {
         if (!dom.activeFiltersBar) return;
         if (Object.keys(filters).length === 0) {
@@ -457,15 +484,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.productSpecsContainer.appendChild(fragment);
     }
-    
-    // --- 6. FUNCIONES DE ESTADO Y PANEL ---
+
+    // --- 7. FUNCIONES DE ESTADO Y PANEL ---
     function showSelectedModelChip(modelName) {
         dom.selectedModelDisplay.innerHTML = `
             <button id="clear-selection-btn" class="model-chip-button" title="Volver al buscador">
                 Modelo: ${modelName} 
                 <span>&times;</span>
             </button>`;
-        
+
         dom.selectedModelDisplay.querySelector('#clear-selection-btn')
             .addEventListener('click', clearSelection);
     }
@@ -477,15 +504,15 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.productSpecsContainer.innerHTML = '';
         dom.productSpecsContainer.appendChild(originalPlaceholder);
         originalPlaceholder.style.display = 'block';
-        
+
         dom.modelSearchInput.value = '';
-        
+
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.value = 'all';
         }
         populateSmartFilters('all');
         applyFiltersAndSearch(); 
-        
+
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
         if (currentActive) {
             currentActive.classList.remove('active');
@@ -573,33 +600,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 7. FUNCIONES DE PALETA DE COLOR E INFO ---
-    function generateRandomPalette() {
-        const newAccentHue = Math.floor(Math.random() * 360);
-        const newDarkHue = (newAccentHue + hueDifference + 360) % 360; 
-        const p = originalPalette;
+    // --- 8. [NUEVO] FUNCIONES DE TEMA (MODO CLARO/OSCURO) ---
+
+    /**
+     * Función de ciclo del tema.
+     * 1. Oscuro (A) -> Claro (A)
+     * 2. Claro (A) -> Oscuro (B) [Aleatorio]
+     * 3. Oscuro (B) -> Claro (B)
+     * 4. Claro (B) -> Oscuro (C) [Aleatorio]
+     */
+    function handleThemeToggle() {
+        isLightMode = !isLightMode; // Alternar estado
+
+        if (isLightMode) {
+            // CAMBIANDO A MODO CLARO
+            // Usamos la paleta clara y mantenemos el color de acento actual
+            updatePaletteCSS(lightPaletteHSL, currentAccentHue);
+            dom.paletteToggleButton.innerHTML = '🎨 Modo Oscuro (Nuevo)';
+        } else {
+            // CAMBIANDO A MODO OSCURO
+            // Generamos un NUEVO color de acento aleatorio
+            currentAccentHue = Math.floor(Math.random() * 360);
+            updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+            dom.paletteToggleButton.innerHTML = '🎨 Modo Claro';
+        }
+        
+        closeSettingsMenu();
+    }
+
+    /**
+     * Aplica la paleta de colores (baseHSL) con un matiz de acento (accentHue)
+     * a las variables CSS de la raíz.
+     * @param {object} baseHSL - El objeto (darkPaletteHSL o lightPaletteHSL)
+     * @param {number} accentHue - El Matiz (0-360) para el color de acento.
+     */
+    function updatePaletteCSS(baseHSL, accentHue) {
+        const p = baseHSL;
+        // Calcular el nuevo matiz para los fondos/texto basado en la diferencia
+        const newOtherHue = (accentHue + hueDifference + 360) % 360; 
+
         const newColors = {
-            accent: `hsl(${newAccentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
-            bgDark: `hsl(${newDarkHue}, ${p.dark.s}%, ${p.dark.l}%)`,
-            bgMedium: `hsl(${newDarkHue}, ${p.medium.s}%, ${p.medium.l}%)`,
-            border: `hsl(${newDarkHue}, ${p.border.s}%, ${p.border.l}%)`,
-            textPrimary: `hsl(${newDarkHue}, ${p.textP.s}%, ${p.textP.l}%)`,
-            textSecondary: `hsl(${newDarkHue}, ${p.textS.s}%, ${p.textS.l}%)`
+            accent: `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
+            bgDark: `hsl(${newOtherHue}, ${p.dark.s}%, ${p.dark.l}%)`,
+            bgMedium: `hsl(${newOtherHue}, ${p.medium.s}%, ${p.medium.l}%)`,
+            border: `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l}%)`,
+            textPrimary: `hsl(${newOtherHue}, ${p.textP.s}%, ${p.textP.l}%)`,
+            textSecondary: `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`
         };
-        const accentRGB = hslToRgb(newAccentHue, p.accent.s, p.accent.l);
+
+        // Calcular el color de "glow" (brillo)
+        const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
         newColors.glow = `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`;
-        updatePaletteCSS(newColors);
-    }
-    function updatePaletteCSS(colors) {
+        
+        // Aplicar las variables CSS al documento
         const root = document.documentElement;
-        root.style.setProperty('--color-cyan-accent', colors.accent);
-        root.style.setProperty('--color-cyan-glow', colors.glow);
-        root.style.setProperty('--color-bg-dark', colors.bgDark);
-        root.style.setProperty('--color-bg-medium', colors.bgMedium);
-        root.style.setProperty('--color-border', colors.border);
-        root.style.setProperty('--color-text-primary', colors.textPrimary);
-        root.style.setProperty('--color-text-secondary', colors.textSecondary);
+        root.style.setProperty('--color-cyan-accent', newColors.accent);
+        root.style.setProperty('--color-cyan-glow', newColors.glow);
+        root.style.setProperty('--color-bg-dark', newColors.bgDark);
+        root.style.setProperty('--color-bg-medium', newColors.bgMedium);
+        root.style.setProperty('--color-border', newColors.border);
+        root.style.setProperty('--color-border-light', `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`); // Aclarar borde
+        root.style.setProperty('--color-text-primary', newColors.textPrimary);
+        root.style.setProperty('--color-text-secondary', newColors.textSecondary);
+        root.style.setProperty('--color-text-dim', `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`); // Oscurecer "dim"
     }
+
+    /**
+     * Convierte HSL a RGB (necesario para el color 'glow' en RGBA).
+     */
     function hslToRgb(h, s, l) {
         s /= 100;
         l /= 100;
@@ -613,11 +681,14 @@ document.addEventListener('DOMContentLoaded', () => {
             b: Math.round(255 * f(4))
         };
     }
-    
+
+    /**
+     * Carga el contenido de README.md en el modal.
+     */
     async function showReadmeInfo() {
         closeSettingsMenu();
         openReadmeModal();
-        
+
         if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
             try {
                 dom.readmeContent.textContent = "Cargando...";
@@ -634,6 +705,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 8. Ejecución ---
+    // --- 9. Ejecución ---
     initialize();
 });
