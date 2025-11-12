@@ -1,6 +1,6 @@
 {
     "schemas": [
-        "db/schemas/moduloSoundbars2.js",
+        "db/schemas/moduloSoundbars.js",
         "db/schemas/moduloTVs.js"
     ],
     "bulk_gamas": [
