@@ -4,6 +4,27 @@
 
 const SOUNDBARS_SCHEMA_GROUPS = [
     {
+        "group": "GENERAL",
+        "attrs": [
+            {
+                "code": "general_num_canales",
+                "desc": "Número de canales de audio del sistema."
+            },
+            {
+                "code": "general_potencia_salida_w",
+                "desc": "Potencia total de salida de audio del sistema (W)."
+            },
+            {
+                "code": "general_num_altavoces",
+                "desc": "Número total de altavoces físicos (drivers) en el sistema."
+            },
+            {
+                "code": "payaso",
+                "desc": "Número de runas cuánticas"
+            }
+        ]
+    },
+    {
         "group": "DIMENSIONES Y PESO",
         "attrs": [
             {
@@ -326,6 +347,15 @@ const SOUNDBARS_SCHEMA_GROUPS = [
             {
                 "code": "acc_tv_synergy_bracket",
                 "desc": "Soporte 'Synergy' para TV específico."
+            }
+        ]
+    },
+    {
+        "group": "Locura",
+        "attrs": [
+            {
+                "code": "crazy",
+                "desc": "Sugusantos"
             }
         ]
     }
