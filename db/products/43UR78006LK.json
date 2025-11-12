@@ -1,0 +1,20 @@
+{
+    "model": "43UR78006LK",
+    "schema_key": "tvs",
+    "attributes": {
+        "display_tipo_pantalla": "4K UHD",
+        "display_resolucion_pantalla": "4K Ultra HD (3,840 x 2,160)",
+        "display_tasa_refresco": "60Hz Nativo",
+        "procesado_procesador_imagen": "Procesador 4K IA α7 Gen8",
+        "procesado_dynamic_tone_mapping": "Si (2.040 zonas)",
+        "procesado_hdr": "HDR10 Pro",
+        "procesado_filmmaker_mode": "Si",
+        "gaming_vrr": "Si (hasta 60Hz)",
+        "audio_codecs": "Dolby Digital Plus",
+        "smart_sistema_operativo": "webOS 25",
+        "smart_reconocimiento_voz": "Compatible (Requiere Magic Remote Opcional)",
+        "smart_magic_remote": "Compatible (No incluido, se vende por separado)",
+        "smart_ajustes_familia": "Si",
+        "acc_mando_distancia": "Mando Estándar"
+    }
+}
