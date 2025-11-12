@@ -1,253 +1,710 @@
 [
     {
-        "group": "GENERAL",
-        "attrs": [
-            {
-                "code": "general_num_canales",
-                "desc": "Número de canales de audio del sistema."
-            },
-            {
-                "code": "general_potencia_salida_w",
-                "desc": "Potencia total de salida de audio del sistema (W)."
-            },
-            {
-                "code": "general_num_altavoces",
-                "desc": "Número total de altavoces físicos (drivers) en el sistema."
-            }
-        ]
+        "model": "S20A",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "2.0",
+            "general_potencia_salida_w": "50",
+            "general_num_altavoces": "4",
+            "dim_principal_mm": "650 x 63 x 99",
+            "dim_caja_mm": "898 x 145 x 123",
+            "peso_principal_kg": "2,2",
+            "peso_bruto_kg": "2,8",
+            "potencia_consumo_stb_principal_w": "0.5",
+            "potencia_consumo_principal_w": "15",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_bluetooth_version": "5.3",
+            "con_bluetooth_codec": "SBC / AAC",
+            "hdmi_arc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_version": "1.4",
+            "audio_dolby_digital": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "smart_remote_app": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si"
+        }
     },
     {
-        "group": "DIMENSIONES Y PESO",
-        "attrs": [
-            {
-                "code": "dim_principal_mm",
-                "desc": "Dimensiones unidad principal (An x Al x Pr) en mm."
-            },
-            {
-                "code": "dim_subwoofer_mm",
-                "desc": "Dimensiones subwoofer (An x Al x Pr) en mm."
-            },
-            {
-                "code": "dim_traseros_mm",
-                "desc": "Dimensiones altavoces traseros (An x Al x Pr) en mm."
-            },
-            {
-                "code": "dim_caja_mm",
-                "desc": "Dimensiones del embalaje (caja) (An x Al x Pr) en mm."
-            },
-            {
-                "code": "peso_principal_kg",
-                "desc": "Peso unidad principal (kg)."
-            },
-            {
-                "code": "peso_subwoofer_kg",
-                "desc": "Peso subwoofer (kg)."
-            },
-            {
-                "code": "peso_traseros_kg",
-                "desc": "Peso altavoces traseros (kg)."
-            },
-            {
-                "code": "peso_bruto_kg",
-                "desc": "Peso bruto total (con embalaje) (kg)."
-            }
-        ]
+        "model": "S40T",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "2.1",
+            "general_potencia_salida_w": "300",
+            "general_num_altavoces": "3",
+            "dim_principal_mm": "720 x 63 x 87",
+            "dim_subwoofer_mm": "171 x 320 x 252",
+            "peso_principal_kg": "1,65",
+            "peso_subwoofer_kg": "4,2",
+            "peso_bruto_kg": "7,6",
+            "potencia_consumo_stb_principal_w": "0.5",
+            "potencia_consumo_principal_w": "22",
+            "potencia_consumo_stb_subwoofer_w": "0.5",
+            "potencia_consumo_subwoofer_w": "35",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_version": "5.3",
+            "con_bluetooth_codec": "SBC/AAC",
+            "hdmi_arc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "smart_remote_app": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si"
+        }
     },
     {
-        "group": "POTENCIA (Consumo Eléctrico)",
-        "attrs": [
-            {
-                "code": "potencia_consumo_stb_principal_w",
-                "desc": "Consumo Standby (STB) unidad principal (W)."
-            },
-            {
-                "code": "potencia_consumo_principal_w",
-                "desc": "Consumo en funcionamiento unidad principal (W)."
-            },
-            {
-                "code": "potencia_consumo_stb_subwoofer_w",
-                "desc": "Consumo Standby (STB) subwoofer (W)."
-            },
-            {
-                "code": "potencia_consumo_subwoofer_w",
-                "desc": "Consumo en funcionamiento subwoofer (W)."
-            },
-            {
-                "code": "potencia_consumo_stb_traseros_w",
-                "desc": "Consumo Standby (STB) altavoces traseros (W)."
-            },
-            {
-                "code": "potencia_consumo_traseros_w",
-                "desc": "Consumo en funcionamiento altavoces traseros (W)."
-            }
-        ]
+        "model": "S40TR",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "4.1",
+            "general_potencia_salida_w": "400",
+            "general_num_altavoces": "5",
+            "dim_principal_mm": "720 x 63 x 87",
+            "dim_subwoofer_mm": "171 x 320 x 252",
+            "dim_traseros_mm": "100,0 x 176,5 x 120,0",
+            "peso_principal_kg": "1,65",
+            "peso_subwoofer_kg": "4,2",
+            "peso_traseros_kg": "2,1",
+            "peso_bruto_kg": "10,0",
+            "potencia_consumo_stb_principal_w": "0.5",
+            "potencia_consumo_principal_w": "22",
+            "potencia_consumo_stb_subwoofer_w": "0.5",
+            "potencia_consumo_subwoofer_w": "35",
+            "potencia_consumo_stb_traseros_w": "0.5",
+            "potencia_consumo_traseros_w": "20",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_version": "5.3",
+            "con_bluetooth_codec": "SBC/AAC",
+            "hdmi_arc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "smart_remote_app": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si"
+        }
     },
     {
-        "group": "CONECTIVIDAD (Puertos Físicos)",
-        "attrs": [
-            {
-                "code": "con_hdmi_in",
-                "desc": "Número de puertos de entrada HDMI."
-            },
-            {
-                "code": "con_hdmi_out",
-                "desc": "Número de puertos de salida HDMI (al TV)."
-            },
-            {
-                "code": "con_usb",
-                "desc": "Número de puertos USB."
-            },
-            {
-                "code": "con_optica",
-                "desc": "Número de puertos de entrada de audio óptico."
-            }
-        ]
+        "model": "S60T",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "3.1",
+            "general_potencia_salida_w": "340",
+            "general_num_altavoces": "4",
+            "dim_principal_mm": "850 x 63 x 87",
+            "dim_subwoofer_mm": "200 x 377 x 285",
+            "peso_principal_kg": "2,5",
+            "peso_subwoofer_kg": "5,7",
+            "peso_bruto_kg": "9,8",
+            "potencia_consumo_stb_principal_w": "0.5",
+            "potencia_consumo_principal_w": "33",
+            "potencia_consumo_stb_subwoofer_w": "0.5",
+            "potencia_consumo_subwoofer_w": "33",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_version": "5.3",
+            "con_bluetooth_codec": "SBC/AAC",
+            "hdmi_arc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_optico": "Si",
+            "acc_soporte_pared": "Si"
+        }
     },
     {
-        "group": "CONECTIVIDAD (Inalámbrica y Red)",
-        "attrs": [
-            {
-                "code": "con_bluetooth_version",
-                "desc": "Versión de Bluetooth."
-            },
-            {
-                "code": "con_bluetooth_codec",
-                "desc": "Codecs de audio Bluetooth soportados."
-            },
-            {
-                "code": "con_wifi",
-                "desc": "Conectividad Wi-Fi integrada."
-            },
-            {
-                "code": "con_preparado_traseros",
-                "desc": "Preparado para altavoces traseros (kit opcional)."
-            },
-            {
-                "code": "con_chromecast",
-                "desc": "Google Chromecast integrado."
-            },
-            {
-                "code": "con_airplay2",
-                "desc": "Apple AirPlay 2."
-            },
-            {
-                "code": "con_spotify_connect",
-                "desc": "Spotify Connect."
-            },
-            {
-                "code": "con_tidal_connect",
-                "desc": "Tidal Connect."
-            },
-            {
-                "code": "con_google_home",
-                "desc": "Integración con Google Home."
-            },
-            {
-                "code": "con_alexa",
-                "desc": "Integración con Amazon Alexa."
-            }
-        ]
+        "model": "S60TR",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "5.1",
+            "general_potencia_salida_w": "440",
+            "dim_principal_mm": "850 x 63 x 87",
+            "dim_subwoofer_mm": "200 x 377 x 285",
+            "dim_traseros_mm": "100,0 x 176,5 x 120,0",
+            "peso_principal_kg": "2,5",
+            "peso_subwoofer_kg": "5,7",
+            "peso_traseros_kg": "2,1",
+            "peso_bruto_kg": "12,56",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_preparado_traseros": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_optico": "Si",
+            "acc_soporte_pared": "Si"
+        }
     },
     {
-        "group": "SOPORTE HDMI (Funciones)",
-        "attrs": [
-            {
-                "code": "hdmi_arc",
-                "desc": "Soporte para ARC (Audio Return Channel)."
-            },
-            {
-                "code": "hdmi_earc",
-                "desc": "Soporte para eARC (Enhanced ARC)."
-            }
-        ]
+        "model": "S65Q",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "3.1",
+            "general_potencia_salida_w": "420",
+            "audio_dolby_digital": "Si",
+            "hires_muestreo": "24bit/96kHz"
+        }
     },
     {
-        "group": "FORMATOS DE AUDIO (Decodificadores)",
-        "attrs": [
-            {
-                "code": "audio_dolby_atmos",
-                "desc": "Decodificador Dolby Atmos."
-            },
-            {
-                "code": "audio_dolby_digital",
-                "desc": "Decodificador Dolby Digital."
-            },
-            {
-                "code": "audio_dtsx",
-                "desc": "Decodificador DTS:X."
-            },
-            {
-                "code": "audio_dts_digital_surround",
-                "desc": "Decodificador DTS Digital Surround."
-            },
-            {
-                "code": "audio_aac",
-                "desc": "Decodificador AAC."
-            },
-            {
-                "code": "audio_aac_plus",
-                "desc": "Decodificador AAC+."
-            },
-            {
-                "code": "audio_lpcm",
-                "desc": "Decodificador LPCM."
-            },
-            {
-                "code": "audio_mqa",
-                "desc": "Decodificador MQA."
-            }
-        ]
+        "model": "S70TR",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "5.1.1",
+            "general_potencia_salida_w": "500",
+            "dim_principal_mm": "950 x 63 x 115",
+            "dim_subwoofer_mm": "200 x 377 x 285",
+            "dim_traseros_mm": "100,0 x 176,5 x 120,0",
+            "peso_principal_kg": "3,0",
+            "peso_subwoofer_kg": "5,7",
+            "peso_traseros_kg": "2,1",
+            "peso_bruto_kg": "15,4",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_preparado_traseros": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_soporte_pared": "Si",
+            "acc_tv_synergy_bracket": "Si"
+        }
     },
     {
-        "group": "HI-RESOLUTION AUDIO (Calidad)",
-        "attrs": [
-            {
-                "code": "hires_muestreo",
-                "desc": "Tasa de muestreo (Hi-Res Audio)."
-            },
-            {
-                "code": "hires_upsampling",
-                "desc": "Capacidad de re-escalado (Upsampling)."
-            }
-        ]
+        "model": "S70TY",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "3.1.1",
+            "general_potencia_salida_w": "400",
+            "dim_principal_mm": "950 x 63 x 115",
+            "dim_subwoofer_mm": "200 x 377 x 285",
+            "hdmi_passthrough": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_tv_synergy_bracket": "Si"
+        }
     },
     {
-        "group": "ACCESORIOS (Incluidos)",
-        "attrs": [
-            {
-                "code": "acc_mando_distancia",
-                "desc": "Mando a distancia."
-            },
-            {
-                "code": "acc_tarjeta_garantia",
-                "desc": "Tarjeta de garantía."
-            },
-            {
-                "code": "acc_cable_hdmi",
-                "desc": "Cable HDMI."
-            },
-            {
-                "code": "acc_cable_optico",
-                "desc": "Cable de audio óptico."
-            },
-            {
-                "code": "acc_soporte_pared",
-                "desc": "Soporte de pared."
-            },
-            {
-                "code": "acc_pilas",
-                "desc": "Pilas (para el mando)."
-            },
-            {
-                "code": "acc_tv_synergy_bracket",
-                "desc": "Soporte 'Synergy' para TV específico."
-            }
-        ]
+        "model": "S80TR",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "5.1.3",
+            "general_potencia_salida_w": "580",
+            "general_num_altavoces": "9",
+            "dim_principal_mm": "1000 x 63 x 135",
+            "dim_subwoofer_mm": "201,7 x 407 x 403",
+            "dim_traseros_mm": "100,0 x 176,5 x 120,0",
+            "peso_principal_kg": "4,3",
+            "peso_subwoofer_kg": "10,0",
+            "peso_traseros_kg": "2,34",
+            "peso_bruto_kg": "22,6",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_wifi": "Si",
+            "con_preparado_traseros": "Si",
+            "con_chromecast": "Si",
+            "con_airplay2": "Si",
+            "con_spotify_connect": "Si",
+            "con_tidal_connect": "Si",
+            "con_google_home": "Si",
+            "con_alexa": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "audio_aac_plus": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "hires_upsampling": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_ai_room_calibration": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_soporte_pared": "Si",
+            "info_ean": "8806096055014",
+            "info_eco_certificado": "UL/SGS/EnergyStar"
+        }
+    },
+    {
+        "model": "S90TR",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "7.1.3",
+            "general_potencia_salida_w": "670",
+            "general_num_altavoces": "11",
+            "dim_principal_mm": "1250 x 63 x 135",
+            "dim_subwoofer_mm": "201,7 x 407,0 x 403,0",
+            "dim_traseros_mm": "100,0 x 176,5 x 120,0",
+            "peso_principal_kg": "5,65",
+            "peso_subwoofer_kg": "10,0",
+            "peso_traseros_kg": "2,34",
+            "peso_bruto_kg": "25,3",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_wifi": "Si",
+            "con_preparado_traseros": "Si",
+            "con_chromecast": "Si",
+            "con_airplay2": "Si",
+            "con_spotify_connect": "Si",
+            "con_tidal_connect": "Si",
+            "con_google_home": "Si",
+            "con_alexa": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "audio_aac_plus": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "hires_upsampling": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_ai_room_calibration": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_soporte_pared": "Si"
+        }
+    },
+    {
+        "model": "S90TY",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "5.1.3",
+            "general_potencia_salida_w": "570",
+            "general_num_altavoces": "9",
+            "dim_principal_mm": "1250 x 63 x 135",
+            "dim_subwoofer_mm": "201,7 x 407,0 x 403,0",
+            "peso_principal_kg": "5,65",
+            "peso_subwoofer_kg": "10,0",
+            "peso_bruto_kg": "22,2",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_wifi": "Si",
+            "con_preparado_traseros": "Si",
+            "con_chromecast": "Si",
+            "con_airplay2": "Si",
+            "con_spotify_connect": "Si",
+            "con_tidal_connect": "Si",
+            "con_google_home": "Si",
+            "con_alexa": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "audio_aac_plus": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "hires_upsampling": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_ai_room_calibration": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_soporte_pared": "Si"
+        }
+    },
+    {
+        "model": "S95TRSP",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "9.1.5",
+            "general_potencia_salida_w": "810",
+            "dim_principal_mm": "1250 x 63 x 135",
+            "dim_subwoofer_mm": "201,7 x 407,0 x 403,0",
+            "dim_traseros_mm": "159 x 223 x 142",
+            "peso_principal_kg": "5,65",
+            "peso_subwoofer_kg": "10,0",
+            "peso_traseros_kg": "4,08",
+            "peso_bruto_kg": "26,4",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_wifi": "Si",
+            "con_preparado_traseros": "Si",
+            "con_chromecast": "Si",
+            "con_airplay2": "Si",
+            "con_spotify_connect": "Si",
+            "con_tidal_connect": "Si",
+            "con_google_home": "Si",
+            "con_alexa": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "audio_aac_plus": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "hires_upsampling": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_ai_room_calibration": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_soporte_pared": "Si"
+        }
+    },
+    {
+        "model": "SC9S",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "3.1.3",
+            "general_potencia_salida_w": "400",
+            "general_num_altavoces": "9",
+            "dim_principal_mm": "975 x 63 x 125",
+            "dim_subwoofer_mm": "221 x 390 x 313",
+            "peso_principal_kg": "4,1",
+            "peso_subwoofer_kg": "7,8",
+            "peso_bruto_kg": "22,7",
+            "potencia_consumo_stb_principal_w": "0.5",
+            "potencia_consumo_principal_w": "37",
+            "potencia_consumo_stb_subwoofer_w": "0.5",
+            "potencia_consumo_subwoofer_w": "38",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_version": "5.0",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_wifi": "Si",
+            "con_preparado_traseros": "Si",
+            "con_chromecast": "Si",
+            "con_airplay2": "Si",
+            "con_spotify_connect": "Si",
+            "con_tidal_connect": "Si",
+            "con_google_home": "Si",
+            "con_alexa": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "audio_aac_plus": "Si",
+            "audio_mqa": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "hires_upsampling": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_ai_room_calibration": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_tv_synergy_bracket": "Si"
+        }
+    },
+    {
+        "model": "SG10TY",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "3.1",
+            "general_potencia_salida_w": "420",
+            "dim_principal_mm": "1446,0 x 150,0 x 32,5",
+            "dim_subwoofer_mm": "180 x 394 x 290",
+            "peso_principal_kg": "3,9",
+            "peso_subwoofer_kg": "5,8",
+            "peso_bruto_kg": "16,1",
+            "con_hdmi_in": "1",
+            "con_hdmi_out": "1",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_codec": "SBC/AAC",
+            "con_wifi": "Si",
+            "con_preparado_traseros": "Si",
+            "con_chromecast": "Si",
+            "con_airplay2": "Si",
+            "con_spotify_connect": "Si",
+            "con_tidal_connect": "Si",
+            "con_google_home": "Si",
+            "con_alexa": "Si",
+            "hdmi_arc": "Si",
+            "hdmi_earc": "Si",
+            "hdmi_cec_simplink": "Si",
+            "hdmi_passthrough": "Si",
+            "hdmi_passthrough_4k": "Si",
+            "hdmi_vrr_allm": "Si",
+            "hdmi_120hz": "Si",
+            "hdmi_hdr10": "Si",
+            "hdmi_dolby_vision": "Si",
+            "audio_dolby_atmos": "Si",
+            "audio_dolby_digital": "Si",
+            "audio_dtsx": "Si",
+            "audio_dts_digital_surround": "Si",
+            "audio_aac": "Si",
+            "audio_aac_plus": "Si",
+            "hires_muestreo": "24bit/96kHz",
+            "hires_upsampling": "24bit/96kHz",
+            "modo_ai_sound_pro": "Si",
+            "modo_standard": "Si",
+            "modo_cinema": "Si",
+            "modo_game": "Si",
+            "modo_musica": "Si",
+            "modo_clear_voice_pro": "Si",
+            "modo_deportes": "Si",
+            "modo_bass_blast": "Si",
+            "smart_remote_app": "Si",
+            "smart_ai_room_calibration": "Si",
+            "smart_control_modos_barra": "Si",
+            "smart_tv_sound_mode_share": "Si",
+            "smart_wow_interface": "Si",
+            "smart_wow_orchestra": "Si",
+            "acc_mando_distancia": "Si",
+            "acc_tarjeta_garantia": "Si",
+            "acc_cable_hdmi": "Si",
+            "acc_soporte_pared": "Si"
+        }
+    },
+    {
+        "model": "SQC2",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "2.1",
+            "general_potencia_salida_w": "300",
+            "con_usb": "1",
+            "con_optica": "1",
+            "audio_dolby_digital": "Si",
+            "smart_remote_app": "Si"
+        }
+    },
+    {
+        "model": "SQC4R",
+        "schema_key": "soundbars",
+        "attributes": {
+            "general_num_canales": "4.1",
+            "general_potencia_salida_w": "220",
+            "dim_principal_mm": "660 x 56 x 99",
+            "dim_subwoofer_mm": "185.5 x 303 x 205",
+            "dim_traseros_mm": "88 x 80 x 122",
+            "dim_caja_mm": "726x223x372",
+            "peso_principal_kg": "1,31",
+            "peso_subwoofer_kg": "2,94",
+            "peso_traseros_kg": "0,73",
+            "peso_bruto_kg": "7,91",
+            "con_usb": "1",
+            "con_optica": "1",
+            "con_bluetooth_version": "4.0",
+            "audio_dolby_digital": "Si",
+            "audio_lpcm": "Si",
+            "modo_standard": "Si",
+            "modo_bass_blast": "Si",
+            "acc_mando_distancia": "Si (HA2)",
+            "acc_tarjeta_garantia": "Si",
+            "acc_pilas": "Si (AAA x 2)"
+        }
     }
-];
-
-if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
-    window.APP_DB.registerSchema('soundbars', SOUNDBARS_SCHEMA_GROUPS);
-} else {
-    console.error("Error: APP_DB no inicializada.");
-}
+]
