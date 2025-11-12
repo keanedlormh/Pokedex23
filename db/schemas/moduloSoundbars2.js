@@ -1,440 +1,290 @@
 /**
- * Modulo de Esquema: tvs
- * (Generado por Admin Panel v3.1.5)
+ * Modulo de Esquema: soundbars2
  */
 
-const TVS_SCHEMA_GROUPS = [
+const SOUNDBARS2_SCHEMA_GROUPS = [
     {
-        "group": "PICTURE (DISPLAY)",
+        "group": "GENERAL",
         "attrs": [
             {
-                "code": "display_tipo_pantalla",
-                "desc": "Tecnología principal del panel (ej: 4K UHD, 4K QNED MiniLED, 4K OLED)."
+                "code": "general_num_canales",
+                "desc": "Número de canales de audio del sistema."
             },
             {
-                "code": "display_resolucion_pantalla",
-                "desc": "Resolución nativa de la pantalla (ej: 4K Ultra HD (3,840 x 2,160))."
+                "code": "general_potencia_salida_w",
+                "desc": "Potencia total de salida de audio del sistema (W)."
             },
             {
-                "code": "display_tipo_retroiluminacion",
-                "desc": "Tecnología de iluminación trasera del panel (ej: Directa, Mini LED)."
-            },
-            {
-                "code": "display_tasa_refresco",
-                "desc": "Tasa de refresco nativa del panel (ej: 60Hz, 120Hz)."
-            },
-            {
-                "code": "display_wide_color_gamut",
-                "desc": "Tecnología de ampliación del espectro de color (ej: Nano Color, OLED Color)."
+                "code": "general_num_altavoces",
+                "desc": "Número total de altavoces físicos (drivers) en el sistema."
             }
         ]
     },
     {
-        "group": "PROCESADO DE IMAGEN",
+        "group": "DIMENSIONES Y PESO",
         "attrs": [
             {
-                "code": "procesado_procesador_imagen",
-                "desc": "Nombre del procesador de imagen principal (ej: Procesador 4K IA α7 Gen8)."
+                "code": "dim_principal_mm",
+                "desc": "Dimensiones unidad principal (An x Al x Pr) en mm."
             },
             {
-                "code": "procesado_escalado_ia",
-                "desc": "Tipo de escalado de imagen basado en IA (ej: Super Escalado 4K)."
+                "code": "dim_subwoofer_mm",
+                "desc": "Dimensiones subwoofer (An x Al x Pr) en mm."
             },
             {
-                "code": "procesado_dynamic_tone_mapping",
-                "desc": "Tecnología de mapeo de tonos dinámico (ej: Si, Dynamic Tone Mapping Pro)."
+                "code": "dim_traseros_mm",
+                "desc": "Dimensiones altavoces traseros (An x Al x Pr) en mm."
             },
             {
-                "code": "procesado_seleccion_genero_ia",
-                "desc": "Selección automática de modo de imagen por IA (ej: Si (SDR/HDR))."
+                "code": "dim_caja_mm",
+                "desc": "Dimensiones del embalaje (caja) (An x Al x Pr) en mm."
             },
             {
-                "code": "procesado_control_brillo_ia",
-                "desc": "Ajuste automático de brillo basado en IA y luz ambiental."
+                "code": "peso_principal_kg",
+                "desc": "Peso unidad principal (kg)."
             },
             {
-                "code": "procesado_hdr",
-                "desc": "Formatos HDR soportados (ej: HDR10 / HLG, Dolby Vision)."
+                "code": "peso_subwoofer_kg",
+                "desc": "Peso subwoofer (kg)."
             },
             {
-                "code": "procesado_filmmaker_mode",
-                "desc": "Soporte para el modo"
+                "code": "peso_traseros_kg",
+                "desc": "Peso altavoces traseros (kg)."
             },
             {
-                "code": "procesado_tecnologia_atenuacion",
-                "desc": "Tecnología de atenuación de la retroiluminación (ej: Pixel Dimming, Precision Dimming Pro)."
-            },
-            {
-                "code": "procesado_motion",
-                "desc": "Tecnología de mejora de movimiento (ej: OLED Motion, Motion Pro)."
-            },
-            {
-                "code": "procesado_modos_imagen",
-                "desc": "Número o lista de modos de imagen predefinidos."
-            },
-            {
-                "code": "procesado_hfr",
-                "desc": "Soporte para Alta Tasa de Fotogramas (High Frame Rate) y sus fuentes."
-            },
-            {
-                "code": "procesado_ai_picture_pro",
-                "desc": "Soporte para la tecnología"
-            },
-            {
-                "code": "procesado_auto_calibrado",
-                "desc": "Soporte para autocalibración de imagen."
-            },
-            {
-                "code": "procesado_qft",
-                "desc": "Soporte para Quick Frame Transport (QFT)."
-            },
-            {
-                "code": "procesado_qms",
-                "desc": "Soporte para Quick Media Switching (QMS)."
+                "code": "peso_bruto_kg",
+                "desc": "Peso bruto total (con embalaje) (kg)."
             }
         ]
     },
     {
-        "group": "GAMING",
+        "group": "POTENCIA (Consumo Eléctrico)",
         "attrs": [
             {
-                "code": "gaming_g_sync",
-                "desc": "Compatibilidad con Nvidia G-Sync."
+                "code": "potencia_consumo_stb_principal_w",
+                "desc": "Consumo Standby (STB) unidad principal (W)."
             },
             {
-                "code": "gaming_free_sync",
-                "desc": "Compatibilidad con AMD FreeSync."
+                "code": "potencia_consumo_principal_w",
+                "desc": "Consumo en funcionamiento unidad principal (W)."
             },
             {
-                "code": "gaming_hgig_mode",
-                "desc": "Soporte para el modo HGiG (HDR Gaming Interest Group)."
+                "code": "potencia_consumo_stb_subwoofer_w",
+                "desc": "Consumo Standby (STB) subwoofer (W)."
             },
             {
-                "code": "gaming_game_optimizer",
-                "desc": "Panel de control"
+                "code": "potencia_consumo_subwoofer_w",
+                "desc": "Consumo en funcionamiento subwoofer (W)."
             },
             {
-                "code": "gaming_allm",
-                "desc": "Soporte para Modo Automático de Baja Latencia (ALLM)."
+                "code": "potencia_consumo_stb_traseros_w",
+                "desc": "Consumo Standby (STB) altavoces traseros (W)."
             },
             {
-                "code": "gaming_vrr",
-                "desc": "Soporte para Tasa de Refresco Variable (VRR) y su rango."
-            },
-            {
-                "code": "gaming_dolby_vision_gaming",
-                "desc": "Soporte para Dolby Vision para Gaming (ej: 4K 120Hz)."
-            },
-            {
-                "code": "gaming_tiempo_refresco",
-                "desc": "Tiempo de respuesta del panel (ej: Inferior a 0.1ms)."
+                "code": "potencia_consumo_traseros_w",
+                "desc": "Consumo en funcionamiento altavoces traseros (W)."
             }
         ]
     },
     {
-        "group": "AUDIO",
+        "group": "CONECTIVIDAD (Puertos Físicos)",
         "attrs": [
             {
-                "code": "audio_dolby_atmos",
-                "desc": "Soporte nativo para decodificación Dolby Atmos."
+                "code": "con_hdmi_in",
+                "desc": "Número de puertos de entrada HDMI."
             },
             {
-                "code": "audio_sonido_ia",
-                "desc": "Tecnología de sonido mejorada por IA (ej: α7 AI Sound Pro (9.1.2 Virtual Up-Mix))."
+                "code": "con_hdmi_out",
+                "desc": "Número de puertos de salida HDMI (al TV)."
             },
             {
-                "code": "audio_dialogos_claros",
-                "desc": "Función de realce de diálogos (ej: Si (Regulación Auto Volumen))."
-            },
-            {
-                "code": "audio_wisa_ready",
-                "desc": "Compatibilidad con la tecnología inalámbrica WiSA."
-            },
-            {
-                "code": "audio_lg_sound_sync",
-                "desc": "Compatibilidad con LG Sound Sync para barras de sonido LG."
-            },
-            {
-                "code": "audio_sound_mode_share",
-                "desc": "Función de compartir modo de sonido con barra de sonido (TV Sound Mode Share)."
-            },
-            {
-                "code": "audio_salida_simultanea",
-                "desc": "Capacidad de emitir sonido por los altavoces internos y externos a la vez."
-            },
-            {
-                "code": "audio_bluetooth_surround",
-                "desc": "Compatibilidad para usar altavoces Bluetooth como traseros."
-            },
-            {
-                "code": "audio_salida_w",
-                "desc": "Potencia total de salida de audio en vatios (W)."
-            },
-            {
-                "code": "audio_calibracion_acustica_ia",
-                "desc": "Calibración automática de sonido basada en la acústica de la sala."
-            },
-            {
-                "code": "audio_codecs",
-                "desc": "Lista de codecs de audio soportados (ej: AC4, AC3, PCM, apt-X)."
-            },
-            {
-                "code": "audio_direccion_altavoces",
-                "desc": "Orientación física de los altavoces (ej: Salida hacia Abajo)."
-            },
-            {
-                "code": "audio_sistema_altavoces",
-                "desc": "Configuración de canales de los altavoces (ej: 2.0 Canales, 4.2 Canales)."
-            },
-            {
-                "code": "audio_wow_orchestra",
-                "desc": "Compatibilidad con la tecnología WOW Orchestra."
-            }
-        ]
-    },
-    {
-        "group": "SMART TV",
-        "attrs": [
-            {
-                "code": "smart_sistema_operativo",
-                "desc": "Sistema operativo y versión (ej: WebOS 25, webOS 24)."
-            },
-            {
-                "code": "smart_apple_airplay",
-                "desc": "Compatibilidad con Apple AirPlay 2."
-            },
-            {
-                "code": "smart_camara_usb",
-                "desc": "Compatibilidad con cámaras USB externas."
-            },
-            {
-                "code": "smart_ai_chatbot",
-                "desc": "Presencia de un Chatbot de IA integrado."
-            },
-            {
-                "code": "smart_siempre_lista",
-                "desc": "Función"
-            },
-            {
-                "code": "smart_alexa",
-                "desc": "Integración nativa con Amazon Alexa."
-            },
-            {
-                "code": "smart_navegador_web",
-                "desc": "Disponibilidad de un navegador web libre."
-            },
-            {
-                "code": "smart_google_cast",
-                "desc": "Compatibilidad nativa con Google Cast (Chromecast)."
-            },
-            {
-                "code": "smart_google_home",
-                "desc": "Integración con el ecosistema Google Home."
-            },
-            {
-                "code": "smart_control_voz_sin_mando",
-                "desc": "Capacidad de usar comandos de voz"
-            },
-            {
-                "code": "smart_home_hub",
-                "desc": "Funcionalidad de panel de control del hogar (Home Hub)."
-            },
-            {
-                "code": "smart_reconocimiento_voz",
-                "desc": "Capacidad de reconocimiento de voz (usualmente vía mando)."
-            },
-            {
-                "code": "smart_lg_channels",
-                "desc": "Disponibilidad de la plataforma LG Channels."
-            },
-            {
-                "code": "smart_magic_remote",
-                "desc": "Indica si el mando Magic Remote está incluido o es compatible."
-            },
-            {
-                "code": "smart_multipantalla",
-                "desc": "Capacidad de mostrar múltiples fuentes o vistas en pantalla."
-            },
-            {
-                "code": "smart_remote_app",
-                "desc": "Compatibilidad con la app móvil (ej: LG ThinQ)."
-            },
-            {
-                "code": "smart_id_voz",
-                "desc": "Capacidad de reconocer diferentes perfiles de voz."
-            },
-            {
-                "code": "smart_apple_home",
-                "desc": "Integración con el ecosistema Apple Home."
-            },
-            {
-                "code": "smart_ajustes_familia",
-                "desc": "Disponibilidad de controles parentales y ajustes de familia."
-            },
-            {
-                "code": "smart_thinq",
-                "desc": "Integración con la plataforma LG ThinQ."
-            }
-        ]
-    },
-    {
-        "group": "CONECTIVIDAD",
-        "attrs": [
-            {
-                "code": "con_hdmi_earc_puerto",
-                "desc": "Indica qué puerto HDMI soporta eARC (ej: eARC (HDMI 2))."
-            },
-            {
-                "code": "con_bluetooth_version",
-                "desc": "Versión de Bluetooth soportada (ej: v 5.0, v 5.1)."
-            },
-            {
-                "code": "con_ethernet",
-                "desc": "Número de puertos de entrada Ethernet (LAN)."
-            },
-            {
-                "code": "con_hdmi_cec_simplink",
-                "desc": "Soporte para HDMI CEC (Simplink)."
+                "code": "con_usb",
+                "desc": "Número de puertos USB."
             },
             {
                 "code": "con_optica",
-                "desc": "Número de salidas de audio óptico digital (SPDIF)."
+                "desc": "Número de puertos de entrada de audio óptico."
             },
             {
-                "code": "con_ranura_ci",
-                "desc": "Número de ranuras"
-            },
-            {
-                "code": "con_hdmi_num_puertos",
-                "desc": "Número total de puertos HDMI y sus especificaciones (ej: 4ud (Soporta 4K 120Hz...))."
-            },
-            {
-                "code": "con_rf_in",
-                "desc": "Número de entradas de antena/cable (RF)."
-            },
-            {
-                "code": "con_usb_num_puertos",
-                "desc": "Número total de puertos USB y sus versiones."
-            },
-            {
-                "code": "con_wifi_version",
-                "desc": "Versión de Wi-Fi soportada (ej: Wi-Fi 5, Wi-Fi 6)."
+                "code": "hdmi_arc",
+                "desc": "Soporte para ARC (Audio Return Channel)"
             }
         ]
     },
     {
-        "group": "ACCESIBILIDAD",
+        "group": "CONECTIVIDAD (Inalámbrica y Red)",
         "attrs": [
             {
-                "code": "accesibilidad_alto_contraste",
-                "desc": "Modo de visualización de Alto Contraste."
+                "code": "con_bluetooth_version",
+                "desc": "Versión de Bluetooth."
             },
             {
-                "code": "accesibilidad_escala_grises",
-                "desc": "Modo de visualización en Escala de Grises."
+                "code": "con_bluetooth_codec",
+                "desc": "Codecs de audio Bluetooth soportados."
             },
             {
-                "code": "accesibilidad_invertir_colores",
-                "desc": "Modo de visualización de Invertir Colores."
+                "code": "con_wifi",
+                "desc": "Conectividad Wi-Fi integrada."
+            },
+            {
+                "code": "con_preparado_traseros",
+                "desc": "Preparado para altavoces traseros (kit opcional)."
+            },
+            {
+                "code": "con_chromecast",
+                "desc": "Google Chromecast integrado."
+            },
+            {
+                "code": "con_airplay2",
+                "desc": "Apple AirPlay 2."
+            },
+            {
+                "code": "con_spotify_connect",
+                "desc": "Spotify Connect."
+            },
+            {
+                "code": "con_tidal_connect",
+                "desc": "Tidal Connect."
+            },
+            {
+                "code": "con_google_home",
+                "desc": "Integración con Google Home."
+            },
+            {
+                "code": "con_alexa",
+                "desc": "Integración con Amazon Alexa."
             }
         ]
     },
     {
-        "group": "DIMENSIONES Y PESOS",
+        "group": "SOPORTE HDMI (Funciones)",
         "attrs": [
             {
-                "code": "dim_sin_peana_mm",
-                "desc": "Dimensiones del TV sin peana (Ancho x Alto x Profundidad) en mm."
+                "code": "hdmi_earc",
+                "desc": "Soporte para eARC (Enhanced ARC)."
             },
             {
-                "code": "dim_con_peana_mm",
-                "desc": "Dimensiones del TV con la peana instalada (Ancho x Alto x Profundidad) en mm."
+                "code": "hdmi_cec_simplink",
+                "desc": "Soporte para CEC (Simplink)."
             },
             {
-                "code": "dim_embalaje_mm",
-                "desc": "Dimensiones de la caja del producto (Ancho x Alto x Profundidad) en mm."
+                "code": "hdmi_passthrough",
+                "desc": "Capacidad de Pass-through de video."
             },
             {
-                "code": "dim_peana_mm",
-                "desc": "Dimensiones de la peana (Ancho x Profundidad) en mm."
+                "code": "hdmi_passthrough_4k",
+                "desc": "Soporte para Pass-through de 4K."
             },
             {
-                "code": "peso_sin_peana_kg",
-                "desc": "Peso del TV sin la peana en kg."
+                "code": "hdmi_vrr_allm",
+                "desc": "Soporte para VRR / ALLM (Gaming)."
             },
             {
-                "code": "peso_con_peana_kg",
-                "desc": "Peso del TV con la peana instalada en kg."
+                "code": "hdmi_120hz",
+                "desc": "Soporte para Pass-through de 120Hz."
             },
             {
-                "code": "peso_embalaje_kg",
-                "desc": "Peso bruto del producto en su embalaje en kg."
+                "code": "hdmi_hdr10",
+                "desc": "Soporte para Pass-through de HDR10."
             },
             {
-                "code": "dim_vesa_mm",
-                "desc": "Compatibilidad con montura VESA (Ancho x Alto) en mm."
+                "code": "hdmi_dolby_vision",
+                "desc": "Soporte para Pass-through de Dolby Vision."
+            },
+            {
+                "code": "hdmi_version",
+                "desc": "Versión del estándar HDMI."
             }
         ]
     },
     {
-        "group": "ALIMENTACION",
+        "group": "FORMATOS DE AUDIO (Decodificadores)",
         "attrs": [
             {
-                "code": "power_voltaje",
-                "desc": "Rango de voltaje de la fuente de alimentación (ej: AC 100~240V 50-60Hz)."
+                "code": "audio_dolby_atmos",
+                "desc": "Decodificador Dolby Atmos."
             },
             {
-                "code": "power_standby_w",
-                "desc": "Consumo de energía en modo de espera (Standby) en vatios (W)."
+                "code": "audio_dolby_digital",
+                "desc": "Decodificador Dolby Digital."
+            },
+            {
+                "code": "audio_dtsx",
+                "desc": "Decodificador DTS:X."
+            },
+            {
+                "code": "audio_dts_digital_surround",
+                "desc": "Decodificador DTS Digital Surround."
+            },
+            {
+                "code": "audio_aac",
+                "desc": "Decodificador AAC."
+            },
+            {
+                "code": "audio_aac_plus",
+                "desc": "Decodificador AAC+."
+            },
+            {
+                "code": "audio_lpcm",
+                "desc": "Decodificador LPCM."
+            },
+            {
+                "code": "audio_mqa",
+                "desc": "Decodificador MQA."
             }
         ]
     },
     {
-        "group": "ACCESORIOS INCLUIDOS",
+        "group": "HI-RESOLUTION AUDIO (Calidad)",
+        "attrs": [
+            {
+                "code": "hires_muestreo",
+                "desc": "Tasa de muestreo (Hi-Res Audio)."
+            },
+            {
+                "code": "hires_upsampling",
+                "desc": "Capacidad de re-escalado (Upsampling)."
+            }
+        ]
+    },
+    {
+        "group": "FACILIDADES (Funciones Smart/TV)",
+        "attrs": [
+            {
+                "code": "smart_remote_app",
+                "desc": "Compatible con App (iOS/Android)."
+            },
+            {
+                "code": "smart_control_modos_barra",
+                "desc": "Control de modos desde el menú del TV."
+            },
+            {
+                "code": "smart_wow_interface",
+                "desc": "WOW Interface."
+            },
+            {
+                "code": "smart_wow_orchestra",
+                "desc": "WOW Orchestra."
+            }
+        ]
+    },
+    {
+        "group": "ACCESORIOS (Incluidos)",
         "attrs": [
             {
                 "code": "acc_mando_distancia",
-                "desc": "Tipo de mando a distancia incluido (ej: Mando Estándar, Magic Remote)."
+                "desc": "Mando a distancia."
             },
             {
-                "code": "acc_cable_alimentacion",
-                "desc": "Tipo de cable de alimentación (ej: Desenchufable, Adjunto)."
-            },
-            {
-                "code": "acc_pilas",
-                "desc": "Indica si se incluyen pilas para el mando."
-            }
-        ]
-    },
-    {
-        "group": "RADIODIFUSIÓN",
-        "attrs": [
-            {
-                "code": "radio_recepcion_analogica",
-                "desc": "Soporte para sintonizador de TV analógica."
-            },
-            {
-                "code": "radio_recepcion_digital",
-                "desc": "Estándares de sintonizador digital soportados (ej: DVB-T2/C/S2)."
-            }
-        ]
-    },
-    {
-        "group": "OTROS DATOS",
-        "attrs": [
-            {
-                "code": "info_ean",
-                "desc": "Código de barras (EAN) del producto."
+                "code": "acc_soporte_pared",
+                "desc": "Soporte de pared."
             }
         ]
     }
 ];
 
-// --- REGISTRO ---
-// Comprueba si la BD global existe y registra este esquema
-// con la clave "tvs".
 if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
-    window.APP_DB.registerSchema('tvs', TVS_SCHEMA_GROUPS);
+    window.APP_DB.registerSchema('soundbars2', SOUNDBARS2_SCHEMA_GROUPS);
 } else {
-    console.error("Error: APP_DB no está inicializada. Asegúrate de que main.js se carga primero.");
+    console.error("Error: APP_DB no inicializada.");
 }
