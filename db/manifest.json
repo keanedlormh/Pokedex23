@@ -9,6 +9,8 @@
     ],
     "products": {
         "soundbars": [],
-        "tvs": []
+        "tvs": [
+        "db/products/24TQ510S-WZ.json"
+]
     }
 }
