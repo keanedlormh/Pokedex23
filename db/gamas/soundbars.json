@@ -1,6 +1,3 @@
-/**
- * Modulo de Esquema: soundbars
- */
 
 const SOUNDBARS_SCHEMA_GROUPS = [
     {
