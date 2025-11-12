@@ -1,5 +1,4 @@
-
-const SOUNDBARS_SCHEMA_GROUPS = [
+[
     {
         "group": "GENERAL",
         "attrs": [
