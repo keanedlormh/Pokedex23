@@ -11,16 +11,21 @@
     ],
     "products": {
         "soundbars": [],
-        "tvs": [],
-        "teleoperadores": [
-            "db/products/TeleoperadorRandom.json",
-            "db/products/TeleoperadorRancio.json",
-            "db/products/TeleoperadorFurioso.json",
-            "db/products/TeleoperadorCuantico.json",
-            "db/products/TeleoperadorFriki.json",
-            "db/products/TeleoperadorTirano.json",
-            "db/products/TeleoperadorNostalgico.json",
-            "db/products/tst_l2_google_fu.json"
+        "tvs": [
+            "db/products/32LQ630B6LA.json",
+            "db/products/32LQ63006LA.json",
+            "db/products/32LQ63806LC.json",
+            "db/products/32LR60006LA.json",
+            "db/products/43UA74006LB.json",
+            "db/products/43UR78006LK.json",
+            "db/products/43UT91006LA.json",
+            "db/products/65UA73006LA.json",
+            "db/products/.json",
+            "db/products/.json",
+            "db/products/.json",
+            "db/products/.json",
+            "db/products/.json",
+            "db/products/.json"
         ]
     }
 }
