@@ -1,13 +1,11 @@
 {
     "schemas": [
         "db/schemas/moduloSoundbars.js",
-        "db/schemas/moduloTVs.js",
-        "db/schemas/moduloTeleoperadores.js"
+        "db/schemas/moduloTVs.js"
     ],
     "bulk_gamas": [
         "db/gamas/soundbars.json",
-        "db/gamas/tvs.json",
-        "db/gamas/teleoperadores.json"
+        "db/gamas/tvs.json"
     ],
     "products": {
         "soundbars": [],
