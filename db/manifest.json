@@ -2,6 +2,7 @@
     "schemas": [
         "db/schemas/moduloSoundbars.js",
         "db/schemas/moduloTVs.js"
+        "db/schemas/moduloPCs.js"
     ],
     "bulk_gamas": [
         "db/gamas/soundbars.json",
@@ -9,6 +10,8 @@
     ],
     "products": {
         "soundbars": [],
-        "tvs": []
+        "pcs": [
+        "db/products/17Z90T-GAD8BB.json"
+        ]
     }
 }
