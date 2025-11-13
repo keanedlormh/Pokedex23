@@ -45,8 +45,7 @@
         "port_usb_a_cantidad": "2 x USB 3.2 Gen 2x1 (Tipo-A)",
         "port_usb_c_thunderbolt": "2 x USB 4 Gen3x2 (Tipo-C) con Thunderbolt 4",
         "port_hdmi_version": "1x HDMI 2.1",
-        "port_salida_auriculares": "1 x Toma auriculares/micróf" +
-                                "ono 3.5mm",
+        "port_salida_auriculares": "1 x Toma auriculares/micrófono 3.5mm",
         "media_webcam_specs": "Cámara FHD con doble micrófono",
         "media_audio_tecnologia": "Dolby Atmos",
         "media_altavoces_potencia": "2.0W x 2",
