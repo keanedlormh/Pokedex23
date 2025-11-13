@@ -10,6 +10,8 @@
     "products": {
         "soundbars": [],
         "tvs": [
+            "db/products/24TQ510S-WZ.json",
+            "db/products/27TQ615S-PZ.json",
             "db/products/32LQ630B6LA.json",
             "db/products/32LQ63006LA.json",
             "db/products/32LQ63806LC.json",
