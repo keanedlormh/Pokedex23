@@ -1,16 +1,58 @@
 {
     "schemas": [
         "db/schemas/moduloSoundbars.js",
-        "db/schemas/moduloTVs.js"
+        "db/schemas/moduloTVs.js",
+        "db/schemas/moduloPCs.js"
     ],
     "bulk_gamas": [
         "db/gamas/soundbars.json",
-        "db/gamas/tvs.json"
+        "db/gamas/tvs.json",
+        "db/gamas/pcs.json"
     ],
     "products": {
         "soundbars": [],
         "tvs": [
-        "db/products/24TQ510S-WZ.json"
-]
+        "db/products/OLED77G55LW.json",
+        "db/products/OLED83M59LA.json",
+        "db/products/OLED77M59LA.json",
+        "db/products/OLED77B46LA.json",
+        "db/products/OLED55G56LS.json",
+        "db/products/OLED65G56LS.json",
+        "db/products/OLED77C45LA.json",
+        "db/products/OLED65G45LW.json",
+        "db/products/OLED97G45LW.json",
+        "db/products/OLED83G45LW.json",
+        "db/products/OLED77G45LW.json",
+        "db/products/OLED55G45LW.json",
+        "db/products/OLED42C55LA.json",
+        "db/products/OLED48C45LA.json",
+        "db/products/OLED55C45LA.json",
+        "db/products/OLED65C45LA.json",
+        "db/products/OLED65C56LB.json",
+        "db/products/OLED48C56LB.json",
+        "db/products/OLED48C55LA.json",
+        "db/products/OLED55C55LA.json",
+        "db/products/OLED65C55LA.json",
+        "db/products/OLED55B56LA.json",
+        "db/products/OLED48B56LA.json",
+        "db/products/OLED65B56LA.json",
+        "db/products/OLED77B56LA.json",
+        "db/products/OLED83C5ELA.json",
+        "db/products/OLED77C5ELB.json",
+        "db/products/OLED65C5ELB.json",
+        "db/products/OLED55C5ELB.json",
+        "db/products/OLED48C5ELB.json",
+        "db/products/OLED42C5ELB.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json"
+        ]
     }
 }
