@@ -10,5 +10,17 @@
         "db/gamas/pcs.json"
     ],
     "products": {
+        "tvs": [
+        "db/products/OLED77C55LA.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json"
+        ]
     }
 }
