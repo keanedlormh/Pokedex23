@@ -2536,35 +2536,6 @@
         }
     },
     {
-        "model": "OLED65C5ELB",
-        "schema_key": "tvs",
-        "attributes": {
-            "display_tipo_pantalla": "4K OLED",
-            "display_resolucion_pantalla": "4K Ultra HD (3,840 x 2,160)",
-            "display_tasa_refresco": "120Hz Nativos (VRR 144Hz)",
-            "display_wide_color_gamut": "OLED Color",
-            "procesado_procesador_imagen": "Procesador 4K IA α9 Gen8",
-            "procesado_dynamic_tone_mapping": "Si (OLED Dynamic Tone Mapping Pro)",
-            "procesado_hdr": "Dolby Vision / HDR10 / HLG",
-            "procesado_filmmaker_mode": "Si",
-            "procesado_tecnologia_atenuacion": "Pixel Dimming",
-            "gaming_g_sync": "Si",
-            "gaming_free_sync": "Si (AMD FreeSync Premium)",
-            "gaming_vrr": "Si (hasta 144Hz)",
-            "gaming_tiempo_refresco": "0.1ms",
-            "audio_dolby_atmos": "Si",
-            "audio_salida_w": "40W",
-            "audio_sistema_altavoces": "2.2 Canales",
-            "smart_sistema_operativo": "WebOS 25",
-            "smart_reconocimiento_voz": "Si",
-            "smart_magic_remote": "Incluido",
-            "smart_ai_chatbot": "Si",
-            "accesibilidad_alto_contraste": "Si",
-            "dim_sin_peana_mm": "1441 x 826 x 45,1",
-            "peso_sin_peana_kg": "16,6"
-        }
-    },
-    {
         "model": "OLED65G45LW",
         "schema_key": "tvs",
         "attributes": {
