@@ -66,7 +66,7 @@
         "con_hdmi_cec_simplink": "Si",
         "con_optica": "1ud",
         "con_ranura_ci": "1x (Excepto UK, Irlanda)",
-        "con_hdmi_num_puertos": "4ud (soporta 4K 120Hz, eARC, VRR, ALLM, QMS, QFT (4 puertos)",
+        "con_hdmi_num_puertos": "4x (soporta 4K 120Hz, eARC, VRR, ALLM, QMS, QFT (4 puertos)",
         "con_rf_in": "2ud",
         "con_usb_num_puertos": "3ud (v 2.0)",
         "con_wifi_version": "Si (Wi-Fi 6)",
@@ -86,6 +86,7 @@
         "acc_mando_distancia": "Magic Remote MR25GA / MR25GB (UK, Italia)",
         "acc_cable_alimentacion": "Si (adjunto)",
         "radio_recepcion_analogica": "Si",
-        "radio_recepcion_digital": "DVB-T2/T (Terrestre), DVB-C (Cable), DVB-S2/S (Satélite)"
+        "radio_recepcion_digital": "DVB-T2/T (Terrestre), DVB-C (Cable), DVB-S2/S (Satélite)",
+        "info_ean": "8806096420690"
     }
 }
