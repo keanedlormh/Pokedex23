@@ -1,0 +1,36 @@
+{
+    "schemas": [
+        "db/schemas/moduloSoundbars.js",
+        "db/schemas/moduloTVs.js",
+        "db/schemas/moduloPCs.js"
+    ],
+    "bulk_gamas": [
+        "db/gamas/soundbars.json",
+        "db/gamas/tvs.json",
+        "db/gamas/pcs.json"
+    ],
+    "products": {
+        "tvs": [
+        "db/products/OLED48C56LB.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json",
+        "db/products/.json"
+        ]
+    }
+}
