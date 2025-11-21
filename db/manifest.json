@@ -11,11 +11,11 @@
     ],
     "products": {
         "tvs": [
-        "db/products/.json",
-        "db/products/.json",
-        "db/products/.json",
-        "db/products/.json",
-        "db/products/.json",
+        "db/products/50UT91006LA.json",
+        "db/products/55UT91006LA.json",
+        "db/products/65UT91006LA.json",
+        "db/products/75UT91006LA.json",
+        "db/products/98UT91006LA.json",
         "db/products/.json",
         "db/products/.json",
         "db/products/.json",
