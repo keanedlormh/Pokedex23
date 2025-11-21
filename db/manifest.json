@@ -11,8 +11,8 @@
     ],
     "products": {
         "tvs": [
-        "db/products/.json",
-        "db/products/.json",
+        "db/products/OLED77C5ELB.json",
+        "db/products/OLED55C5ELB.json",
         "db/products/.json",
         "db/products/.json",
         "db/products/.json",
