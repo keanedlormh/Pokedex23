@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokedex LG v13.14</title>
+    <title>Pokedex LG v13.15</title>
 
     <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="style.css">
 
     <!-- ====================================================== -->
-    <!-- [ACTUALIZADO] Bootloader v2.9.6 (Carga .json)        -->
-    <!-- Carga desde manifest: .js de esquemas Y .json de datos -->
+    <!-- Bootloader v2.9.7 (Carga .json y esquemas)           -->
     <!-- ====================================================== -->
     <script>
         // 1. Definir la BD global
@@ -21,7 +20,7 @@
             registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
         };
 
-        // 2. Definir la ruta base (estamos en la raíz)
+        // 2. Definir la ruta base
         const basePath = '';
 
         // 3. Cargar el manifest (SÍNCRONO)
@@ -40,13 +39,12 @@
             // 5. Cargar y registrar las gamas JSON a granel (SÍNCRONO)
             manifest.bulk_gamas.forEach(jsonPath => {
                 const jsonXhr = new XMLHttpRequest();
-                jsonXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                jsonXhr.open('GET', basePath + jsonPath, false);
                 jsonXhr.send(null);
 
                 if (jsonXhr.status === 200) {
                     const products = JSON.parse(jsonXhr.responseText);
                     products.forEach(product => {
-                        // Registra directamente en la BD global
                         window.APP_DB.registerProduct(product);
                     });
                 } else {
@@ -54,16 +52,15 @@
                 }
             });
 
-            // 6. [CAMBIO v2.9.6] Cargar y registrar los productos .json individuales (SÍNCRONO)
+            // 6. Cargar y registrar los productos .json individuales (SÍNCRONO)
             Object.values(manifest.products).forEach(productList => {
                 productList.forEach(jsonPath => {
                     const jsonProductXhr = new XMLHttpRequest();
-                    jsonProductXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                    jsonProductXhr.open('GET', basePath + jsonPath, false);
                     jsonProductXhr.send(null);
 
                     if (jsonProductXhr.status === 200) {
                         const product = JSON.parse(jsonProductXhr.responseText);
-                        // Registra el producto individual
                         window.APP_DB.registerProduct(product);
                     } else {
                         console.error("ERROR: No se pudo cargar el archivo JSON de producto: " + jsonPath);
@@ -93,7 +90,7 @@
         <header class="app-header">
 
             <div class="header-left">
-                <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.23.11.25</span></h1>
+                <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.23.11.26</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"><!-- Relleno por JS --></div>
             </div>
 
@@ -132,7 +129,7 @@
                             ℹ️ Info
                         </button>
                         <a href="admin/index.html" target="_blank" id="admin-link-btn" class="settings-menu-item" title="Administrar base de datos">
-                            🛠️
+                            🛠️ Admin
                         </a>
                     </div>
                 </div>
