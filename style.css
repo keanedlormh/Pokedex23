@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v2.9.4)
+   Estilos para la App Principal (v3.1.0)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -23,6 +23,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease;
+    margin: 0; /* Reset básico */
 }
 
 /* Scrollbar (fino) */
@@ -32,7 +33,7 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: #0891b2; }
 
 /* ==============================================
-   2. LAYOUT PRINCIPAL Y ESTADO v2.0
+   2. LAYOUT PRINCIPAL Y ESTADO
    ============================================== */
 
 .container {
@@ -40,7 +41,7 @@ body {
     max-width: 1280px;
     margin: 0 auto;
     padding: 0.75rem;
-    box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
+    box-sizing: border-box; 
 }
 @media (min-width: 1024px) {
     .container { padding: 1.5rem; }
@@ -66,12 +67,18 @@ body {
 }
 
 /* --- ESTADO: MODELO SELECCIONADO --- */
+/* Ocultamos el buscador lateral y expandimos la ficha */
 body.model-is-selected .sidebar-column { display: none; }
 body.model-is-selected .main-column { width: 100%; }
+
+/* Ocultamos elementos de navegación no necesarios en la vista de ficha */
 body.model-is-selected #smart-filter-system { display: none; }
 body.model-is-selected #active-filters-bar { display: none; }
+
+/* Mostramos el "chip" del modelo */
 body.model-is-selected #selected-model-display { display: block; }
-body.model-is-selected .settings-menu-wrapper { display: none; }
+
+/* IMPORTANTE: Hemos eliminado la regla que ocultaba .settings-menu-wrapper */
 
 
 .sticky-panel { position: sticky; top: 1rem; }
@@ -87,7 +94,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
 .max-h-64 { max-height: 16rem; }
 
 /* ==============================================
-   3. BARRA SUPERIOR DE APP (ACTUALIZADA)
+   3. BARRA SUPERIOR DE APP
    ============================================== */
 .app-header {
     display: flex;
@@ -111,14 +118,14 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    min-width: 0; /* Corrección para flexbox en móviles */
+    min-width: 0;
 }
 
 .app-title {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    /* [CORREGIDO] white-space: nowrap; eliminado para permitir que el título se divida */
+    margin: 0;
 }
 .app-version {
     font-size: 0.75rem;
@@ -130,7 +137,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     border: 1px solid var(--color-border);
     position: relative;
     top: -2px;
-    white-space: nowrap; /* La versión sí puede ser nowrap */
+    white-space: nowrap;
 }
 
 /* "Chip" del modelo seleccionado */
@@ -182,13 +189,13 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
 }
 
 /* ==============================================
-   4. SISTEMA DE FILTROS (ACTUALIZADO)
+   4. SISTEMA DE FILTROS
    ============================================== */
 .smart-filter-wrapper-v2 {
     position: relative;
     width: 100%;
     flex-grow: 1;
-    min-width: 0; /* [AÑADIDO] Corrección para flexbox en móviles */
+    min-width: 0;
 }
 
 @media (min-width: 1024px) {
@@ -198,7 +205,6 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     }
 }
 
-/* Botón de 'Filtros Inteligentes' */
 .smart-filter-summary {
     font-size: 0.85rem;
     font-weight: 600;
@@ -279,6 +285,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     display: flex;
     align-items: center;
     cursor: pointer;
+    margin: 0;
 }
 
 .filter-toggle-btn {
@@ -428,6 +435,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     font-size: 1.15rem;
     font-weight: 600;
     color: var(--color-text-primary);
+    margin: 0; /* Ajustado */
     margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.4rem;
@@ -449,6 +457,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     transition: all 0.2s ease-in-out;
     box-sizing: border-box;
     flex-shrink: 0;
+    width: 100%; /* Asegurar ancho */
 }
 .futuristic-input:focus,
 .futuristic-select:focus {
@@ -467,27 +476,8 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     padding-right: 2.5rem;
 }
 
-.futuristic-button {
-    background-color: var(--color-cyan-accent);
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    padding: 0.6rem 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: 1px solid var(--color-cyan-accent);
-    transition: all 0.2s ease-in-out;
-    cursor: pointer;
-}
-.futuristic-button:hover {
-    background-color: #0891b2;
-    border-color: #0891b2;
-    box-shadow: 0 0 15px var(--color-cyan-glow);
-}
-
 /* ==============================================
-   8. LISTAS DE RESULTADOS (Compacta)
+   8. LISTAS DE RESULTADOS
    ============================================== */
 
 .futuristic-list {
@@ -525,13 +515,9 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     border-left: 3px solid var(--color-cyan-accent);
     padding-left: calc(0.75rem - 3px);
 }
-.futuristic-list .list-item[style*="color: var(--color-text-dim)"]:hover {
-    background: none;
-    color: var(--color-text-dim);
-}
 
 /* ==============================================
-   9. PANEL DE ESPECS Y CONTROLES (ACTUALIZADO)
+   9. PANEL DE ESPECS Y CONTROLES
    ============================================== */
 .spec-header {
     display: flex;
@@ -545,6 +531,7 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--color-text-primary);
+    margin: 0;
 }
 
 .spec-controls-hidden {
@@ -574,7 +561,7 @@ body.model-is-selected .spec-controls-visible {
     border-color: var(--color-cyan-accent);
 }
 
-/* Grupos de specs desplegables (ESTILOS UNIFICADOS) */
+/* Grupos de specs desplegables */
 details.spec-group {
     border: 1px solid var(--color-border);
     border-radius: 4px;
@@ -669,9 +656,6 @@ details.spec-group summary::after {
     font-weight: 600;
     color: var(--color-text-secondary);
 }
-.filter-schema-selector #schema-filter-select {
-    width: 100%;
-}
 
 /* ==============================================
    11. MENÚ DE AJUSTES (Settings)
@@ -731,6 +715,7 @@ details.spec-group summary::after {
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
+    box-sizing: border-box;
 }
 .settings-menu-item:hover {
     background-color: var(--color-border);
@@ -740,9 +725,6 @@ details.spec-group summary::after {
     margin-top: 0.25rem;
 }
 
-/* ==============================================
-   12. PLACEHOLDER DE FILTROS
-   ============================================== */
 .filter-placeholder {
     font-size: 0.8rem;
     color: var(--color-text-dim);
@@ -791,6 +773,7 @@ details.spec-group summary::after {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--color-text-primary);
+    margin: 0;
 }
 .modal-close-btn {
     background: none;
