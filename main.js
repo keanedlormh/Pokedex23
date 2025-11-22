@@ -1,7 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.0.1
- * [ACTUALIZACIÓN] El botón de tema ahora se llama "Tema" y
- * no cierra el panel de ajustes al pulsarlo.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.1.0
+ * Actualización: Menú de ajustes persistente en vista de producto.
  */
 
 // PASO 1: Creación de la base de datos global
@@ -56,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let filterValueCache = {};
     let attrCodeToDescMap = {};
 
-    // --- 3. [NUEVO] Lógica de Tema ---
+    // --- 3. Lógica de Tema ---
 
     // Paleta base para MODO OSCURO (Valores S y L)
     const darkPaletteHSL = {
@@ -70,18 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Paleta base para MODO CLARO (Valores S y L)
     const lightPaletteHSL = {
-        accent: { h: 188, s: 86, l: 40 }, // Un acento ligeramente más oscuro para contraste
-        dark:   { h: 210, s: 20, l: 98 }, // color-bg-dark -> bg-light
-        medium: { h: 210, s: 19, l: 94 }, // color-bg-medium -> bg-medium-light
-        border: { h: 210, s: 16, l: 85 }, // color-border -> border-light
-        textP:  { h: 210, s: 29, l: 10 }, // color-text-primary -> text-dark-primary
-        textS:  { h: 210, s: 12, l: 40 }  // color-text-secondary -> text-dark-secondary
+        accent: { h: 188, s: 86, l: 40 },
+        dark:   { h: 210, s: 20, l: 98 },
+        medium: { h: 210, s: 19, l: 94 },
+        border: { h: 210, s: 16, l: 85 },
+        textP:  { h: 210, s: 29, l: 10 },
+        textS:  { h: 210, s: 12, l: 40 }
     };
     
-    // Diferencia de Matiz (Hue) base entre acento y fondos
     const hueDifference = darkPaletteHSL.dark.h - darkPaletteHSL.accent.h;
     
-    // Estado actual del tema
     let isLightMode = false;
     let currentAccentHue = darkPaletteHSL.accent.h;
 
@@ -89,9 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v3.0.1 inicializando...");
+        console.log("Enciclopedia v3.1.0 inicializando...");
 
-        // [CORRECCIÓN] Esperar 100ms para que los scripts 'defer' de la BD se registren
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
@@ -109,21 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSmartFilters('all');
             populateFullModelList(); 
 
-            // Aplicar tema inicial (oscuro por defecto)
+            // Aplicar tema inicial
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
-            
-            // [CAMBIO] Texto del botón ahora es estático
             dom.paletteToggleButton.innerHTML = '🎨 Tema';
 
             console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
-            console.log(`Esquemas cargados: ${Object.keys(masterSchemaMap).join(', ')}`);
-        }, 100); // 100ms de retardo
+        }, 100);
     }
 
     function setupEventListeners() {
-        if (dom.modelSearchInput) {
-            dom.modelSearchInput.addEventListener('input', applyFiltersAndSearch);
-        }
+        // Filtros y Búsqueda
+        if (dom.modelSearchInput) dom.modelSearchInput.addEventListener('input', applyFiltersAndSearch);
 
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.addEventListener('change', () => {
@@ -138,9 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.smartFilterContainer.addEventListener('click', (e) => {
                 if (e.target.classList.contains('filter-toggle-btn') || e.target.closest('.filter-group-title')) {
                     const titleEl = e.target.closest('.filter-group-title');
-                    if (titleEl) {
-                        toggleFilterGroup(titleEl);
-                    }
+                    if (titleEl) toggleFilterGroup(titleEl);
                 }
             });
         }
@@ -153,17 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (dom.modelSearchResults) {
-            dom.modelSearchResults.addEventListener('click', handleResultClick);
-        }
+        if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
 
-        // --- Listeners de Paneles y Modales ---
-        if (dom.smartFilterToggle) {
-            dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
-        }
-        if (dom.settingsMenuToggle) {
-            dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
-        }
+        // Paneles y Modales
+        if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
+        if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
+        
         if (dom.filterOverlay) {
             dom.filterOverlay.addEventListener('click', () => {
                 closeFilterPanel();
@@ -171,26 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeReadmeModal();
             });
         }
-        if (dom.readmeCloseButton) {
-            dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
-        }
-        // --- Fin Listeners ---
+        if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
 
-        if (dom.expandAllButton) {
-            dom.expandAllButton.addEventListener('click', expandAllSpecs);
-        }
-        if (dom.collapseAllButton) {
-            dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
-        }
+        // Specs
+        if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
+        if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
 
-        // Listeners de botones de Ajustes
-        if (dom.paletteToggleButton) {
-            // [CAMBIO] Llama a la nueva función de ciclo
-            dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
-        }
-        if (dom.infoToggleButton) {
-            dom.infoToggleButton.addEventListener('click', showReadmeInfo);
-        }
+        // Ajustes
+        if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
+        if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
     }
 
     // --- 5. Lógica de Búsqueda y Filtro ---
@@ -217,17 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         const uniqueValues = new Set();
                         masterDatabase.forEach(product => {
                             const value = product.attributes[attr.code];
-                            if (value && value !== 'unknown') {
-                                uniqueValues.add(value);
-                            }
+                            if (value && value !== 'unknown') uniqueValues.add(value);
                         });
                         if (uniqueValues.size > 0) {
                             filterValueCache[attr.code] = [...uniqueValues].sort((a, b) => {
                                 const numA = parseFloat(a);
                                 const numB = parseFloat(b);
-                                if (!isNaN(numA) && !isNaN(numB)) {
-                                    return numA - numB;
-                                }
+                                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
                                 return String(a).localeCompare(String(b));
                             });
                         }
@@ -245,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             option.value = key;
             let friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
             if (key === 'tvs') friendlyName = "TVs";
+            if (key === 'pcs') friendlyName = "Monitores / PCs";
 
             option.textContent = friendlyName;
             fragment.appendChild(option);
@@ -328,9 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const filters = {};
         const selects = dom.smartFilterContainer.querySelectorAll('select');
         selects.forEach(select => {
-            if (select.value) {
-                filters[select.dataset.attribute] = select.value;
-            }
+            if (select.value) filters[select.dataset.attribute] = select.value;
         });
         return filters;
     }
@@ -346,23 +315,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasTextQuery = textQuery.length > 0;
         const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
         const hasSchemaFilter = selectedSchema !== 'all';
-        if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) {
-            return masterDatabase;
-        }
+        if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return masterDatabase;
+        
         return masterDatabase.filter(product => {
-            if (hasSchemaFilter && product.schema_key !== selectedSchema) {
-                return false;
-            }
-            if (hasTextQuery && !product.model.toLowerCase().includes(textQuery)) {
-                return false;
-            }
+            if (hasSchemaFilter && product.schema_key !== selectedSchema) return false;
+            if (hasTextQuery && !product.model.toLowerCase().includes(textQuery)) return false;
             if (hasAttributeFilters) {
                 const match = Object.entries(attributeFilters).every(([attrCode, attrValue]) => {
                     return product.attributes[attrCode] === attrValue;
                 });
-                if (!match) {
-                    return false;
-                }
+                if (!match) return false;
             }
             return true;
         });
@@ -370,12 +332,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleResultClick(e) {
         const target = e.target.closest('.list-item');
         if (!target) return;
-        document.querySelectorAll('.list-item.active').forEach(item => {
-            item.classList.remove('active');
-        });
+        document.querySelectorAll('.list-item.active').forEach(item => item.classList.remove('active'));
         target.classList.add('active');
+        
+        // Cerramos el panel de filtros si estaba abierto, pero mantenemos
+        // el control del menú de ajustes.
         closeFilterPanel();
-        closeSettingsMenu();
+        closeSettingsMenu(); // Cierra el panel desplegable, pero el botón se queda
+        
         const model = target.dataset.model;
         if (!model) return;
         const product = masterDatabase.find(p => p.model === model);
@@ -415,9 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function removeActiveFilter(attrCode) {
         const select = dom.smartFilterContainer.querySelector(`#filter_${attrCode}`);
-        if (select) {
-            select.value = "";
-        }
+        if (select) select.value = "";
         applyFiltersAndSearch();
     }
     function renderSearchResults(results, container) {
@@ -438,12 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(fragment);
     }
     function displayProduct(product) {
-        if (dom.productDisplayPlaceholder) {
-            dom.productDisplayPlaceholder.style.display = 'none';
-        }
-        if (dom.specControls) {
-            dom.specControls.className = 'spec-controls-visible'; 
-        }
+        if (dom.productDisplayPlaceholder) dom.productDisplayPlaceholder.style.display = 'none';
+        if (dom.specControls) dom.specControls.className = 'spec-controls-visible'; 
+        
         dom.productTitle.textContent = product.model;
         const productSchema = masterSchemaMap[product.schema_key]; 
         if (productSchema) {
@@ -508,16 +467,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dom.modelSearchInput.value = '';
 
-        if (dom.schemaFilterSelect) {
-            dom.schemaFilterSelect.value = 'all';
-        }
+        if (dom.schemaFilterSelect) dom.schemaFilterSelect.value = 'all';
         populateSmartFilters('all');
         applyFiltersAndSearch(); 
 
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
-        if (currentActive) {
-            currentActive.classList.remove('active');
-        }
+        if (currentActive) currentActive.classList.remove('active');
     }
     function expandAllSpecs() {
         const allGroups = dom.productSpecsContainer.querySelectorAll('details.spec-group');
@@ -557,6 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeFilterPanel() {
         if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
         dom.smartFilterPanel.className = 'smart-filter-content-hidden';
+        // Revisamos si hay otros paneles abiertos antes de cerrar el overlay
         if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
@@ -601,38 +557,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 8. [NUEVO] FUNCIONES DE TEMA (MODO CLARO/OSCURO) ---
+    // --- 8. FUNCIONES DE TEMA (MODO CLARO/OSCURO) ---
 
-    /**
-     * Función de ciclo del tema.
-     */
     function handleThemeToggle() {
-        isLightMode = !isLightMode; // Alternar estado
-
+        isLightMode = !isLightMode;
         if (isLightMode) {
-            // CAMBIANDO A MODO CLARO
             updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-            // [CAMBIO] Texto del botón ya no se actualiza
         } else {
-            // CAMBIANDO A MODO OSCURO
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
-            // [CAMBIO] Texto del botón ya no se actualiza
         }
-        
-        // [CAMBIO] Ya no se cierra el panel de ajustes
-        // closeSettingsMenu();
     }
 
-    /**
-     * Aplica la paleta de colores (baseHSL) con un matiz de acento (accentHue)
-     * a las variables CSS de la raíz.
-     * @param {object} baseHSL - El objeto (darkPaletteHSL o lightPaletteHSL)
-     * @param {number} accentHue - El Matiz (0-360) para el color de acento.
-     */
     function updatePaletteCSS(baseHSL, accentHue) {
         const p = baseHSL;
-        // Calcular el nuevo matiz para los fondos/texto basado en la diferencia
         const newOtherHue = (accentHue + hueDifference + 360) % 360; 
 
         const newColors = {
@@ -644,58 +582,40 @@ document.addEventListener('DOMContentLoaded', () => {
             textSecondary: `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`
         };
 
-        // Calcular el color de "glow" (brillo)
         const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
         newColors.glow = `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`;
         
-        // Aplicar las variables CSS al documento
         const root = document.documentElement;
         root.style.setProperty('--color-cyan-accent', newColors.accent);
         root.style.setProperty('--color-cyan-glow', newColors.glow);
         root.style.setProperty('--color-bg-dark', newColors.bgDark);
         root.style.setProperty('--color-bg-medium', newColors.bgMedium);
         root.style.setProperty('--color-border', newColors.border);
-        root.style.setProperty('--color-border-light', `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`); // Aclarar borde
+        root.style.setProperty('--color-border-light', `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`);
         root.style.setProperty('--color-text-primary', newColors.textPrimary);
         root.style.setProperty('--color-text-secondary', newColors.textSecondary);
-        root.style.setProperty('--color-text-dim', `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`); // Oscurecer "dim"
+        root.style.setProperty('--color-text-dim', `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`);
     }
 
-    /**
-     * Convierte HSL a RGB (necesario para el color 'glow' en RGBA).
-     */
     function hslToRgb(h, s, l) {
-        s /= 100;
-        l /= 100;
+        s /= 100; l /= 100;
         const k = n => (n + h / 30) % 12;
         const a = s * Math.min(l, 1 - l);
-        const f = n =>
-            l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        return {
-            r: Math.round(255 * f(0)),
-            g: Math.round(255 * f(8)),
-            b: Math.round(255 * f(4))
-        };
+        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
     }
 
-    /**
-     * Carga el contenido de README.md en el modal.
-     */
     async function showReadmeInfo() {
         closeSettingsMenu();
         openReadmeModal();
-
         if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
             try {
                 dom.readmeContent.textContent = "Cargando...";
                 const response = await fetch('README.md');
-                if (!response.ok) {
-                    throw new Error('No se pudo encontrar README.md');
-                }
+                if (!response.ok) throw new Error('No se pudo encontrar README.md');
                 const text = await response.text();
                 dom.readmeContent.textContent = text;
             } catch (error) {
-                console.error("Error al cargar README.md:", error);
                 dom.readmeContent.textContent = "Error al cargar el archivo README.md.\n\nAsegúrate de que el archivo existe en la raíz del proyecto.";
             }
         }
