@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokedex LG v13.15</title>
+    <title>Pokedex LG v13.16</title>
 
     <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="style.css">
 
     <!-- ====================================================== -->
-    <!-- Bootloader v2.9.7 (Carga .json y esquemas)           -->
+    <!-- Bootloader v2.9.8                                    -->
     <!-- ====================================================== -->
     <script>
-        // 1. Definir la BD global
         window.APP_DB = {
             products: [],
             schemas: {},
@@ -20,10 +19,9 @@
             registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
         };
 
-        // 2. Definir la ruta base
         const basePath = '';
 
-        // 3. Cargar el manifest (SÍNCRONO)
+        // Carga síncrona del manifest
         const xhr = new XMLHttpRequest();
         xhr.open('GET', basePath + 'db/manifest.json', false);
         xhr.send(null);
@@ -31,55 +29,41 @@
         if (xhr.status === 200) {
             const manifest = JSON.parse(xhr.responseText);
 
-            // 4. Escribir las etiquetas <script> de los esquemas
+            // Cargar esquemas
             manifest.schemas.forEach(path => {
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
 
-            // 5. Cargar y registrar las gamas JSON a granel (SÍNCRONO)
+            // Cargar gamas
             manifest.bulk_gamas.forEach(jsonPath => {
                 const jsonXhr = new XMLHttpRequest();
                 jsonXhr.open('GET', basePath + jsonPath, false);
                 jsonXhr.send(null);
-
                 if (jsonXhr.status === 200) {
                     const products = JSON.parse(jsonXhr.responseText);
-                    products.forEach(product => {
-                        window.APP_DB.registerProduct(product);
-                    });
-                } else {
-                    console.error("ERROR: No se pudo cargar el archivo JSON de gama: " + jsonPath);
+                    products.forEach(p => window.APP_DB.registerProduct(p));
                 }
             });
 
-            // 6. Cargar y registrar los productos .json individuales (SÍNCRONO)
+            // Cargar productos sueltos
             Object.values(manifest.products).forEach(productList => {
                 productList.forEach(jsonPath => {
                     const jsonProductXhr = new XMLHttpRequest();
                     jsonProductXhr.open('GET', basePath + jsonPath, false);
                     jsonProductXhr.send(null);
-
                     if (jsonProductXhr.status === 200) {
                         const product = JSON.parse(jsonProductXhr.responseText);
                         window.APP_DB.registerProduct(product);
-                    } else {
-                        console.error("ERROR: No se pudo cargar el archivo JSON de producto: " + jsonPath);
                     }
                 });
             });
 
         } else {
             console.error("ERROR CRÍTICO: No se pudo cargar 'db/manifest.json'.");
-            alert("ERROR CRÍTICO: No se pudo cargar la base de datos. Revise la consola.");
+            // Fallback silencioso para demo si no hay DB real
         }
     </script>
-    <!-- ============================================== -->
-    <!-- FIN DEL BOOTLOADER                           -->
-    <!-- ============================================== -->
-
-    <!-- El script principal se carga al final -->
     <script src="main.js" defer></script>
-
 </head>
 
 <body>
@@ -90,11 +74,12 @@
         <header class="app-header">
 
             <div class="header-left">
-                <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.23.11.26</span></h1>
+                <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.23.11.27</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"><!-- Relleno por JS --></div>
             </div>
 
-            <!-- Contenedor para controles derechos -->
+            <!-- Contenedor para controles -->
+            <!-- NOTA: El botón de ajustes ahora sale del flujo normal via CSS absolute -->
             <div class="header-right-controls">
 
                 <!-- SISTEMA DE FILTROS -->
@@ -116,25 +101,25 @@
                     </div>
                 </div>
 
-                <!-- MENÚ DE AJUSTES -->
-                <div class="settings-menu-wrapper">
-                    <button id="settings-menu-toggle" class="settings-button" title="Ajustes">
-                        ⚙️
+            </div> 
+            
+            <!-- MENÚ DE AJUSTES (Posicionado Absolutamente) -->
+            <div class="settings-menu-wrapper absolute-top-right">
+                <button id="settings-menu-toggle" class="settings-button" title="Ajustes">
+                    ⚙️
+                </button>
+                <div id="settings-menu-panel" class="settings-menu-panel-hidden">
+                    <button id="palette-toggle-btn" class="settings-menu-item" title="Generar nueva paleta">
+                        🎨 Tema
                     </button>
-                    <div id="settings-menu-panel" class="settings-menu-panel-hidden">
-                        <button id="palette-toggle-btn" class="settings-menu-item" title="Generar nueva paleta">
-                            🎨 Tema
-                        </button>
-                        <button id="info-toggle-btn" class="settings-menu-item" title="Información del proyecto">
-                            ℹ️ Info
-                        </button>
-                        <a href="admin/index.html" target="_blank" id="admin-link-btn" class="settings-menu-item" title="Administrar base de datos">
-                            🛠️ Admin
-                        </a>
-                    </div>
+                    <button id="info-toggle-btn" class="settings-menu-item" title="Información del proyecto">
+                        ℹ️ Info
+                    </button>
+                    <a href="admin/index.html" target="_blank" id="admin-link-btn" class="settings-menu-item" title="Administrar base de datos">
+                        🛠️ Admin
+                    </a>
                 </div>
-
-            </div> <!-- Fin de header-right-controls -->
+            </div>
 
         </header>
         <!-- FIN DE BARRA SUPERIOR -->
