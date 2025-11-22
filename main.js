@@ -1,6 +1,7 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.7.0
- * Update: Eliminación de nombres 'ad-hoc' para gamas. Carga dinámica pura basada en keys.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.8.0
+ * Update: Filtros contextuales. Los valores de los filtros se calculan dinámicamente
+ * según la gama seleccionada para evitar contaminación cruzada de datos entre gamas.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const originalPlaceholder = dom.productDisplayPlaceholder;
     let masterDatabase = [];
     let masterSchemaMap = {};
-    let filterValueCache = {};
+    // Eliminamos filterValueCache global para evitar mezcla de datos
     let attrCodeToDescMap = {};
 
     // --- Tema ---
@@ -53,8 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
             masterSchemaMap = window.APP_DB.schemas;
             if (masterDatabase.length === 0) console.warn("Base de datos vacía.");
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
+            
             buildAttributeCache();
-            buildFilterValueCache();
+            // buildFilterValueCache(); // YA NO SE USA: El cálculo ahora es dinámico y contextual
+            
             setupEventListeners();
             populateSchemaSelector();
             populateSmartFilters('all');
@@ -142,9 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fragment = document.createDocumentFragment();
 
         if (hasSchemaFilter) {
-            // CAMBIO v3.7.0: Usar la key directa (capitalizada) sin lógica ad-hoc
             const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1);
-            
             const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; 
             schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`;
             fragment.appendChild(schemaChip);
@@ -169,35 +170,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Funciones Auxiliares Standard ---
     function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
+    
     function buildAttributeCache() {
         if (Object.keys(masterSchemaMap).length === 0) return;
         Object.values(masterSchemaMap).forEach(schema => {
             schema.forEach(group => { group.attrs.forEach(attr => { attrCodeToDescMap[attr.code] = attr.desc; }); });
         });
     }
-    function buildFilterValueCache() {
-        if (Object.keys(masterSchemaMap).length === 0) return;
-        Object.values(masterSchemaMap).forEach(schema => {
-            schema.forEach(group => {
-                group.attrs.forEach(attr => {
-                    if (!filterValueCache[attr.code]) { 
-                        const uniqueValues = new Set();
-                        masterDatabase.forEach(product => {
-                            const value = product.attributes[attr.code];
-                            if (value && value !== 'unknown') uniqueValues.add(value);
-                        });
-                        if (uniqueValues.size > 0) {
-                            filterValueCache[attr.code] = [...uniqueValues].sort((a, b) => {
-                                const numA = parseFloat(a); const numB = parseFloat(b);
-                                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-                                return String(a).localeCompare(String(b));
-                            });
-                        }
-                    }
-                });
-            });
-        });
-    }
+    
+    // buildFilterValueCache() ELIMINADA: Se calcula dinámicamente en populateSmartFilters
     
     function populateSchemaSelector() {
         if (!dom.schemaFilterSelect) return;
@@ -205,11 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fragment = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
             const option = document.createElement('option'); option.value = key;
-            
-            // CAMBIO v3.7.0: Nombre basado puramente en la key
-            // Primera letra mayúscula, resto igual. Sin excepciones if/else.
             const friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
-            
             option.textContent = friendlyName; fragment.appendChild(option);
         });
         dom.schemaFilterSelect.appendChild(fragment);
@@ -219,44 +196,65 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
         dom.smartFilterContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
-        let schemaList = [];
+        
         if (schemaKey === 'all') {
             const placeholder = document.createElement('p'); placeholder.className = 'filter-placeholder';
             placeholder.textContent = 'Selecciona una gama para ver filtros específicos.';
             fragment.appendChild(placeholder); dom.smartFilterContainer.appendChild(fragment); return;
-        } else if (masterSchemaMap[schemaKey]) { schemaList = [ masterSchemaMap[schemaKey] ]; }
+        } 
+        
+        // LÓGICA DINÁMICA (FIX v3.8.0):
+        // 1. Obtenemos solo los productos de la gama seleccionada
+        const relevantProducts = masterDatabase.filter(p => p.schema_key === schemaKey);
+        
+        // 2. Obtenemos el esquema de esa gama
+        const schemaGroups = masterSchemaMap[schemaKey] || [];
 
-        schemaList.forEach(schemaGroups => {
-            schemaGroups.forEach(group => {
-                const groupWrapper = document.createElement('div'); groupWrapper.className = 'filter-group-wrapper';
-                const title = document.createElement('h3'); title.className = 'filter-group-title';
-                title.innerHTML = `<button class="filter-toggle-btn gray"></button>${group.group}`;
-                groupWrapper.appendChild(title);
-                const rowsContainer = document.createElement('div'); rowsContainer.className = 'filter-rows-container collapsed';
-                let hasFiltersInGroup = false; 
-                group.attrs.forEach(attr => {
-                    const values = filterValueCache[attr.code];
-                    if (values && values.length > 0) {
-                        hasFiltersInGroup = true;
-                        const uniqueId = `filter_${attr.code}_${Math.random().toString(36).substr(2, 5)}`;
-                        const row = document.createElement('div'); row.className = 'filter-row';
-                        const label = document.createElement('label'); label.htmlFor = uniqueId;
-                        label.textContent = attr.desc; label.title = attr.desc;
-                        const select = document.createElement('select'); 
-                        select.id = uniqueId;
-                        select.className = 'futuristic-select'; 
-                        select.dataset.attribute = attr.code;
-                        select.setAttribute('data-attribute', attr.code);
-                        select.innerHTML = '<option value="">---</option>';
-                        values.forEach(value => {
-                            const option = document.createElement('option'); option.value = value; option.textContent = value;
-                            select.appendChild(option);
-                        });
-                        row.appendChild(label); row.appendChild(select); rowsContainer.appendChild(row);
-                    }
+        schemaGroups.forEach(group => {
+            const groupWrapper = document.createElement('div'); groupWrapper.className = 'filter-group-wrapper';
+            const title = document.createElement('h3'); title.className = 'filter-group-title';
+            title.innerHTML = `<button class="filter-toggle-btn gray"></button>${group.group}`;
+            groupWrapper.appendChild(title);
+            const rowsContainer = document.createElement('div'); rowsContainer.className = 'filter-rows-container collapsed';
+            
+            let hasFiltersInGroup = false; 
+            
+            group.attrs.forEach(attr => {
+                // 3. Calculamos los valores disponibles SOLO dentro de relevantProducts
+                const rawValues = relevantProducts
+                    .map(p => p.attributes[attr.code])
+                    .filter(v => v && v !== 'unknown');
+                
+                // Crear Set para únicos y ordenar
+                const uniqueValues = [...new Set(rawValues)].sort((a, b) => {
+                    const numA = parseFloat(a); const numB = parseFloat(b);
+                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                    return String(a).localeCompare(String(b));
                 });
-                if (hasFiltersInGroup) { groupWrapper.appendChild(rowsContainer); fragment.appendChild(groupWrapper); }
+
+                if (uniqueValues.length > 0) {
+                    hasFiltersInGroup = true;
+                    const uniqueId = `filter_${attr.code}_${Math.random().toString(36).substr(2, 5)}`;
+                    const row = document.createElement('div'); row.className = 'filter-row';
+                    const label = document.createElement('label'); label.htmlFor = uniqueId;
+                    label.textContent = attr.desc; label.title = attr.desc;
+                    const select = document.createElement('select'); 
+                    select.id = uniqueId;
+                    select.className = 'futuristic-select'; 
+                    select.dataset.attribute = attr.code;
+                    select.setAttribute('data-attribute', attr.code);
+                    select.innerHTML = '<option value="">---</option>';
+                    
+                    uniqueValues.forEach(value => {
+                        const option = document.createElement('option'); option.value = value; option.textContent = value;
+                        select.appendChild(option);
+                    });
+                    
+                    row.appendChild(label); row.appendChild(select); rowsContainer.appendChild(row);
+                }
             });
+            
+            if (hasFiltersInGroup) { groupWrapper.appendChild(rowsContainer); fragment.appendChild(groupWrapper); }
         });
         dom.smartFilterContainer.appendChild(fragment);
     }
