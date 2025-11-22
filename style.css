@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v3.2.3 Fix)
+   Estilos para la App Principal (v3.5.1 Wrap Fix)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -34,6 +34,7 @@ body {
     margin: 0 auto;
     padding: 0.75rem;
     box-sizing: border-box; 
+    position: relative;
 }
 @media (min-width: 1024px) { .container { padding: 1.5rem; } }
 
@@ -63,10 +64,10 @@ body.model-is-selected #selected-model-display { display: block; }
 .max-h-64 { max-height: 16rem; }
 
 /* ==============================================
-   BARRA SUPERIOR DE APP (Header)
+   BARRA SUPERIOR (HEADER)
    ============================================== */
 .app-header {
-    position: relative; /* Referencia para el botón absoluto */
+    position: relative; 
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -75,7 +76,7 @@ body.model-is-selected #selected-model-display { display: block; }
     margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--color-border);
     gap: 0.75rem;
-    min-height: 40px; /* Asegura altura mínima para el botón flotante */
+    min-height: 40px;
 }
 @media (min-width: 1024px) {
     .app-header { flex-direction: row; align-items: center; }
@@ -86,7 +87,7 @@ body.model-is-selected #selected-model-display { display: block; }
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    padding-right: 50px; /* IMPORTANTE: Deja hueco a la derecha para que el botón no tape el texto */
+    padding-right: 50px; 
 }
 
 .app-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
@@ -111,22 +112,12 @@ body.model-is-selected #selected-model-display { display: block; }
 @media (min-width: 1024px) { .header-right-controls { width: auto; } }
 
 /* ==============================================
-   MENÚ DE AJUSTES (CORRECCIÓN POSICIONAMIENTO)
+   MENÚ DE AJUSTES
    ============================================== */
-.settings-menu-wrapper {
-    position: relative; 
-}
-
-/* USAMOS ALTA ESPECIFICIDAD AQUÍ PARA FORZAR EL POSICIONAMIENTO
-   Esto arregla el bug donde el botón se quedaba a la izquierda.
-*/
+.settings-menu-wrapper { position: relative; }
 .settings-menu-wrapper.absolute-top-right {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 60;
+    position: absolute; top: 0; right: 0; z-index: 60;
 }
-
 .settings-button {
     background-color: var(--color-bg-medium); border: 1px solid var(--color-border);
     color: var(--color-text-secondary); font-size: 1.2rem; line-height: 1;
@@ -163,12 +154,16 @@ body.model-is-selected #selected-model-display { display: block; }
 
 .smart-filter-content-hidden { display: none; }
 .smart-filter-content-open {
-    display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); right: 0;
-    width: 100%; min-width: 300px; max-width: 500px; background: var(--color-bg-medium);
+    display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem);
+    left: 0; right: auto; width: 100%; min-width: 280px; max-width: 95vw; 
+    background: var(--color-bg-medium);
     border: 1px solid var(--color-border-light); border-radius: 0.5rem; padding: 0.75rem;
     max-height: 70vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-@media (min-width: 1024px) { .smart-filter-content-open { width: auto; } }
+
+@media (min-width: 1024px) {
+    .smart-filter-content-open { left: auto; right: 0; width: auto; min-width: 300px; max-width: 500px; }
+}
 
 .smart-filters-list { display: flex; flex-direction: column; gap: 0.25rem; }
 .filter-group-wrapper { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
@@ -191,34 +186,61 @@ body.model-is-selected #selected-model-display { display: block; }
 .overlay-hidden { display: none; }
 
 /* ==============================================
-   BARRA DE FILTROS ACTIVOS (EXPANDIDA)
+   BARRA DE FILTROS ACTIVOS (MULTILINE FIX)
    ============================================== */
 .active-filters-bar-hidden { display: none; }
 .active-filters-bar-visible {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    
-    /* [CAMBIO] Permitir crecimiento libre sin scroll */
-    height: auto; 
-    max-height: none; 
-    overflow: visible;
+    display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem 0.75rem;
+    background: var(--color-bg-medium); border: 1px solid var(--color-border);
+    border-radius: 0.5rem; margin-bottom: 1rem;
+    height: auto; max-height: none; overflow: visible;
 }
 
 .active-filter-chip {
-    display: flex; align-items: center; gap: 0.5rem;
+    display: flex; 
+    align-items: center; /* Centrar verticalmente el botón X */
+    gap: 0.5rem;
     background: var(--color-cyan-glow); border: 1px solid var(--color-cyan-accent);
-    border-radius: 4px; padding: 0.25rem 0.5rem; font-family: var(--font-mono);
+    border-radius: 4px; 
+    padding: 0.35rem 0.6rem; /* Un poco más de padding para multilínea */
+    font-family: var(--font-mono);
     font-size: 0.8rem; color: var(--color-text-primary);
+    max-width: 100%;
+    height: auto; /* Permitir que crezca */
 }
 .schema-chip { border-color: var(--color-text-secondary); background: var(--color-border); }
-.chip-label .filter-value { color: var(--color-text-primary); font-weight: 600; }
-.chip-remove-btn { background: none; border: none; color: var(--color-cyan-accent); font-weight: 700; cursor: pointer; padding: 0 0.25rem; }
+
+.chip-label {
+    display: flex; 
+    flex-wrap: wrap; /* Permitir wrapping de los elementos hijos */
+    gap: 0.3rem; 
+    white-space: normal; /* Permitir salto de línea general */
+    word-break: break-word; /* Romper palabras largas si es necesario */
+    line-height: 1.3;
+}
+
+.chip-label .filter-name {
+    white-space: normal; /* El nombre del atributo puede saltar de línea si es muy largo */
+    font-weight: 400;
+    color: var(--color-text-secondary);
+}
+
+.chip-label .filter-value { 
+    color: var(--color-text-primary); 
+    font-weight: 700; 
+    white-space: normal; /* El valor puede saltar de línea */
+    overflow: visible;
+    text-overflow: clip; /* Adiós a los tres puntos */
+}
+
+.chip-remove-btn { 
+    background: none; border: none; color: var(--color-cyan-accent); font-weight: 700; 
+    cursor: pointer; padding: 0 0.25rem; 
+    min-width: 24px; 
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; /* IMPORTANTE: Evita que el botón desaparezca */
+}
+.chip-remove-btn:hover { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 4px; }
 
 /* ==============================================
    TARJETAS, INPUTS Y LISTAS
