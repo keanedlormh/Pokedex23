@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.6.0
- * Update: Inicio aleatorio en modo claro (Light Mode Random Start).
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.7.0
+ * Update: Eliminación de nombres 'ad-hoc' para gamas. Carga dinámica pura basada en keys.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     
-    // CAMBIO: Inicializamos en modo claro (true)
+    // Inicio en modo claro
     let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
 
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSmartFilters('all');
             populateFullModelList(); 
             
-            // CAMBIO: Generar color aleatorio y aplicar tema CLARO al inicio
+            // Generar color aleatorio y aplicar tema CLARO al inicio
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(lightPaletteHSL, currentAccentHue);
             
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
     }
 
-    // --- LÓGICA DE FILTROS (FIX DUPLICADOS) ---
+    // --- LÓGICA DE FILTROS ---
 
     function removeActiveFilter(attrCode) {
         const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select'));
@@ -142,9 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const fragment = document.createDocumentFragment();
 
         if (hasSchemaFilter) {
-            let schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1);
-            if (currentSchema === 'tvs') schemaName = 'TVs';
-            if (currentSchema === 'pcs') schemaName = 'Monitores';
+            // CAMBIO v3.7.0: Usar la key directa (capitalizada) sin lógica ad-hoc
+            const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1);
+            
             const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; 
             schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`;
             fragment.appendChild(schemaChip);
@@ -198,18 +198,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    
     function populateSchemaSelector() {
         if (!dom.schemaFilterSelect) return;
         dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>';
         const fragment = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
             const option = document.createElement('option'); option.value = key;
-            let friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
-            if (key === 'tvs') friendlyName = "TVs"; if (key === 'pcs') friendlyName = "Monitores / PCs";
+            
+            // CAMBIO v3.7.0: Nombre basado puramente en la key
+            // Primera letra mayúscula, resto igual. Sin excepciones if/else.
+            const friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
+            
             option.textContent = friendlyName; fragment.appendChild(option);
         });
         dom.schemaFilterSelect.appendChild(fragment);
     }
+
     function populateSmartFilters(schemaKey = 'all') {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
         dom.smartFilterContainer.innerHTML = '';
