@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.5.0
- * Fix: Soporte completo para atributos duplicados en filtros y corrección de IDs.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.6.0
+ * Update: Inicio aleatorio en modo claro (Light Mode Random Start).
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Tema ---
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
-    let isLightMode = false;
+    
+    // CAMBIO: Inicializamos en modo claro (true)
+    let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
 
     function initialize() {
@@ -57,7 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSchemaSelector();
             populateSmartFilters('all');
             populateFullModelList(); 
-            updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+            
+            // CAMBIO: Generar color aleatorio y aplicar tema CLARO al inicio
+            currentAccentHue = Math.floor(Math.random() * 360);
+            updatePaletteCSS(lightPaletteHSL, currentAccentHue);
+            
             dom.paletteToggleButton.innerHTML = '🎨 Tema';
         }, 100);
     }
@@ -108,21 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DE FILTROS (FIX DUPLICADOS) ---
 
     function removeActiveFilter(attrCode) {
-        // 1. Obtener TODOS los selects del panel
         const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select'));
-        
-        // 2. Filtrar TODOS los que coincidan con el attrCode (pueden ser múltiples si hay duplicados)
         const targetSelects = allSelects.filter(s => 
             s.dataset.attribute === attrCode || 
             s.getAttribute('data-attribute') === attrCode
         );
 
         if (targetSelects.length > 0) {
-            // 3. Limpiarlos TODOS para asegurar que el filtro se va
             targetSelects.forEach(select => select.value = "");
             applyFiltersAndSearch();
         } else {
-            // Fallback: Si no encuentra el select (raro), regenerar todo por seguridad
             console.warn(`Select no encontrado para attrCode: ${attrCode}. Refrescando.`);
             applyFiltersAndSearch();
         }
@@ -232,20 +233,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const values = filterValueCache[attr.code];
                     if (values && values.length > 0) {
                         hasFiltersInGroup = true;
-                        
-                        // FIX: Generar ID único para evitar colisiones en el DOM si el atributo se repite
                         const uniqueId = `filter_${attr.code}_${Math.random().toString(36).substr(2, 5)}`;
-                        
                         const row = document.createElement('div'); row.className = 'filter-row';
                         const label = document.createElement('label'); label.htmlFor = uniqueId;
                         label.textContent = attr.desc; label.title = attr.desc;
-                        
                         const select = document.createElement('select'); 
                         select.id = uniqueId;
                         select.className = 'futuristic-select'; 
                         select.dataset.attribute = attr.code;
                         select.setAttribute('data-attribute', attr.code);
-                        
                         select.innerHTML = '<option value="">---</option>';
                         values.forEach(value => {
                             const option = document.createElement('option'); option.value = value; option.textContent = value;
@@ -260,12 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.smartFilterContainer.appendChild(fragment);
     }
 
-    // FIX: Nueva lógica para obtener filtros. Si hay duplicados, cogemos el que tenga valor.
     function getAppliedFilters() {
         const filters = {};
         dom.smartFilterContainer.querySelectorAll('select').forEach(select => {
-            // Solo añadimos al mapa de filtros si el select tiene un valor seleccionado.
-            // Esto previene que un select duplicado vacío sobrescriba a uno seleccionado.
             if (select.value) {
                 filters[select.dataset.attribute] = select.value;
             }
