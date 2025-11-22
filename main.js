@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.2.0
- * Actualización: Persistencia de búsqueda, Gama como filtro y Botón fijo.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.2.1
+ * Actualización: Mismas funcionalidades, ajustes solo visuales en CSS.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v3.2.0 inicializando...");
+        console.log("Enciclopedia v3.2.1 inicializando...");
 
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
@@ -200,9 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let schemaList = [];
         if (schemaKey === 'all') {
-            // Mostrar un mensaje si no hay gama seleccionada para no saturar
-            // O podríamos decidir mostrar todos. Por ahora, mantenemos comportamiento:
-            // Si 'all', no mostrar filtros específicos.
             const placeholder = document.createElement('p');
             placeholder.className = 'filter-placeholder';
             placeholder.textContent = 'Selecciona una gama para ver filtros específicos.';
@@ -285,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
         const hasSchemaFilter = selectedSchema !== 'all';
         
-        // Si no hay filtros activos, devolver todo
         if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return masterDatabase;
         
         return masterDatabase.filter(product => {
@@ -340,14 +336,14 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.activeFiltersBar.innerHTML = ''; 
         const fragment = document.createDocumentFragment();
 
-        // 1. Dibujar Chip de Gama (Schema)
+        // 1. Dibujar Chip de Gama
         if (hasSchemaFilter) {
             let schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1);
             if (currentSchema === 'tvs') schemaName = 'TVs';
             if (currentSchema === 'pcs') schemaName = 'Monitores';
 
             const schemaChip = document.createElement('div');
-            schemaChip.className = 'active-filter-chip schema-chip'; // Clase especial para estilo diferente si se desea
+            schemaChip.className = 'active-filter-chip schema-chip'; 
             schemaChip.innerHTML = `
                 <span class="chip-label">
                     <span class="filter-name">Gama:</span>
@@ -378,8 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function removeSchemaFilter() {
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.value = 'all';
-            populateSmartFilters('all'); // Resetear paneles de filtro
-            applyFiltersAndSearch(); // Recalcular
+            populateSmartFilters('all'); 
+            applyFiltersAndSearch(); 
         }
     }
 
@@ -474,15 +470,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.productSpecsContainer.appendChild(originalPlaceholder);
         originalPlaceholder.style.display = 'block';
 
-        // [MODIFICADO] YA NO LIMPIAMOS LOS FILTROS NI EL BUSCADOR
-        // dom.modelSearchInput.value = '';  <-- ELIMINADO
-        // if (dom.schemaFilterSelect) dom.schemaFilterSelect.value = 'all'; <-- ELIMINADO
-        // populateSmartFilters('all'); <-- ELIMINADO
-        
-        // Simplemente reaplicamos la búsqueda con lo que ya había
         applyFiltersAndSearch(); 
 
-        // Quitamos el "active" visual de la lista si lo hubiera
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
         if (currentActive) currentActive.classList.remove('active');
     }
