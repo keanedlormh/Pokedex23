@@ -1,12 +1,8 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.1.0
- * Actualización: Menú de ajustes persistente en vista de producto.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.2.0
+ * Actualización: Persistencia de búsqueda, Gama como filtro y Botón fijo.
  */
 
-// PASO 1: Creación de la base de datos global
-// (Definido en el bootloader de index.html)
-
-// PASO 2: Espera al DOM
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. Almacenamiento de Elementos del DOM ---
@@ -56,29 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let attrCodeToDescMap = {};
 
     // --- 3. Lógica de Tema ---
-
-    // Paleta base para MODO OSCURO (Valores S y L)
-    const darkPaletteHSL = {
-        accent: { h: 188, s: 96, l: 41 }, // color-cyan-accent
-        dark:   { h: 210, s: 29, l: 8 },  // color-bg-dark
-        medium: { h: 210, s: 19, l: 11 }, // color-bg-medium
-        border: { h: 210, s: 16, l: 15 }, // color-border
-        textP:  { h: 210, s: 29, l: 92 }, // color-text-primary
-        textS:  { h: 210, s: 12, l: 67 }  // color-text-secondary
-    };
-
-    // Paleta base para MODO CLARO (Valores S y L)
-    const lightPaletteHSL = {
-        accent: { h: 188, s: 86, l: 40 },
-        dark:   { h: 210, s: 20, l: 98 },
-        medium: { h: 210, s: 19, l: 94 },
-        border: { h: 210, s: 16, l: 85 },
-        textP:  { h: 210, s: 29, l: 10 },
-        textS:  { h: 210, s: 12, l: 40 }
-    };
-    
+    const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
+    const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     const hueDifference = darkPaletteHSL.dark.h - darkPaletteHSL.accent.h;
-    
     let isLightMode = false;
     let currentAccentHue = darkPaletteHSL.accent.h;
 
@@ -86,15 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. Inicialización de la Aplicación ---
 
     function initialize() {
-        console.log("Enciclopedia v3.1.0 inicializando...");
+        console.log("Enciclopedia v3.2.0 inicializando...");
 
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
 
-            if (masterDatabase.length === 0) {
-                console.warn("La base de datos está vacía. ¿Se cargó el manifest.json correctamente?");
-            }
+            if (masterDatabase.length === 0) console.warn("Base de datos vacía.");
 
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
 
@@ -105,16 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSmartFilters('all');
             populateFullModelList(); 
 
-            // Aplicar tema inicial
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
             dom.paletteToggleButton.innerHTML = '🎨 Tema';
 
-            console.log(`Base de datos cargada con ${masterDatabase.length} productos.`);
+            console.log(`Cargados ${masterDatabase.length} productos.`);
         }, 100);
     }
 
     function setupEventListeners() {
-        // Filtros y Búsqueda
         if (dom.modelSearchInput) dom.modelSearchInput.addEventListener('input', applyFiltersAndSearch);
 
         if (dom.schemaFilterSelect) {
@@ -138,14 +110,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.activeFiltersBar) {
             dom.activeFiltersBar.addEventListener('click', (e) => {
                 if (e.target.classList.contains('chip-remove-btn')) {
-                    removeActiveFilter(e.target.dataset.attrCode);
+                    const action = e.target.dataset.action;
+                    if (action === 'remove-schema') {
+                        removeSchemaFilter();
+                    } else {
+                        removeActiveFilter(e.target.dataset.attrCode);
+                    }
                 }
             });
         }
 
         if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
 
-        // Paneles y Modales
         if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
         if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
         
@@ -157,12 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
-
-        // Specs
         if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
-
-        // Ajustes
         if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
     }
@@ -216,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
             if (key === 'tvs') friendlyName = "TVs";
             if (key === 'pcs') friendlyName = "Monitores / PCs";
-
             option.textContent = friendlyName;
             fragment.appendChild(option);
         });
@@ -224,24 +195,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function populateSmartFilters(schemaKey = 'all') {
         if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
-
         dom.smartFilterContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
 
         let schemaList = [];
         if (schemaKey === 'all') {
-            schemaList = [];
-        } else if (masterSchemaMap[schemaKey]) {
-            schemaList = [ masterSchemaMap[schemaKey] ];
-        }
-
-        if (schemaList.length === 0) {
+            // Mostrar un mensaje si no hay gama seleccionada para no saturar
+            // O podríamos decidir mostrar todos. Por ahora, mantenemos comportamiento:
+            // Si 'all', no mostrar filtros específicos.
             const placeholder = document.createElement('p');
             placeholder.className = 'filter-placeholder';
             placeholder.textContent = 'Selecciona una gama para ver filtros específicos.';
             fragment.appendChild(placeholder);
             dom.smartFilterContainer.appendChild(fragment);
             return;
+        } else if (masterSchemaMap[schemaKey]) {
+            schemaList = [ masterSchemaMap[schemaKey] ];
         }
 
         schemaList.forEach(schemaGroups => {
@@ -250,14 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 groupWrapper.className = 'filter-group-wrapper';
                 const title = document.createElement('h3');
                 title.className = 'filter-group-title';
-                const toggleBtn = document.createElement('button');
-                toggleBtn.className = 'filter-toggle-btn gray';
-                title.appendChild(toggleBtn);
-                title.appendChild(document.createTextNode(group.group));
+                title.innerHTML = `<button class="filter-toggle-btn gray"></button>${group.group}`;
                 groupWrapper.appendChild(title);
+                
                 const rowsContainer = document.createElement('div');
                 rowsContainer.className = 'filter-rows-container collapsed';
                 let hasFiltersInGroup = false; 
+                
                 group.attrs.forEach(attr => {
                     const values = filterValueCache[attr.code];
                     if (values && values.length > 0) {
@@ -268,14 +236,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         label.htmlFor = `filter_${attr.code}`;
                         label.textContent = attr.desc;
                         label.title = attr.desc;
+                        
                         const select = document.createElement('select');
                         select.id = `filter_${attr.code}`;
                         select.className = 'futuristic-select';
                         select.dataset.attribute = attr.code;
-                        const defaultOption = document.createElement('option');
-                        defaultOption.value = "";
-                        defaultOption.textContent = "---";
-                        select.appendChild(defaultOption);
+                        select.innerHTML = '<option value="">---</option>';
                         values.forEach(value => {
                             const option = document.createElement('option');
                             option.value = value;
@@ -295,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.smartFilterContainer.appendChild(fragment);
     }
+
     function getAppliedFilters() {
         const filters = {};
         const selects = dom.smartFilterContainer.querySelectorAll('select');
@@ -303,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         return filters;
     }
+
     function applyFiltersAndSearch() {
         const textQuery = dom.modelSearchInput.value.toLowerCase().trim();
         const attributeFilters = getAppliedFilters();
@@ -310,11 +278,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSearchResults(filteredProducts, dom.modelSearchResults);
         renderActiveFilters(attributeFilters);
     }
+
     function filterProducts(textQuery, attributeFilters) {
         const selectedSchema = dom.schemaFilterSelect.value;
         const hasTextQuery = textQuery.length > 0;
         const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
         const hasSchemaFilter = selectedSchema !== 'all';
+        
+        // Si no hay filtros activos, devolver todo
         if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return masterDatabase;
         
         return masterDatabase.filter(product => {
@@ -329,16 +300,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
     }
+
     function handleResultClick(e) {
         const target = e.target.closest('.list-item');
         if (!target) return;
         document.querySelectorAll('.list-item.active').forEach(item => item.classList.remove('active'));
         target.classList.add('active');
         
-        // Cerramos el panel de filtros si estaba abierto, pero mantenemos
-        // el control del menú de ajustes.
         closeFilterPanel();
-        closeSettingsMenu(); // Cierra el panel desplegable, pero el botón se queda
+        closeSettingsMenu(); 
         
         const model = target.dataset.model;
         if (!model) return;
@@ -351,17 +321,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 6. Lógica de Renderizado ---
+    // --- 6. Lógica de Renderizado y Chips ---
+
     function renderActiveFilters(filters) {
         if (!dom.activeFiltersBar) return;
-        if (Object.keys(filters).length === 0) {
+
+        const currentSchema = dom.schemaFilterSelect.value;
+        const hasSchemaFilter = currentSchema !== 'all';
+        const hasAttrFilters = Object.keys(filters).length > 0;
+
+        if (!hasSchemaFilter && !hasAttrFilters) {
             dom.activeFiltersBar.className = 'active-filters-bar-hidden';
             dom.activeFiltersBar.innerHTML = '';
             return;
         }
+
         dom.activeFiltersBar.className = 'active-filters-bar-visible';
         dom.activeFiltersBar.innerHTML = ''; 
         const fragment = document.createDocumentFragment();
+
+        // 1. Dibujar Chip de Gama (Schema)
+        if (hasSchemaFilter) {
+            let schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1);
+            if (currentSchema === 'tvs') schemaName = 'TVs';
+            if (currentSchema === 'pcs') schemaName = 'Monitores';
+
+            const schemaChip = document.createElement('div');
+            schemaChip.className = 'active-filter-chip schema-chip'; // Clase especial para estilo diferente si se desea
+            schemaChip.innerHTML = `
+                <span class="chip-label">
+                    <span class="filter-name">Gama:</span>
+                    <span class="filter-value">${schemaName}</span>
+                </span>
+                <button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>
+            `;
+            fragment.appendChild(schemaChip);
+        }
+
+        // 2. Dibujar Chips de Atributos
         Object.entries(filters).forEach(([attrCode, attrValue]) => {
             const attrDesc = attrCodeToDescMap[attrCode] || attrCode;
             const chip = document.createElement('div');
@@ -377,11 +374,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.activeFiltersBar.appendChild(fragment);
     }
+
+    function removeSchemaFilter() {
+        if (dom.schemaFilterSelect) {
+            dom.schemaFilterSelect.value = 'all';
+            populateSmartFilters('all'); // Resetear paneles de filtro
+            applyFiltersAndSearch(); // Recalcular
+        }
+    }
+
     function removeActiveFilter(attrCode) {
         const select = dom.smartFilterContainer.querySelector(`#filter_${attrCode}`);
         if (select) select.value = "";
         applyFiltersAndSearch();
     }
+
     function renderSearchResults(results, container) {
         if (!container) return;
         container.innerHTML = '';
@@ -399,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         container.appendChild(fragment);
     }
+
     function displayProduct(product) {
         if (dom.productDisplayPlaceholder) dom.productDisplayPlaceholder.style.display = 'none';
         if (dom.specControls) dom.specControls.className = 'spec-controls-visible'; 
@@ -408,10 +416,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (productSchema) {
             renderProductSpecs(product.attributes, productSchema);
         } else {
-            console.error(`Error: No se encontró el esquema "${product.schema_key}" para el modelo ${product.model}.`);
-            dom.productSpecsContainer.innerHTML = '<p class="text-gray-400">Error: No se pudo cargar la estructura de especificaciones.</p>';
+            dom.productSpecsContainer.innerHTML = '<p class="text-gray-400">Error: Esquema no encontrado.</p>';
         }
     }
+    
     function renderProductSpecs(attributes, schema) {
         dom.productSpecsContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
@@ -448,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 7. FUNCIONES DE ESTADO Y PANEL ---
     function showSelectedModelChip(modelName) {
         dom.selectedModelDisplay.innerHTML = `
-            <button id="clear-selection-btn" class="model-chip-button" title="Volver al buscador">
+            <button id="clear-selection-btn" class="model-chip-button" title="Cerrar y volver a búsqueda">
                 Modelo: ${modelName} 
                 <span>&times;</span>
             </button>`;
@@ -456,6 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.selectedModelDisplay.querySelector('#clear-selection-btn')
             .addEventListener('click', clearSelection);
     }
+
     function clearSelection() {
         dom.body.classList.remove('model-is-selected');
         dom.selectedModelDisplay.innerHTML = '';
@@ -465,15 +474,19 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.productSpecsContainer.appendChild(originalPlaceholder);
         originalPlaceholder.style.display = 'block';
 
-        dom.modelSearchInput.value = '';
-
-        if (dom.schemaFilterSelect) dom.schemaFilterSelect.value = 'all';
-        populateSmartFilters('all');
+        // [MODIFICADO] YA NO LIMPIAMOS LOS FILTROS NI EL BUSCADOR
+        // dom.modelSearchInput.value = '';  <-- ELIMINADO
+        // if (dom.schemaFilterSelect) dom.schemaFilterSelect.value = 'all'; <-- ELIMINADO
+        // populateSmartFilters('all'); <-- ELIMINADO
+        
+        // Simplemente reaplicamos la búsqueda con lo que ya había
         applyFiltersAndSearch(); 
 
+        // Quitamos el "active" visual de la lista si lo hubiera
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
         if (currentActive) currentActive.classList.remove('active');
     }
+
     function expandAllSpecs() {
         const allGroups = dom.productSpecsContainer.querySelectorAll('details.spec-group');
         allGroups.forEach(group => group.open = true);
@@ -500,9 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Funciones de Paneles (Filtros, Ajustes, Modal) ---
     function openFilterPanel() {
-        if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
+        if (!dom.smartFilterPanel) return;
         closeSettingsMenu();
         closeReadmeModal();
         dom.smartFilterPanel.className = 'smart-filter-content-open';
@@ -510,20 +522,18 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.smartFilterToggle.classList.add('active');
     }
     function closeFilterPanel() {
-        if (!dom.smartFilterPanel || !dom.filterOverlay || !dom.smartFilterToggle) return;
+        if (!dom.smartFilterPanel) return;
         dom.smartFilterPanel.className = 'smart-filter-content-hidden';
-        // Revisamos si hay otros paneles abiertos antes de cerrar el overlay
         if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
         dom.smartFilterToggle.classList.remove('active');
     }
     function toggleFilterPanel() {
-        if (!dom.smartFilterPanel) return;
         dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel();
     }
     function openSettingsMenu() {
-        if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
+        if (!dom.settingsMenuPanel) return;
         closeFilterPanel();
         closeReadmeModal();
         dom.settingsMenuPanel.className = 'settings-menu-panel-open';
@@ -531,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.settingsMenuToggle.classList.add('active');
     }
     function closeSettingsMenu() {
-        if (!dom.settingsMenuPanel || !dom.filterOverlay || !dom.settingsMenuToggle) return;
+        if (!dom.settingsMenuPanel) return;
         dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
         if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.readmeModal.className === 'modal-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
@@ -539,31 +549,25 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.settingsMenuToggle.classList.remove('active');
     }
     function toggleSettingsMenu() {
-        if (!dom.settingsMenuPanel) return;
         dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu();
     }
     function openReadmeModal() {
-        if (!dom.readmeModal || !dom.filterOverlay) return;
-        closeFilterPanel();
-        closeSettingsMenu();
+        closeFilterPanel(); closeSettingsMenu();
         dom.readmeModal.className = 'modal-visible';
         dom.filterOverlay.className = 'overlay-visible';
     }
     function closeReadmeModal() {
-        if (!dom.readmeModal || !dom.filterOverlay) return;
         dom.readmeModal.className = 'modal-hidden';
         if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') {
             dom.filterOverlay.className = 'overlay-hidden';
         }
     }
 
-    // --- 8. FUNCIONES DE TEMA (MODO CLARO/OSCURO) ---
-
+    // --- 8. FUNCIONES DE TEMA ---
     function handleThemeToggle() {
         isLightMode = !isLightMode;
-        if (isLightMode) {
-            updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-        } else {
+        if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
+        else {
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(darkPaletteHSL, currentAccentHue);
         }
@@ -572,29 +576,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePaletteCSS(baseHSL, accentHue) {
         const p = baseHSL;
         const newOtherHue = (accentHue + hueDifference + 360) % 360; 
-
-        const newColors = {
-            accent: `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
-            bgDark: `hsl(${newOtherHue}, ${p.dark.s}%, ${p.dark.l}%)`,
-            bgMedium: `hsl(${newOtherHue}, ${p.medium.s}%, ${p.medium.l}%)`,
-            border: `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l}%)`,
-            textPrimary: `hsl(${newOtherHue}, ${p.textP.s}%, ${p.textP.l}%)`,
-            textSecondary: `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`
+        const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
+        const root = document.documentElement;
+        
+        const vars = {
+            '--color-cyan-accent': `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
+            '--color-cyan-glow': `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`,
+            '--color-bg-dark': `hsl(${newOtherHue}, ${p.dark.s}%, ${p.dark.l}%)`,
+            '--color-bg-medium': `hsl(${newOtherHue}, ${p.medium.s}%, ${p.medium.l}%)`,
+            '--color-border': `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l}%)`,
+            '--color-border-light': `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`,
+            '--color-text-primary': `hsl(${newOtherHue}, ${p.textP.s}%, ${p.textP.l}%)`,
+            '--color-text-secondary': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`,
+            '--color-text-dim': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`
         };
 
-        const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
-        newColors.glow = `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`;
-        
-        const root = document.documentElement;
-        root.style.setProperty('--color-cyan-accent', newColors.accent);
-        root.style.setProperty('--color-cyan-glow', newColors.glow);
-        root.style.setProperty('--color-bg-dark', newColors.bgDark);
-        root.style.setProperty('--color-bg-medium', newColors.bgMedium);
-        root.style.setProperty('--color-border', newColors.border);
-        root.style.setProperty('--color-border-light', `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`);
-        root.style.setProperty('--color-text-primary', newColors.textPrimary);
-        root.style.setProperty('--color-text-secondary', newColors.textSecondary);
-        root.style.setProperty('--color-text-dim', `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`);
+        for (const [key, value] of Object.entries(vars)) {
+            root.style.setProperty(key, value);
+        }
     }
 
     function hslToRgb(h, s, l) {
@@ -621,6 +620,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 9. Ejecución ---
     initialize();
 });
