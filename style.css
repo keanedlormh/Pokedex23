@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v3.2.2)
+   Estilos para la App Principal (v3.2.3 Fix)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -75,7 +75,7 @@ body.model-is-selected #selected-model-display { display: block; }
     margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--color-border);
     gap: 0.75rem;
-    min-height: 40px;
+    min-height: 40px; /* Asegura altura mínima para el botón flotante */
 }
 @media (min-width: 1024px) {
     .app-header { flex-direction: row; align-items: center; }
@@ -86,7 +86,7 @@ body.model-is-selected #selected-model-display { display: block; }
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    padding-right: 50px; /* Evita que el texto choque con el botón */
+    padding-right: 50px; /* IMPORTANTE: Deja hueco a la derecha para que el botón no tape el texto */
 }
 
 .app-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
@@ -107,20 +107,43 @@ body.model-is-selected #selected-model-display { display: block; }
 }
 .model-chip-button span { font-family: var(--font-sans); font-weight: 900; font-size: 1rem; color: var(--color-text-primary); }
 
-.header-right-controls {
-    display: flex; width: 100%;
-    /* El botón ya no está aquí, así que quitamos el padding extra */
-}
+.header-right-controls { display: flex; width: 100%; }
 @media (min-width: 1024px) { .header-right-controls { width: auto; } }
 
 /* ==============================================
-   BOTÓN DE AJUSTES (POSICIÓN ABSOLUTA)
+   MENÚ DE AJUSTES (CORRECCIÓN POSICIONAMIENTO)
    ============================================== */
-.absolute-top-right {
+.settings-menu-wrapper {
+    position: relative; 
+}
+
+/* USAMOS ALTA ESPECIFICIDAD AQUÍ PARA FORZAR EL POSICIONAMIENTO
+   Esto arregla el bug donde el botón se quedaba a la izquierda.
+*/
+.settings-menu-wrapper.absolute-top-right {
     position: absolute;
-    top: 0;   /* Pegado arriba */
-    right: 0; /* Pegado a la derecha */
+    top: 0;
+    right: 0;
     z-index: 60;
+}
+
+.settings-button {
+    background-color: var(--color-bg-medium); border: 1px solid var(--color-border);
+    color: var(--color-text-secondary); font-size: 1.2rem; line-height: 1;
+    border-radius: 4px; cursor: pointer; padding: 0.4rem 0.6rem; height: 38px; width: 38px;
+}
+.settings-menu-panel-hidden { display: none; }
+.settings-menu-panel-open {
+    display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); right: 0;
+    width: 200px; background: var(--color-bg-medium); border: 1px solid var(--color-border-light);
+    border-radius: 0.5rem; padding: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.settings-menu-item {
+    background-color: var(--color-bg-dark); border: 1px solid var(--color-border);
+    color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600;
+    border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left;
+    cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none;
+    box-sizing: border-box; margin-top: 0.25rem;
 }
 
 /* ==============================================
@@ -168,7 +191,7 @@ body.model-is-selected #selected-model-display { display: block; }
 .overlay-hidden { display: none; }
 
 /* ==============================================
-   BARRA DE FILTROS ACTIVOS (Expandida)
+   BARRA DE FILTROS ACTIVOS (EXPANDIDA)
    ============================================== */
 .active-filters-bar-hidden { display: none; }
 .active-filters-bar-visible {
@@ -181,7 +204,7 @@ body.model-is-selected #selected-model-display { display: block; }
     border-radius: 0.5rem;
     margin-bottom: 1rem;
     
-    /* [CAMBIO] Permitir crecimiento vertical completo */
+    /* [CAMBIO] Permitir crecimiento libre sin scroll */
     height: auto; 
     max-height: none; 
     overflow: visible;
@@ -269,26 +292,6 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
 @media (min-width: 768px) { .spec-row { flex-direction: row; } }
 .spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; }
 .spec-row .attr-value { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-mono); text-align: right; }
-
-.settings-menu-wrapper { position: relative; }
-.settings-button {
-    background-color: var(--color-bg-medium); border: 1px solid var(--color-border);
-    color: var(--color-text-secondary); font-size: 1.2rem; line-height: 1;
-    border-radius: 4px; cursor: pointer; padding: 0.4rem 0.6rem; height: 38px; width: 38px;
-}
-.settings-menu-panel-hidden { display: none; }
-.settings-menu-panel-open {
-    display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); right: 0;
-    width: 200px; background: var(--color-bg-medium); border: 1px solid var(--color-border-light);
-    border-radius: 0.5rem; padding: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-.settings-menu-item {
-    background-color: var(--color-bg-dark); border: 1px solid var(--color-border);
-    color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600;
-    border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left;
-    cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none;
-    box-sizing: border-box; margin-top: 0.25rem;
-}
 
 .modal-hidden { display: none; }
 .modal-visible {
