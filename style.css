@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v3.2.0)
+   Estilos para la App Principal (v3.2.1)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -193,16 +193,9 @@ body.model-is-selected #selected-model-display { display: block; }
    ============================================== */
 .absolute-top-right {
     position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 60; /* Por encima de todo */
-}
-/* En Desktop, ajustamos ligeramente si es necesario */
-@media (min-width: 1024px) {
-    .absolute-top-right {
-        top: 50%;
-        transform: translateY(-50%);
-    }
+    top: 0; /* Fijado arriba */
+    right: 0; /* Fijado a la derecha */
+    z-index: 60;
 }
 
 
@@ -371,7 +364,7 @@ body.model-is-selected #selected-model-display { display: block; }
 }
 
 /* ==============================================
-   5. NUEVA BARRA DE FILTROS ACTIVOS
+   5. NUEVA BARRA DE FILTROS ACTIVOS (CORREGIDO)
    ============================================== */
 .active-filters-bar-hidden {
     display: none;
@@ -385,8 +378,10 @@ body.model-is-selected #selected-model-display { display: block; }
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
     margin-bottom: 1rem;
-    max-height: 100px; 
-    overflow-y: auto;
+    
+    /* [CORRECCIÓN] Eliminado max-height y overflow para que crezca */
+    max-height: none; 
+    overflow-y: visible;
 }
 
 .active-filter-chip {
@@ -402,7 +397,7 @@ body.model-is-selected #selected-model-display { display: block; }
     color: var(--color-text-primary);
 }
 
-/* Estilo especial para la Gama (opcional) */
+/* Estilo especial para la Gama */
 .schema-chip {
     border-color: var(--color-text-secondary);
     background: var(--color-border);
