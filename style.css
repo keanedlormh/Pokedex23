@@ -222,14 +222,14 @@ body.model-is-selected .settings-menu-wrapper { display: none; }
     border-color: var(--color-border-light);
 }
 .smart-filter-summary::after {
-    content: '[ + ]';
+    content: '[■]';
     font-family: var(--font-mono);
     color: var(--color-cyan-accent);
     font-size: 0.8rem;
     margin-left: 0.5rem;
 }
 .smart-filter-summary.active::after {
-    content: '[ − ]';
+    content: '[-]';
 }
 
 /* Panel de Contenido de Filtros */
