@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v3.1.0)
+   Estilos para la App Principal (v3.2.0)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -23,7 +23,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease;
-    margin: 0; /* Reset básico */
+    margin: 0;
 }
 
 /* Scrollbar (fino) */
@@ -67,19 +67,13 @@ body {
 }
 
 /* --- ESTADO: MODELO SELECCIONADO --- */
-/* Ocultamos el buscador lateral y expandimos la ficha */
 body.model-is-selected .sidebar-column { display: none; }
 body.model-is-selected .main-column { width: 100%; }
 
-/* Ocultamos elementos de navegación no necesarios en la vista de ficha */
+/* Ocultamos elementos de navegación */
 body.model-is-selected #smart-filter-system { display: none; }
 body.model-is-selected #active-filters-bar { display: none; }
-
-/* Mostramos el "chip" del modelo */
 body.model-is-selected #selected-model-display { display: block; }
-
-/* IMPORTANTE: Hemos eliminado la regla que ocultaba .settings-menu-wrapper */
-
 
 .sticky-panel { position: sticky; top: 1rem; }
 
@@ -97,6 +91,7 @@ body.model-is-selected #selected-model-display { display: block; }
    3. BARRA SUPERIOR DE APP
    ============================================== */
 .app-header {
+    position: relative; /* Necesario para el botón absoluto */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -105,6 +100,7 @@ body.model-is-selected #selected-model-display { display: block; }
     margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--color-border);
     gap: 0.75rem;
+    min-height: 45px; /* Espacio mínimo para el botón en móvil */
 }
 @media (min-width: 1024px) {
     .app-header {
@@ -119,6 +115,7 @@ body.model-is-selected #selected-model-display { display: block; }
     gap: 0.75rem;
     flex-wrap: wrap;
     min-width: 0;
+    padding-right: 45px; /* Evitar que el texto choque con el botón absoluto en móvil */
 }
 
 .app-title {
@@ -173,20 +170,41 @@ body.model-is-selected #selected-model-display { display: block; }
     color: #fff;
 }
 
-/* Contenedor para controles derechos */
+/* Contenedor para controles (Filtros) */
 .header-right-controls {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 0.75rem;
     width: 100%;
+    padding-right: 40px; /* Espacio para el botón de ajustes */
+    box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
     .header-right-controls {
         width: auto;
+        padding-right: 45px; /* Mantenemos espacio */
     }
 }
+
+/* ==============================================
+   POSICIONAMIENTO ABSOLUTO DEL MENÚ DE AJUSTES
+   ============================================== */
+.absolute-top-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 60; /* Por encima de todo */
+}
+/* En Desktop, ajustamos ligeramente si es necesario */
+@media (min-width: 1024px) {
+    .absolute-top-right {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
 
 /* ==============================================
    4. SISTEMA DE FILTROS
@@ -384,6 +402,12 @@ body.model-is-selected #selected-model-display { display: block; }
     color: var(--color-text-primary);
 }
 
+/* Estilo especial para la Gama (opcional) */
+.schema-chip {
+    border-color: var(--color-text-secondary);
+    background: var(--color-border);
+}
+
 .chip-label .filter-name {
     color: var(--color-text-secondary);
     margin-right: 0.25rem;
@@ -435,7 +459,7 @@ body.model-is-selected #selected-model-display { display: block; }
     font-size: 1.15rem;
     font-weight: 600;
     color: var(--color-text-primary);
-    margin: 0; /* Ajustado */
+    margin: 0;
     margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.4rem;
@@ -457,7 +481,7 @@ body.model-is-selected #selected-model-display { display: block; }
     transition: all 0.2s ease-in-out;
     box-sizing: border-box;
     flex-shrink: 0;
-    width: 100%; /* Asegurar ancho */
+    width: 100%;
 }
 .futuristic-input:focus,
 .futuristic-select:focus {
@@ -476,10 +500,6 @@ body.model-is-selected #selected-model-display { display: block; }
     padding-right: 2.5rem;
 }
 
-/* ==============================================
-   8. LISTAS DE RESULTADOS
-   ============================================== */
-
 .futuristic-list {
     background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border-light);
@@ -492,7 +512,6 @@ body.model-is-selected #selected-model-display { display: block; }
     border-radius: 4px;
     background-color: var(--color-bg-dark);
 }
-
 .futuristic-list .list-item {
     padding: 0.45rem 0.75rem;
     border-bottom: 1px dashed var(--color-border);
@@ -534,14 +553,8 @@ body.model-is-selected #selected-model-display { display: block; }
     margin: 0;
 }
 
-.spec-controls-hidden {
-    display: none;
-    gap: 0.5rem;
-}
-body.model-is-selected .spec-controls-visible {
-    display: flex;
-    gap: 0.5rem;
-}
+.spec-controls-hidden { display: none; gap: 0.5rem; }
+body.model-is-selected .spec-controls-visible { display: flex; gap: 0.5rem; }
 
 .spec-button {
     background-color: var(--color-bg-medium);
@@ -561,7 +574,6 @@ body.model-is-selected .spec-controls-visible {
     border-color: var(--color-cyan-accent);
 }
 
-/* Grupos de specs desplegables */
 details.spec-group {
     border: 1px solid var(--color-border);
     border-radius: 4px;
@@ -583,7 +595,6 @@ details.spec-group summary {
 details.spec-group summary:hover {
     background-color: var(--color-border-light);
 }
-
 details.spec-group summary::before {
     content: '';
     width: 12px;
@@ -596,21 +607,16 @@ details.spec-group summary::before {
     background-color: var(--color-text-dim);
     transition: background-color 0.2s ease;
 }
-
 details[open].spec-group summary::before {
     background-color: var(--color-cyan-accent);
 }
-
-details.spec-group summary::after {
-    content: none;
-}
+details.spec-group summary::after { content: none; }
 
 .spec-group-content {
     padding: 0.75rem 1.25rem;
     border-top: 1px solid var(--color-border-light);
     background-color: var(--color-bg-dark);
 }
-
 .spec-row {
     display: flex;
     flex-direction: column;
@@ -622,23 +628,10 @@ details.spec-group summary::after {
 @media (min-width: 768px) {
     .spec-row { flex-direction: row; }
 }
-.spec-row:last-child {
-    border-bottom: none;
-}
-.spec-row .attr-desc {
-    color: var(--color-text-secondary);
-    margin-right: 0.75rem;
-    flex-shrink: 0;
-}
-.spec-row .attr-value {
-    color: var(--color-text-primary);
-    font-weight: 500;
-    font-family: var(--font-mono);
-    text-align: left;
-}
-@media (min-width: 768px) {
-    .spec-row .attr-value { text-align: right; }
-}
+.spec-row:last-child { border-bottom: none; }
+.spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; flex-shrink: 0; }
+.spec-row .attr-value { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-mono); text-align: left; }
+@media (min-width: 768px) { .spec-row .attr-value { text-align: right; } }
 
 /* ==============================================
    10. ESTILOS SELECTOR DE GAMA
@@ -698,6 +691,11 @@ details.spec-group summary::after {
     padding: 0.5rem;
     animation: fadeIn 0.2s ease-out;
 }
+/* Ajustar origen del popover si está a la derecha absoluta */
+.absolute-top-right .settings-menu-panel-open {
+    right: 0;
+}
+
 
 .settings-menu-item {
     background-color: var(--color-bg-dark);
