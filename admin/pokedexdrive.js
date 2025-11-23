@@ -1,7 +1,6 @@
 /**
- * Pokedex Drive Meta-Constructor v7.0 (Filtered Viewer Edition)
- * Genera un archivo HTML 'Viewer-Only' (sin admin) que contiene
- * ÚNICAMENTE los datos de las gamas activas en la biblioteca actual.
+ * Pokedex Drive Meta-Constructor v7.1 (Info Update)
+ * Genera un archivo HTML 'Viewer-Only' con la BD filtrada e información estática incrustada.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,11 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
         generatedBlobUrl = null;
 
         try {
-            // --- PASO 1: Obtener Recursos Base (Archivos Físicos) ---
+            // --- PASO 1: Obtener Recursos Base ---
             await wait(300);
             log("Leyendo código fuente del visor...");
             
-            // Carga paralela para eficiencia
+            // Carga paralela
             const [htmlRaw, cssRaw, jsRaw] = await Promise.all([
                 fetchText('../index.html'),
                 fetchText('../style.css'),
@@ -53,61 +52,35 @@ document.addEventListener('DOMContentLoaded', () => {
             log("Limpiando dependencias externas...");
             let htmlContent = htmlRaw;
 
-            // 2.1 Eliminar link CSS externo (lo inyectaremos inline)
+            // Eliminar links y scripts externos
             htmlContent = htmlContent.replace(/<link rel="stylesheet" href="style.css">/, '');
-
-            // 2.2 Eliminar Bootloader AJAX original
-            // Elimina el bloque <script> que carga manifest.json y hace los XHR
             htmlContent = htmlContent.replace(/<script>[\s\S]*?manifest\.json[\s\S]*?<\/script>/, '');
-
-            // 2.3 Eliminar referencia externa a main.js (lo inyectaremos inline)
             htmlContent = htmlContent.replace(/<script src="main.js" defer><\/script>/, '');
-
-            // 2.4 Eliminar acceso al Admin (Seguridad y Limpieza)
-            // Busca el botón/enlace al admin y lo elimina del HTML
             htmlContent = htmlContent.replace(/<a href="admin\/index\.html".*?id="admin-link-btn".*?>.*?<\/a>/, '');
 
             updateProgress(50);
 
-            // --- PASO 3: Filtrado y Serialización de Datos (Lógica Nueva) ---
+            // --- PASO 3: Filtrado y Serialización de Datos ---
             await wait(200);
-            log("Analizando gamas activas en biblioteca...", "active");
+            log("Empaquetando gamas activas...", "active");
 
-            // 3.1 Detectar Gamas Activas desde el DOM (Checkboxes)
-            // admin.js renderiza esto al inicio, así que el DOM existe aunque el modal esté cerrado.
+            // Detectar Gamas Activas desde Checkboxes del Admin
             const activeCheckboxes = document.querySelectorAll('.gama-checkbox:checked');
             const activeKeys = new Set();
-            
-            activeCheckboxes.forEach(cb => {
-                activeKeys.add(cb.dataset.key);
-            });
+            activeCheckboxes.forEach(cb => activeKeys.add(cb.dataset.key));
 
-            log(`> Gamas seleccionadas: ${activeKeys.size}`);
-
-            // 3.2 Filtrar Base de Datos Global (APP_DB)
+            // Filtrar DB
             const sourceSchemas = window.APP_DB.schemas;
             const sourceProducts = window.APP_DB.products;
-
             const filteredSchemas = {};
             const filteredProducts = [];
 
-            // Solo copiamos esquemas activos
-            activeKeys.forEach(key => {
-                if (sourceSchemas[key]) {
-                    filteredSchemas[key] = sourceSchemas[key];
-                }
-            });
+            activeKeys.forEach(key => { if (sourceSchemas[key]) filteredSchemas[key] = sourceSchemas[key]; });
+            sourceProducts.forEach(p => { if (activeKeys.has(p.schema_key)) filteredProducts.push(p); });
 
-            // Solo copiamos productos cuya gama esté activa
-            sourceProducts.forEach(p => {
-                if (activeKeys.has(p.schema_key)) {
-                    filteredProducts.push(p);
-                }
-            });
+            log(`> Objetos empaquetados: ${filteredProducts.length}`);
 
-            log(`> Productos empaquetados: ${filteredProducts.length}`);
-
-            // 3.3 Crear Bootloader Estático
+            // Crear Bootloader Estático
             const staticBootloader = `
     <style>
         ${cssRaw}
@@ -115,35 +88,64 @@ document.addEventListener('DOMContentLoaded', () => {
     <script>
         /** * Pokedex Drive - Offline Data Layer
          * Generated: ${new Date().toLocaleString()}
-         * Gamas: ${Array.from(activeKeys).join(', ') || 'Ninguna'}
          */
         window.APP_DB = {
             products: ${JSON.stringify(filteredProducts)},
             schemas: ${JSON.stringify(filteredSchemas)},
-            // Métodos dummy para compatibilidad (Read-Only)
             registerProduct: function(p) { this.products.push(p); },
             registerSchema: function(k, s) { this.schemas[k] = s; }
         };
-        // Flag de entorno
         window.IS_POKEDEX_DRIVE = true;
     </script>
             `;
 
             updateProgress(75);
 
-            // --- PASO 4: Ensamblaje Final ---
-            log("Inyectando código y estilos...");
+            // --- PASO 4: Inyección de Lógica y Texto Info ---
+            log("Inyectando documentación y lógica...");
 
-            // Inyectar CSS + Datos en el HEAD
-            htmlContent = htmlContent.replace('</head>', `${staticBootloader}\n</head>`);
+            // Texto literal solicitado por el usuario
+            const infoText = `La aplicación Pokedex Drive es un visor web interactivo para un catálogo de modelos, implementado en HTML/CSS/JS como una aplicación offline con un sistema de datos integrados sobre productos y esquemas de atributos.
 
-            // Inyectar Lógica Main.js en el BODY (evitando cierre prematuro de script)
-            const safeJs = jsRaw.replace(/<\/script>/g, '<\\/script>');
-            const mainJsBlock = `<script>\n${safeJs}\n</script>`;
+- **HTML**: Estructura con cabecera (título, ajustes, filtros), capas flexibles (barras laterales para búsqueda/lista de modelos, main para detalles), y modales (info, biblioteca). Incluye superposición para cierres.
+
+- **CSS**: Tema básico con variables, fuentes dual (primaria: sans/serif legible; secundaria: mono/display), estilos para tarjetas, inputs, listas, specs (detalles agrupados), y responsive (media queries para mobile/desktop). Soporta transiciones y hover effects.
+
+- **JavaScript**: Inicializa DB (productos ordenados, caches), listeners para inputs/clicks. Maneja:
+
+  - Búsqueda/filtros: Dinámicos por gama/atributos, chips activos, render resultados.
+
+  - Visualización: Muestra specs en <details>, expande/colapsa.
+
+  - UI: Toggles panels/modales, temas (light/dark con tonos random), fuentes dual random.
+
+  - Biblioteca: Gestión de gamas (activar/ocultar), import CSV (parser personalizado para schemas y datos).
+
+  - Auxiliares: para colores, README para info modal.
+
+🏴‍☠️`;
+
+            // Modificamos el JS para reemplazar la función que busca README.md por este texto estático
+            let jsModified = jsRaw;
             
-            htmlContent = htmlContent.replace('</body>', `${mainJsBlock}\n</body>`);
+            // Regex para encontrar el bloque condicional donde se intenta cargar el readme
+            // Busca: if (dom.readmeContent.textContent === "" ... ) { ... }
+            const fetchLogicRegex = /if\s*\(dom\.readmeContent\.textContent\s*===\s*""[\s\S]*?catch\s*\(error\)\s*\{[\s\S]*?\}\s*?\}/;
+            
+            // Reemplazo: Asignación directa del texto.
+            // Usamos JSON.stringify para escapar correctamente saltos de línea y comillas en el string JS generado
+            jsModified = jsModified.replace(
+                fetchLogicRegex, 
+                `dom.readmeContent.textContent = ${JSON.stringify(infoText)};`
+            );
 
-            // Cambiar Título para diferenciar
+            // Escape final para el HTML
+            const safeJs = jsModified.replace(/<\/script>/g, '<\\/script>');
+            const mainJsBlock = `<script>\n${safeJs}\n</script>`;
+
+            // Ensamblaje HTML final
+            htmlContent = htmlContent.replace('</head>', `${staticBootloader}\n</head>`);
+            htmlContent = htmlContent.replace('</body>', `${mainJsBlock}\n</body>`);
             htmlContent = htmlContent.replace(/<title>.*?<\/title>/, '<title>Pokedex Drive (Viewer)</title>');
 
             updateProgress(90);
@@ -157,11 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateProgress(100);
 
-            // Activar UI final
             ui.closeBtn.style.display = 'block';
             ui.actions.style.display = 'block';
-
-            // Descarga automática
             triggerDownload(generatedBlobUrl);
 
         } catch (error) {
@@ -183,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function log(message, type = '') {
         const prev = ui.log.querySelector('.active');
         if (prev) prev.classList.remove('active');
-
         const line = document.createElement('div');
         line.className = `log-line ${type}`;
         line.textContent = `> ${message}`;
@@ -196,9 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.percent.textContent = `${percent}%`;
     }
 
-    function wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
     function triggerDownload(url) {
         const a = document.createElement('a');
