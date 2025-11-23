@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.2.2
- * Update: Añadida funcionalidad de Fuentes Aleatorias
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.3
+ * Update: Funcionalidad Dual Font Mix (Mix de 2 grupos de fuentes)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
-        fontToggleButton: document.getElementById('font-toggle-btn'), // NUEVO
+        fontToggleButton: document.getElementById('font-toggle-btn'), // DUAL
         infoToggleButton: document.getElementById('info-toggle-btn'),
         adminLinkButton: document.getElementById('admin-link-btn'),
         libraryBtn: document.getElementById('library-menu-toggle'),
@@ -65,31 +65,58 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
 
-    // --- Lista de Fuentes (23 Variedades) ---
-    const fontFamilies = [
-        "'Inter', system-ui, sans-serif",                   // 1. Default Modern
-        "Arial, Helvetica, sans-serif",                     // 2. Classic
-        "'Courier New', Courier, monospace",                // 3. Code
-        "Georgia, 'Times New Roman', Times, serif",         // 4. Elegant
-        "'Verdana', sans-serif",                            // 5. Wide
-        "'Trebuchet MS', 'Lucida Sans', sans-serif",        // 6. Humanist
-        "'Impact', Haettenschweiler, sans-serif",           // 7. Heavy
-        "'Comic Sans MS', 'Chalkboard SE', sans-serif",     // 8. Playful
-        "'Segoe UI', Roboto, Helvetica, sans-serif",        // 9. System UI
-        "'Garamond', 'Baskerville', serif",                 // 10. Old Style
-        "'Lucida Console', Monaco, monospace",              // 11. Retro Terminal
-        "'Tahoma', Geneva, sans-serif",                     // 12. Compact
-        "'Palatino Linotype', 'Book Antiqua', serif",       // 13. Bookish
-        "'Arial Black', Gadget, sans-serif",                // 14. Bold
-        "'Century Gothic', Futura, sans-serif",             // 15. Geometric
-        "'Bookman Old Style', serif",                       // 16. Slab Serif
-        "'Brush Script MT', cursive",                       // 17. Handwriting
-        "'Copperplate', 'Copperplate Gothic Light', serif",  // 18. Small Caps
-        "'Papyrus', fantasy",                               // 19. Ancient
-        "'Optima', sans-serif",                             // 20. Humanist Serif-like
-        "'Candara', sans-serif",                            // 21. Modern Clear
-        "'Perpetua', serif",                                // 22. Sharp Serif
-        "'Consolas', 'Andale Mono', monospace"              // 23. Modern Code
+    // --- GRUPO A: Fuentes Primarias (Cuerpo, UI, Legibilidad) - 23 Fuentes ---
+    const fontGroupPrimary = [
+        "'Inter', system-ui, sans-serif",                   
+        "Arial, Helvetica, sans-serif",                     
+        "'Segoe UI', Roboto, Helvetica, sans-serif",        
+        "'Verdana', sans-serif",                            
+        "'Trebuchet MS', 'Lucida Sans', sans-serif",        
+        "'Tahoma', Geneva, sans-serif",                     
+        "'Gill Sans', 'Gill Sans MT', Calibri, sans-serif", 
+        "'Optima', sans-serif",                             
+        "'Candara', sans-serif",                            
+        "'Century Gothic', Futura, sans-serif",             
+        "'Franklin Gothic Medium', 'Arial Narrow', sans-serif", 
+        "'Geneva', Verdana, sans-serif",                    
+        "'Helvetica Neue', Helvetica, Arial, sans-serif",   
+        "'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif", 
+        "'Cambria', Georgia, serif",                        
+        "Georgia, 'Times New Roman', Times, serif",         
+        "'Garamond', 'Baskerville', serif",                 
+        "'Palatino Linotype', 'Book Antiqua', serif",       
+        "'Bookman Old Style', serif",                       
+        "'Times New Roman', Times, serif",                  
+        "'Didot', serif",                                   
+        "'American Typewriter', serif",                     
+        "'Lucida Bright', Georgia, serif"                   
+    ];
+
+    // --- GRUPO B: Fuentes Secundarias (Títulos, Técnica, Display, Mono) - 23 Fuentes ---
+    const fontGroupSecondary = [
+        "'ui-monospace', 'SFMono-Regular', 'Menlo', monospace", 
+        "'Courier New', Courier, monospace",                
+        "'Lucida Console', Monaco, monospace",              
+        "'Consolas', 'Andale Mono', monospace",             
+        "'Monaco', 'Courier New', monospace",               
+        "'Brush Script MT', cursive",                       
+        "'Copperplate', 'Copperplate Gothic Light', serif",  
+        "'Papyrus', fantasy",                               
+        "'Impact', Haettenschweiler, sans-serif",           
+        "'Arial Black', Gadget, sans-serif",                
+        "'Comic Sans MS', 'Chalkboard SE', sans-serif",     
+        "'Courier', monospace",                             
+        "'Lucida Sans Typewriter', monospace",              
+        "'Perpetua', serif",                                
+        "'Rockwell', 'Courier Bold', serif",                
+        "'Baskerville Old Face', serif",                    
+        "'Haettenschweiler', 'Impact', sans-serif",         
+        "'Chalkduster', fantasy",                           
+        "'Luminari', fantasy",                              
+        "'Trattatello', fantasy",                           
+        "'Big Caslon', serif",                              
+        "'Bodoni MT', serif",                               
+        "'OCR A Std', monospace"                            
     ];
 
     function initialize() {
@@ -155,8 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
         
-        // --- Nuevo Listener Fuente ---
-        if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleFontToggle);
+        // --- Nuevo Listener Fuente Dual ---
+        if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleDualFontToggle);
 
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
 
@@ -671,18 +698,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleThemeToggle(e) {
-        // Evitar que el clic cierre el menú si se propagara
         e.stopPropagation();
         isLightMode = !isLightMode;
         if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
         else { currentAccentHue = Math.floor(Math.random() * 360); updatePaletteCSS(darkPaletteHSL, currentAccentHue); }
     }
 
-    function handleFontToggle(e) {
-        e.stopPropagation(); // Importante: No cerrar menú
-        const randomFont = fontFamilies[Math.floor(Math.random() * fontFamilies.length)];
-        // Actualizamos variable CSS
-        document.documentElement.style.setProperty('--font-sans', randomFont);
+    // --- NUEVO: Mix Dual de Fuentes ---
+    function handleDualFontToggle(e) {
+        e.stopPropagation();
+        const primary = fontGroupPrimary[Math.floor(Math.random() * fontGroupPrimary.length)];
+        const secondary = fontGroupSecondary[Math.floor(Math.random() * fontGroupSecondary.length)];
+        
+        document.documentElement.style.setProperty('--font-primary', primary);
+        document.documentElement.style.setProperty('--font-secondary', secondary);
     }
 
     function updatePaletteCSS(baseHSL, accentHue) {
