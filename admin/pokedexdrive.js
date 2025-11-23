@@ -1,6 +1,9 @@
 /**
- * Pokedex Drive Meta-Constructor v7.1 (Info Update)
- * Genera un archivo HTML 'Viewer-Only' con la BD filtrada e información estática incrustada.
+ * Pokedex Drive Meta-Constructor v8.1 (Title Fix)
+ * Genera un archivo HTML 'Viewer-Only' con:
+ * 1. Reemplazo GLOBAL de título (Header + Title tag).
+ * 2. Versión dinámica por fecha.
+ * 3. Base de datos filtrada.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.closeBtn.style.display = 'none';
         ui.actions.style.display = 'none';
         updateProgress(0);
-        log("Iniciando constructor Pokedex Drive (Viewer Mode)...", "active");
+        log("Iniciando constructor Pokedex Drive v8.1...", "active");
         generatedBlobUrl = null;
 
         try {
@@ -39,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             await wait(300);
             log("Leyendo código fuente del visor...");
             
-            // Carga paralela
             const [htmlRaw, cssRaw, jsRaw] = await Promise.all([
                 fetchText('../index.html'),
                 fetchText('../style.css'),
@@ -52,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             log("Limpiando dependencias externas...");
             let htmlContent = htmlRaw;
 
-            // Eliminar links y scripts externos
             htmlContent = htmlContent.replace(/<link rel="stylesheet" href="style.css">/, '');
             htmlContent = htmlContent.replace(/<script>[\s\S]*?manifest\.json[\s\S]*?<\/script>/, '');
             htmlContent = htmlContent.replace(/<script src="main.js" defer><\/script>/, '');
@@ -64,12 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
             await wait(200);
             log("Empaquetando gamas activas...", "active");
 
-            // Detectar Gamas Activas desde Checkboxes del Admin
             const activeCheckboxes = document.querySelectorAll('.gama-checkbox:checked');
             const activeKeys = new Set();
             activeCheckboxes.forEach(cb => activeKeys.add(cb.dataset.key));
 
-            // Filtrar DB
             const sourceSchemas = window.APP_DB.schemas;
             const sourceProducts = window.APP_DB.products;
             const filteredSchemas = {};
@@ -80,15 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             log(`> Objetos empaquetados: ${filteredProducts.length}`);
 
-            // Crear Bootloader Estático
             const staticBootloader = `
     <style>
         ${cssRaw}
     </style>
     <script>
-        /** * Pokedex Drive - Offline Data Layer
-         * Generated: ${new Date().toLocaleString()}
-         */
+        /** * Pokedex Drive - Offline Data Layer */
         window.APP_DB = {
             products: ${JSON.stringify(filteredProducts)},
             schemas: ${JSON.stringify(filteredSchemas)},
@@ -101,10 +97,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateProgress(75);
 
-            // --- PASO 4: Inyección de Lógica y Texto Info ---
-            log("Inyectando documentación y lógica...");
+            // --- PASO 4: Personalización e Inyección ---
+            log("Personalizando UI y versión...");
 
-            // Texto literal solicitado por el usuario
+            // 4.1 Calcular Fecha (v.dd.mm.aa)
+            const date = new Date();
+            const dd = String(date.getDate()).padStart(2, '0');
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const yy = String(date.getFullYear()).slice(-2);
+            const versionString = `v.${dd}.${mm}.${yy}`;
+
+            // 4.2 Reemplazo GLOBAL de Título (FIX v8.1)
+            // Usamos la bandera /g para reemplazar TANTO el <title> como el <h1>
+            htmlContent = htmlContent.replace(/Pokedex LG/g, 'Pokedex Drive');
+
+            // 4.3 Reemplazar Versión en Header
+            htmlContent = htmlContent.replace(
+                /<span class="app-version">.*?<\/span>/, 
+                `<span class="app-version">${versionString}</span>`
+            );
+
+            // 4.4 Inyección de Texto Info
             const infoText = `La aplicación Pokedex Drive es un visor web interactivo para un catálogo de modelos, implementado en HTML/CSS/JS como una aplicación offline con un sistema de datos integrados sobre productos y esquemas de atributos.
 
 - **HTML**: Estructura con cabecera (título, ajustes, filtros), capas flexibles (barras laterales para búsqueda/lista de modelos, main para detalles), y modales (info, biblioteca). Incluye superposición para cierres.
@@ -125,28 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 🏴‍☠️`;
 
-            // Modificamos el JS para reemplazar la función que busca README.md por este texto estático
             let jsModified = jsRaw;
-            
-            // Regex para encontrar el bloque condicional donde se intenta cargar el readme
-            // Busca: if (dom.readmeContent.textContent === "" ... ) { ... }
             const fetchLogicRegex = /if\s*\(dom\.readmeContent\.textContent\s*===\s*""[\s\S]*?catch\s*\(error\)\s*\{[\s\S]*?\}\s*?\}/;
-            
-            // Reemplazo: Asignación directa del texto.
-            // Usamos JSON.stringify para escapar correctamente saltos de línea y comillas en el string JS generado
-            jsModified = jsModified.replace(
-                fetchLogicRegex, 
-                `dom.readmeContent.textContent = ${JSON.stringify(infoText)};`
-            );
+            jsModified = jsModified.replace(fetchLogicRegex, `dom.readmeContent.textContent = ${JSON.stringify(infoText)};`);
 
-            // Escape final para el HTML
             const safeJs = jsModified.replace(/<\/script>/g, '<\\/script>');
             const mainJsBlock = `<script>\n${safeJs}\n</script>`;
 
-            // Ensamblaje HTML final
+            // 4.5 Ensamblaje HTML final
             htmlContent = htmlContent.replace('</head>', `${staticBootloader}\n</head>`);
             htmlContent = htmlContent.replace('</body>', `${mainJsBlock}\n</body>`);
-            htmlContent = htmlContent.replace(/<title>.*?<\/title>/, '<title>Pokedex Drive (Viewer)</title>');
+            
+            // Reforzar título de pestaña con versión
+            htmlContent = htmlContent.replace(/<title>.*?<\/title>/, `<title>Pokedex Drive (${versionString})</title>`);
 
             updateProgress(90);
 
@@ -161,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ui.closeBtn.style.display = 'block';
             ui.actions.style.display = 'block';
-            triggerDownload(generatedBlobUrl);
+            triggerDownload(generatedBlobUrl, versionString);
 
         } catch (error) {
             console.error(error);
@@ -196,11 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-    function triggerDownload(url) {
+    function triggerDownload(url, versionTag) {
         const a = document.createElement('a');
         a.href = url;
-        const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
-        a.download = `PokedexDrive_Viewer_${date}.html`;
+        const safeVer = versionTag.replace(/\./g, '-');
+        a.download = `PokedexDrive_${safeVer}.html`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
