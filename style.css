@@ -1,731 +1,427 @@
-/*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.2.2
- * Update: Añadida funcionalidad de Fuentes Aleatorias
- */
-
-document.addEventListener('DOMContentLoaded', () => {
-
-    // --- 1. Elementos DOM ---
-    const dom = {
-        body: document.body,
-        // Búsqueda y Resultados
-        modelSearchInput: document.getElementById('search-model'),
-        modelSearchResults: document.getElementById('model-results-list'),
-        modelListHeader: document.getElementById('model-list-header'),
-        
-        // Filtros
-        smartFilterToggle: document.getElementById('smart-filter-toggle'),
-        smartFilterPanel: document.getElementById('smart-filter-panel'),
-        filterOverlay: document.getElementById('filter-overlay'),
-        smartFilterContainer: document.getElementById('smart-filters-container'),
-        schemaFilterSelect: document.getElementById('schema-filter-select'),
-        activeFiltersBar: document.getElementById('active-filters-bar'),
-        
-        // Menú Ajustes
-        settingsMenuToggle: document.getElementById('settings-menu-toggle'),
-        settingsMenuPanel: document.getElementById('settings-menu-panel'),
-        paletteToggleButton: document.getElementById('palette-toggle-btn'),
-        fontToggleButton: document.getElementById('font-toggle-btn'), // NUEVO
-        infoToggleButton: document.getElementById('info-toggle-btn'),
-        adminLinkButton: document.getElementById('admin-link-btn'),
-        libraryBtn: document.getElementById('library-menu-toggle'),
-        
-        // Modal Info
-        readmeModal: document.getElementById('readme-modal'),
-        readmeContent: document.getElementById('readme-content'),
-        readmeCloseButton: document.getElementById('readme-close-btn'),
-        
-        // Detalles Producto
-        productDisplayPlaceholder: document.getElementById('product-placeholder'),
-        productTitle: document.getElementById('product-title'),
-        productSpecsContainer: document.getElementById('product-specs'),
-        specControls: document.getElementById('spec-controls'),
-        expandAllButton: document.getElementById('expand-all-btn'),
-        collapseAllButton: document.getElementById('collapse-all-btn'),
-        selectedModelDisplay: document.getElementById('selected-model-display'),
-
-        // Biblioteca (Modal)
-        libraryModal: document.getElementById('library-modal'),
-        libraryCloseBtn: document.getElementById('library-close-btn'),
-        libraryGamaList: document.getElementById('library-gama-list'),
-        csvUploadInput: document.getElementById('csv-upload-input'),
-        uploadStatusText: document.getElementById('upload-status-text')
-    };
-
-    const originalPlaceholder = dom.productDisplayPlaceholder;
-    let masterDatabase = [];
-    let masterSchemaMap = {};
-    let attrCodeToDescMap = {};
-    let activeSchemas = new Set(); 
-
-    // --- Tema ---
-    const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
-    const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
-    
-    let isLightMode = true; 
-    let currentAccentHue = darkPaletteHSL.accent.h;
-
-    // --- Lista de Fuentes (23 Variedades) ---
-    const fontFamilies = [
-        "'Inter', system-ui, sans-serif",                   // 1. Default Modern
-        "Arial, Helvetica, sans-serif",                     // 2. Classic
-        "'Courier New', Courier, monospace",                // 3. Code
-        "Georgia, 'Times New Roman', Times, serif",         // 4. Elegant
-        "'Verdana', sans-serif",                            // 5. Wide
-        "'Trebuchet MS', 'Lucida Sans', sans-serif",        // 6. Humanist
-        "'Impact', Haettenschweiler, sans-serif",           // 7. Heavy
-        "'Comic Sans MS', 'Chalkboard SE', sans-serif",     // 8. Playful
-        "'Segoe UI', Roboto, Helvetica, sans-serif",        // 9. System UI
-        "'Garamond', 'Baskerville', serif",                 // 10. Old Style
-        "'Lucida Console', Monaco, monospace",              // 11. Retro Terminal
-        "'Tahoma', Geneva, sans-serif",                     // 12. Compact
-        "'Palatino Linotype', 'Book Antiqua', serif",       // 13. Bookish
-        "'Arial Black', Gadget, sans-serif",                // 14. Bold
-        "'Century Gothic', Futura, sans-serif",             // 15. Geometric
-        "'Bookman Old Style', serif",                       // 16. Slab Serif
-        "'Brush Script MT', cursive",                       // 17. Handwriting
-        "'Copperplate', 'Copperplate Gothic Light', serif",  // 18. Small Caps
-        "'Papyrus', fantasy",                               // 19. Ancient
-        "'Optima', sans-serif",                             // 20. Humanist Serif-like
-        "'Candara', sans-serif",                            // 21. Modern Clear
-        "'Perpetua', serif",                                // 22. Sharp Serif
-        "'Consolas', 'Andale Mono', monospace"              // 23. Modern Code
-    ];
-
-    function initialize() {
-        setTimeout(() => {
-            masterDatabase = window.APP_DB.products;
-            masterSchemaMap = window.APP_DB.schemas;
-            if (masterDatabase.length === 0) console.warn("Base de datos vacía.");
-            masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-            
-            Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
-
-            buildAttributeCache();
-            setupEventListeners();
-            populateSchemaSelector();
-            populateSmartFilters('all');
-            populateFullModelList(); 
-            
-            currentAccentHue = Math.floor(Math.random() * 360);
-            updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-            
-            dom.paletteToggleButton.innerHTML = '🎨 Tema';
-        }, 100);
-    }
-
-    function setupEventListeners() {
-        if (dom.modelSearchInput) dom.modelSearchInput.addEventListener('input', applyFiltersAndSearch);
-        if (dom.schemaFilterSelect) {
-            dom.schemaFilterSelect.addEventListener('change', () => {
-                populateSmartFilters(dom.schemaFilterSelect.value);
-                applyFiltersAndSearch();
-            });
-        }
-        if (dom.smartFilterContainer) {
-            dom.smartFilterContainer.addEventListener('change', applyFiltersAndSearch);
-            dom.smartFilterContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('filter-toggle-btn') || e.target.closest('.filter-group-title')) {
-                    const titleEl = e.target.closest('.filter-group-title');
-                    if (titleEl) toggleFilterGroup(titleEl);
-                }
-            });
-        }
-        if (dom.activeFiltersBar) {
-            dom.activeFiltersBar.addEventListener('click', (e) => {
-                const btn = e.target.closest('.chip-remove-btn');
-                if (btn) {
-                    e.preventDefault(); e.stopPropagation();
-                    const action = btn.dataset.action;
-                    action === 'remove-schema' ? removeSchemaFilter() : removeActiveFilter(btn.dataset.attrCode);
-                }
-            });
-        }
-        if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
-        if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
-        if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
-        
-        if (dom.filterOverlay) {
-            dom.filterOverlay.addEventListener('click', () => {
-                closeFilterPanel(); closeSettingsMenu(); closeReadmeModal(); closeLibraryModal();
-            });
-        }
-        if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
-        if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
-        if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
-        if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
-        
-        // --- Nuevo Listener Fuente ---
-        if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleFontToggle);
-
-        if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
-
-        if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
-        if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
-        if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
-        if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
-    }
-
-    // --- Lógica Filtros ---
-    function removeActiveFilter(attrCode) {
-        const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select'));
-        const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode);
-        if (targetSelects.length > 0) {
-            targetSelects.forEach(select => select.value = "");
-            applyFiltersAndSearch();
-        } else {
-            applyFiltersAndSearch();
-        }
-    }
-
-    function renderActiveFilters(filters) {
-        if (!dom.activeFiltersBar) return;
-        const currentSchema = dom.schemaFilterSelect.value;
-        const hasSchemaFilter = currentSchema !== 'all';
-        const hasAttrFilters = Object.keys(filters).length > 0;
-
-        if (!hasSchemaFilter && !hasAttrFilters) {
-            dom.activeFiltersBar.className = 'active-filters-bar-hidden'; dom.activeFiltersBar.innerHTML = ''; return;
-        }
-        dom.activeFiltersBar.className = 'active-filters-bar-visible'; dom.activeFiltersBar.innerHTML = ''; 
-        const fragment = document.createDocumentFragment();
-
-        if (hasSchemaFilter) {
-            const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1);
-            const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; 
-            schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`;
-            fragment.appendChild(schemaChip);
-        }
-
-        Object.entries(filters).forEach(([attrCode, attrValue]) => {
-            const attrDesc = attrCodeToDescMap[attrCode] || attrCode;
-            const safeCode = attrCode.replace(/"/g, '&quot;');
-            const chip = document.createElement('div'); chip.className = 'active-filter-chip';
-            chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`;
-            fragment.appendChild(chip);
-        });
-        dom.activeFiltersBar.appendChild(fragment);
-    }
-
-    // --- Funciones Auxiliares ---
-    function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
-    
-    function buildAttributeCache() {
-        attrCodeToDescMap = {};
-        if (Object.keys(masterSchemaMap).length === 0) return;
-        Object.values(masterSchemaMap).forEach(schema => {
-            schema.forEach(group => { group.attrs.forEach(attr => { attrCodeToDescMap[attr.code] = attr.desc; }); });
-        });
-    }
-    
-    function populateSchemaSelector() {
-        if (!dom.schemaFilterSelect) return;
-        const currentValue = dom.schemaFilterSelect.value; 
-        dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>';
-        const fragment = document.createDocumentFragment();
-        
-        Object.keys(masterSchemaMap).filter(k => activeSchemas.has(k)).forEach(key => {
-            const option = document.createElement('option'); option.value = key;
-            const friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
-            option.textContent = friendlyName; fragment.appendChild(option);
-        });
-        dom.schemaFilterSelect.appendChild(fragment);
-        
-        if (activeSchemas.has(currentValue)) {
-            dom.schemaFilterSelect.value = currentValue;
-        } else {
-            dom.schemaFilterSelect.value = 'all';
-        }
-    }
-
-    function populateSmartFilters(schemaKey = 'all') {
-        if (!dom.smartFilterContainer) return;
-        dom.smartFilterContainer.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        
-        if (schemaKey === 'all') {
-            const placeholder = document.createElement('p'); placeholder.className = 'filter-placeholder';
-            placeholder.textContent = 'Selecciona una gama para ver filtros específicos.';
-            fragment.appendChild(placeholder); dom.smartFilterContainer.appendChild(fragment); return;
-        } 
-        
-        const relevantProducts = masterDatabase.filter(p => p.schema_key === schemaKey && activeSchemas.has(p.schema_key));
-        const schemaGroups = masterSchemaMap[schemaKey] || [];
-
-        schemaGroups.forEach(group => {
-            const groupWrapper = document.createElement('div'); groupWrapper.className = 'filter-group-wrapper';
-            const title = document.createElement('h3'); title.className = 'filter-group-title';
-            title.innerHTML = `<button class="filter-toggle-btn gray"></button>${group.group}`;
-            groupWrapper.appendChild(title);
-            const rowsContainer = document.createElement('div'); rowsContainer.className = 'filter-rows-container collapsed';
-            
-            let hasFiltersInGroup = false; 
-            
-            group.attrs.forEach(attr => {
-                const rawValues = relevantProducts.map(p => p.attributes[attr.code]).filter(v => v && v !== 'unknown');
-                const uniqueValues = [...new Set(rawValues)].sort((a, b) => {
-                    const numA = parseFloat(a); const numB = parseFloat(b);
-                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-                    return String(a).localeCompare(String(b));
-                });
-
-                if (uniqueValues.length > 0) {
-                    hasFiltersInGroup = true;
-                    const uniqueId = `filter_${attr.code}_${Math.random().toString(36).substr(2, 5)}`;
-                    const row = document.createElement('div'); row.className = 'filter-row';
-                    const label = document.createElement('label'); label.htmlFor = uniqueId;
-                    label.textContent = attr.desc; label.title = attr.desc;
-                    const select = document.createElement('select'); 
-                    select.id = uniqueId;
-                    select.className = 'futuristic-select'; 
-                    select.dataset.attribute = attr.code;
-                    select.setAttribute('data-attribute', attr.code);
-                    select.innerHTML = '<option value="">---</option>';
-                    
-                    uniqueValues.forEach(value => {
-                        const option = document.createElement('option'); option.value = value; option.textContent = value;
-                        select.appendChild(option);
-                    });
-                    row.appendChild(label); row.appendChild(select); rowsContainer.appendChild(row);
-                }
-            });
-            if (hasFiltersInGroup) { groupWrapper.appendChild(rowsContainer); fragment.appendChild(groupWrapper); }
-        });
-        dom.smartFilterContainer.appendChild(fragment);
-    }
-
-    function getAppliedFilters() {
-        const filters = {};
-        dom.smartFilterContainer.querySelectorAll('select').forEach(select => {
-            if (select.value) filters[select.dataset.attribute] = select.value;
-        });
-        return filters;
-    }
-
-    function applyFiltersAndSearch() {
-        const textQuery = dom.modelSearchInput.value.toLowerCase().trim();
-        const attributeFilters = getAppliedFilters();
-        const filteredProducts = filterProducts(textQuery, attributeFilters);
-        renderSearchResults(filteredProducts, dom.modelSearchResults);
-        renderActiveFilters(attributeFilters);
-    }
-
-    function filterProducts(textQuery, attributeFilters) {
-        const selectedSchema = dom.schemaFilterSelect.value;
-        const hasTextQuery = textQuery.length > 0;
-        const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
-        const hasSchemaFilter = selectedSchema !== 'all';
-        
-        let candidates = masterDatabase.filter(p => activeSchemas.has(p.schema_key));
-
-        if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return candidates;
-
-        return candidates.filter(product => {
-            if (hasSchemaFilter && product.schema_key !== selectedSchema) return false;
-            if (hasTextQuery && !product.model.toLowerCase().includes(textQuery)) return false;
-            if (hasAttributeFilters) {
-                const match = Object.entries(attributeFilters).every(([attrCode, attrValue]) => product.attributes[attrCode] === attrValue);
-                if (!match) return false;
-            }
-            return true;
-        });
-    }
-
-    function handleResultClick(e) {
-        const target = e.target.closest('.list-item');
-        if (!target) return;
-        document.querySelectorAll('.list-item.active').forEach(item => item.classList.remove('active'));
-        target.classList.add('active');
-        closeFilterPanel(); closeSettingsMenu(); closeLibraryModal();
-        const model = target.dataset.model;
-        const product = masterDatabase.find(p => p.model === model);
-        if (product) {
-            displayProduct(product); expandAllSpecs();
-            dom.body.classList.add('model-is-selected'); showSelectedModelChip(product.model);
-        }
-    }
-
-    function removeSchemaFilter() {
-        if (dom.schemaFilterSelect) {
-            dom.schemaFilterSelect.value = 'all'; populateSmartFilters('all'); applyFiltersAndSearch(); 
-        }
-    }
-    
-    function renderSearchResults(results, container) {
-        if (!container) return;
-        container.innerHTML = '';
-        if (dom.modelListHeader) dom.modelListHeader.textContent = `Modelos (${results.length})`;
-        if (results.length === 0) { container.innerHTML = '<div class="list-item" style="cursor: default; background: none; color: var(--color-text-dim);">No se encontraron resultados.</div>'; return; }
-        const fragment = document.createDocumentFragment();
-        results.forEach(product => {
-            const item = document.createElement('div'); item.className = 'list-item'; 
-            item.dataset.model = product.model; item.textContent = product.model; fragment.appendChild(item);
-        });
-        container.appendChild(fragment);
-    }
-    
-    function displayProduct(product) {
-        dom.productDisplayPlaceholder.style.display = 'none'; dom.specControls.className = 'spec-controls-visible'; 
-        dom.productTitle.textContent = product.model;
-        const productSchema = masterSchemaMap[product.schema_key]; 
-        if (productSchema) renderProductSpecs(product.attributes, productSchema);
-        else dom.productSpecsContainer.innerHTML = '<p class="text-gray-400">Error: Esquema no encontrado.</p>';
-    }
-
-    function renderProductSpecs(attributes, schema) {
-        dom.productSpecsContainer.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        schema.forEach(group => {
-            const details = document.createElement('details'); details.className = 'spec-group';
-            const summary = document.createElement('summary'); summary.textContent = group.group;
-            details.appendChild(summary);
-            const content = document.createElement('div'); content.className = 'spec-group-content';
-            let hasContentInGroup = false; 
-            group.attrs.forEach(attr => {
-                const value = attributes[attr.code];
-                if (value && value !== 'unknown') {
-                    hasContentInGroup = true;
-                    const specItem = document.createElement('div'); specItem.className = 'spec-row';
-                    specItem.innerHTML = `<span class="attr-desc">${attr.desc}</span><span class="attr-value">${value}</span>`;
-                    content.appendChild(specItem);
-                }
-            });
-            if (hasContentInGroup) { details.appendChild(content); fragment.appendChild(details); }
-        });
-        dom.productSpecsContainer.appendChild(fragment);
-    }
-
-    function showSelectedModelChip(modelName) {
-        dom.selectedModelDisplay.innerHTML = `<button id="clear-selection-btn" class="model-chip-button" title="Cerrar y volver a búsqueda">Modelo: ${modelName} <span>&times;</span></button>`;
-        dom.selectedModelDisplay.querySelector('#clear-selection-btn').addEventListener('click', clearSelection);
-    }
-
-    function clearSelection() {
-        dom.body.classList.remove('model-is-selected');
-        dom.selectedModelDisplay.innerHTML = '';
-        dom.productTitle.textContent = 'Selecciona un producto';
-        dom.specControls.className = 'spec-controls-hidden';
-        dom.productSpecsContainer.innerHTML = '';
-        dom.productSpecsContainer.appendChild(originalPlaceholder);
-        originalPlaceholder.style.display = 'block';
-        applyFiltersAndSearch(); 
-        const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
-        if (currentActive) currentActive.classList.remove('active');
-    }
-
-    // --- UI Controls ---
-    function expandAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = true); }
-    function collapseAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = false); }
-    function toggleFilterGroup(titleElement) {
-        const btn = titleElement.querySelector('.filter-toggle-btn');
-        const rowsContainer = titleElement.nextElementSibling; 
-        if (rowsContainer && btn) {
-            if (rowsContainer.classList.contains('collapsed')) {
-                rowsContainer.classList.remove('collapsed'); rowsContainer.classList.add('expanded');
-                btn.classList.remove('gray'); btn.classList.add('blue');
-            } else {
-                rowsContainer.classList.remove('expanded'); rowsContainer.classList.add('collapsed');
-                btn.classList.remove('blue'); btn.classList.add('gray');
-            }
-        }
-    }
-
-    function openFilterPanel() {
-        if (!dom.smartFilterPanel) return;
-        closeSettingsMenu(); closeReadmeModal(); closeLibraryModal();
-        dom.smartFilterPanel.className = 'smart-filter-content-open';
-        dom.filterOverlay.className = 'overlay-visible';
-        dom.smartFilterToggle.classList.add('active');
-    }
-    function closeFilterPanel() {
-        if (!dom.smartFilterPanel) return;
-        dom.smartFilterPanel.className = 'smart-filter-content-hidden';
-        checkOverlay();
-        dom.smartFilterToggle.classList.remove('active');
-    }
-    function toggleFilterPanel() { dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel(); }
-    
-    function openSettingsMenu() {
-        if (!dom.settingsMenuPanel) return;
-        closeFilterPanel(); closeReadmeModal(); closeLibraryModal();
-        dom.settingsMenuPanel.className = 'settings-menu-panel-open';
-        dom.filterOverlay.className = 'overlay-visible';
-        dom.settingsMenuToggle.classList.add('active');
-    }
-    function closeSettingsMenu() {
-        if (!dom.settingsMenuPanel) return;
-        dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
-        checkOverlay();
-        dom.settingsMenuToggle.classList.remove('active');
-    }
-    function toggleSettingsMenu() { dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu(); }
-    
-    function openReadmeModal() { closeFilterPanel(); closeSettingsMenu(); closeLibraryModal(); dom.readmeModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; }
-    function closeReadmeModal() { dom.readmeModal.className = 'modal-hidden'; checkOverlay(); }
-
-    function checkOverlay() {
-        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && 
-            dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' &&
-            dom.readmeModal.className === 'modal-hidden' &&
-            dom.libraryModal.className === 'modal-hidden') {
-            dom.filterOverlay.className = 'overlay-hidden';
-        }
-    }
-
-    // --- Biblioteca ---
-    function openLibraryModal() {
-        closeSettingsMenu(); 
-        closeFilterPanel(); closeReadmeModal();
-        renderLibraryGamaList();
-        dom.libraryModal.className = 'modal-visible';
-        dom.filterOverlay.className = 'overlay-visible';
-        dom.uploadStatusText.textContent = "Formato Admin (CSV)";
-        dom.csvUploadInput.value = "";
-    }
-
-    function closeLibraryModal() {
-        dom.libraryModal.className = 'modal-hidden';
-        checkOverlay();
-    }
-
-    function renderLibraryGamaList() {
-        dom.libraryGamaList.innerHTML = '';
-        Object.keys(masterSchemaMap).forEach(schemaKey => {
-            const isActive = activeSchemas.has(schemaKey);
-            const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1);
-            
-            const item = document.createElement('div');
-            item.className = 'gama-toggle-item';
-            item.innerHTML = `
-                <label class="gama-toggle-label">
-                    <input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}>
-                    <span class="gama-name">${friendlyName}</span>
-                </label>
-                <span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>
-            `;
-            dom.libraryGamaList.appendChild(item);
-        });
-    }
-
-    function handleGamaToggle(e) {
-        if (!e.target.matches('.gama-checkbox')) return;
-        const key = e.target.dataset.key;
-        const isChecked = e.target.checked;
-        
-        if (isChecked) activeSchemas.add(key);
-        else activeSchemas.delete(key);
-
-        const statusSpan = e.target.closest('.gama-toggle-item').querySelector('.gama-status');
-        statusSpan.textContent = isChecked ? 'Activa' : 'Oculta';
-        statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)';
-
-        populateSchemaSelector(); 
-        populateSmartFilters(dom.schemaFilterSelect.value); 
-        applyFiltersAndSearch(); 
-    }
-
-    function handleCsvUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        dom.uploadStatusText.textContent = `Procesando: ${file.name}...`;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                parseAndImportCsv(event.target.result);
-                dom.uploadStatusText.textContent = `¡Importado con éxito!`;
-                dom.uploadStatusText.style.color = 'var(--color-cyan-accent)';
-                
-                buildAttributeCache();
-                populateSchemaSelector();
-                applyFiltersAndSearch();
-                renderLibraryGamaList(); 
-
-            } catch (error) {
-                console.error(error);
-                dom.uploadStatusText.textContent = `Error: Formato inválido`;
-                dom.uploadStatusText.style.color = '#ef4444';
-                alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8.");
-            }
-        };
-        reader.readAsText(file, 'UTF-8');
-    }
-
-    function parseCSVLine(text) {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
-        
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-            const nextChar = text[i + 1];
-
-            if (inQuotes) {
-                if (char === '"' && nextChar === '"') {
-                    current += '"';
-                    i++; 
-                } else if (char === '"') {
-                    inQuotes = false;
-                } else {
-                    current += char;
-                }
-            } else {
-                if (char === ';') {
-                    result.push(current);
-                    current = '';
-                } else if (char === '"') {
-                    inQuotes = true;
-                } else {
-                    current += char;
-                }
-            }
-        }
-        result.push(current); 
-        return result;
-    }
-
-    // --- [FIXED] Parser CSV 3 Filas (Grupos) ---
-    function parseAndImportCsv(csvText) {
-        let cleanText = csvText;
-        if (cleanText.charCodeAt(0) === 0xFEFF) {
-            cleanText = cleanText.slice(1);
-        }
-
-        const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== '');
-
-        if (lines.length < 4) throw new Error("CSV muy corto");
-
-        // Fila 1: Grupos [Key, "", Group1, Group1...]
-        const rowGroups = parseCSVLine(lines[0]);
-        const schemaKey = rowGroups[0].toLowerCase().trim();
-        if (!schemaKey) throw new Error("Falta Schema Key");
-
-        // Fila 2: Códigos ["", "model", "code1", "code2"...]
-        const rowCodes = parseCSVLine(lines[1]);
-        
-        // Fila 3: Descripciones ["", "Modelo", "Desc1"...]
-        const rowDescs = parseCSVLine(lines[2]);
-
-        // Detección de inicio de atributos (Index 2, tras Key y Model)
-        const startIndex = 2; 
-
-        // Reconstruir Esquema Agrupado
-        const tempSchema = {}; // Map<GroupName, Array<Attrs>>
-        const groupOrder = []; // Para mantener orden
-
-        for (let i = startIndex; i < rowCodes.length; i++) {
-            const groupName = rowGroups[i] || "Otros";
-            const code = rowCodes[i];
-            const desc = rowDescs[i] || code;
-
-            if (code) {
-                if (!tempSchema[groupName]) {
-                    tempSchema[groupName] = [];
-                    groupOrder.push(groupName);
-                }
-                tempSchema[groupName].push({ code, desc });
-            }
-        }
-
-        const newSchemaGroup = groupOrder.map(gName => ({
-            group: gName,
-            attrs: tempSchema[gName]
-        }));
-
-        window.APP_DB.registerSchema(schemaKey, newSchemaGroup);
-        activeSchemas.add(schemaKey);
-
-        // Fila 4+: Datos
-        let count = 0;
-        for (let i = 3; i < lines.length; i++) {
-            const cols = parseCSVLine(lines[i]);
-            const modelId = cols[1]; // Columna B es Model ID
-            if (!modelId) continue;
-
-            const attributes = {};
-            for (let j = startIndex; j < rowCodes.length; j++) {
-                const code = rowCodes[j];
-                if (code && cols[j]) {
-                    attributes[code] = cols[j];
-                }
-            }
-
-            const newProduct = {
-                model: modelId,
-                schema_key: schemaKey,
-                attributes: attributes
-            };
-
-            window.APP_DB.registerProduct(newProduct);
-            count++;
-        }
-
-        masterSchemaMap = window.APP_DB.schemas;
-        masterDatabase = window.APP_DB.products;
-        
-        // FIX: Reordenar alfabéticamente para que los nuevos no salgan al final
-        masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-
-        console.log(`Importada gama ${schemaKey} con ${count} modelos.`);
-    }
-
-    function handleThemeToggle(e) {
-        // Evitar que el clic cierre el menú si se propagara
-        e.stopPropagation();
-        isLightMode = !isLightMode;
-        if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-        else { currentAccentHue = Math.floor(Math.random() * 360); updatePaletteCSS(darkPaletteHSL, currentAccentHue); }
-    }
-
-    function handleFontToggle(e) {
-        e.stopPropagation(); // Importante: No cerrar menú
-        const randomFont = fontFamilies[Math.floor(Math.random() * fontFamilies.length)];
-        // Actualizamos variable CSS
-        document.documentElement.style.setProperty('--font-sans', randomFont);
-    }
-
-    function updatePaletteCSS(baseHSL, accentHue) {
-        const p = baseHSL;
-        const hueDifference = 0;
-        const newOtherHue = (accentHue + hueDifference + 360) % 360; 
-        const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
-        const root = document.documentElement;
-        const vars = {
-            '--color-cyan-accent': `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
-            '--color-cyan-glow': `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`,
-            '--color-bg-dark': `hsl(${newOtherHue}, ${p.dark.s}%, ${p.dark.l}%)`,
-            '--color-bg-medium': `hsl(${newOtherHue}, ${p.medium.s}%, ${p.medium.l}%)`,
-            '--color-border': `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l}%)`,
-            '--color-border-light': `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`,
-            '--color-text-primary': `hsl(${newOtherHue}, ${p.textP.s}%, ${p.textP.l}%)`,
-            '--color-text-secondary': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`,
-            '--color-text-dim': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`
-        };
-        for (const [key, value] of Object.entries(vars)) { root.style.setProperty(key, value); }
-    }
-    function hslToRgb(h, s, l) {
-        s /= 100; l /= 100;
-        const k = n => (n + h / 30) % 12;
-        const a = s * Math.min(l, 1 - l);
-        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
-    }
-    
-    async function showReadmeInfo() {
-        closeSettingsMenu(); closeLibraryModal(); openReadmeModal();
-        if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
-            try {
-                dom.readmeContent.textContent = "Cargando...";
-                const response = await fetch('README.md');
-                if (!response.ok) throw new Error('No se pudo encontrar README.md');
-                const text = await response.text();
-                dom.readmeContent.textContent = text;
-            } catch (error) {
-                dom.readmeContent.textContent = "Error al cargar el archivo README.md.\n\nAsegúrate de que el archivo existe en la raíz del proyecto.";
-            }
-        }
-    }
-    
-    initialize();
-});
+/* ==============================================
+   Estilos para la App Principal (v4.3.0 Compact Library + Font)
+   ============================================== */
+:root {
+    --color-bg-dark: #0D1117;
+    --color-bg-medium: #161B22;
+    --color-border: #21262D;
+    --color-border-light: #2a3038;
+    --color-text-primary: #e2e8f0;
+    --color-text-secondary: #9ca3af;
+    --color-text-dim: #6b7280;
+    --color-cyan-accent: #06b6d4;
+    --color-cyan-glow: rgba(6, 182, 212, 0.25);
+    /* Fuente por defecto inicial */
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+
+body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    /* Transición suave al cambiar la fuente */
+    transition: background-color 0.3s, color 0.3s, font-family 0.1s;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-medium); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
+
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0.75rem;
+    box-sizing: border-box; 
+    position: relative;
+}
+@media (min-width: 1024px) { .container { padding: 1.5rem; } }
+
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.3s ease-in-out;
+}
+@media (min-width: 1024px) {
+    .main-layout { flex-direction: row; }
+    .sidebar-column { width: 33.333333%; flex-shrink: 0; }
+    .main-column { width: 66.666667%; }
+}
+
+/* ESTADO: MODELO SELECCIONADO */
+body.model-is-selected .sidebar-column { display: none; }
+body.model-is-selected .main-column { width: 100%; }
+body.model-is-selected #smart-filter-system { display: none; }
+body.model-is-selected #active-filters-bar { display: none; }
+body.model-is-selected #selected-model-display { display: block; }
+
+.sticky-panel { position: sticky; top: 1rem; }
+.w-full { width: 100%; }
+.text-gray-400 { color: var(--color-text-secondary); }
+.overflow-y-auto { overflow-y: auto; }
+.max-h-64 { max-height: 16rem; }
+
+/* ==============================================
+   BARRA SUPERIOR (HEADER)
+   ============================================== */
+.app-header {
+    position: relative; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    gap: 0.75rem;
+    min-height: 40px;
+}
+@media (min-width: 1024px) {
+    .app-header { flex-direction: row; align-items: center; }
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-right: 50px; 
+}
+
+.app-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+.app-version {
+    font-size: 0.75rem; padding: 0 0.3rem; font-family: var(--font-mono);
+    color: var(--color-cyan-accent); background-color: var(--color-bg-medium);
+    border-radius: 4px; border: 1px solid var(--color-border);
+    position: relative; top: -2px; white-space: nowrap;
+}
+
+#selected-model-display.model-chip-hidden { display: none; }
+.model-chip-button {
+    font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
+    color: var(--color-cyan-accent); background-color: var(--color-cyan-glow);
+    border: 1px solid var(--color-cyan-accent); border-radius: 1rem;
+    padding: 0.35rem 0.6rem 0.35rem 0.8rem; cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.model-chip-button span { font-family: var(--font-sans); font-weight: 900; font-size: 1rem; color: var(--color-text-primary); }
+
+.header-right-controls { display: flex; width: 100%; }
+@media (min-width: 1024px) { .header-right-controls { width: auto; } }
+
+/* ==============================================
+   MENÚ DE AJUSTES
+   ============================================== */
+.settings-menu-wrapper { position: relative; }
+.settings-menu-wrapper.absolute-top-right {
+    position: absolute; top: 0; right: 0; z-index: 60;
+}
+.settings-button {
+    background-color: var(--color-bg-medium); border: 1px solid var(--color-border);
+    color: var(--color-text-secondary); font-size: 1.2rem; line-height: 1;
+    border-radius: 4px; cursor: pointer; padding: 0.4rem 0.6rem; height: 38px; width: 38px;
+}
+.settings-menu-panel-hidden { display: none; }
+.settings-menu-panel-open {
+    display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); right: 0;
+    width: 200px; background: var(--color-bg-medium); border: 1px solid var(--color-border-light);
+    border-radius: 0.5rem; padding: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.settings-menu-item {
+    background-color: var(--color-bg-dark); border: 1px solid var(--color-border);
+    color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600;
+    border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left;
+    cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none;
+    box-sizing: border-box; margin-top: 0.25rem;
+}
+.settings-menu-item:hover {
+    border-color: var(--color-cyan-accent);
+    color: var(--color-cyan-accent);
+}
+
+/* ==============================================
+   SISTEMA DE FILTROS
+   ============================================== */
+.smart-filter-wrapper-v2 { position: relative; width: 100%; flex-grow: 1; }
+@media (min-width: 1024px) { .smart-filter-wrapper-v2 { width: auto; } }
+
+.smart-filter-summary {
+    font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary);
+    background-color: var(--color-bg-medium); border: 1px solid var(--color-border);
+    border-radius: 0.5rem; padding: 0.6rem 0.9rem; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
+}
+.smart-filter-summary::after { content: '[■]'; font-family: var(--font-mono); color: var(--color-cyan-accent); margin-left: 0.5rem; }
+.smart-filter-summary.active::after { content: '[-]'; }
+
+.smart-filter-content-hidden { display: none; }
+
+.smart-filter-content-open {
+    display: block; 
+    position: absolute; 
+    z-index: 50; 
+    top: calc(100% + 0.25rem);
+    box-sizing: border-box; 
+    left: 0; right: 0;
+    width: 100%; min-width: 280px; 
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light); border-radius: 0.5rem; padding: 0.75rem;
+    max-height: 70vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+@media (min-width: 1024px) {
+    .smart-filter-content-open { left: auto; right: 0; width: auto; min-width: 300px; max-width: 500px; }
+}
+
+.smart-filters-list { display: flex; flex-direction: column; gap: 0.25rem; }
+.filter-group-wrapper { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
+.filter-group-title {
+    font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary);
+    padding: 0.5rem 0.75rem; background: var(--color-border);
+    display: flex; align-items: center; cursor: pointer; margin: 0;
+}
+.filter-toggle-btn { width: 12px; height: 12px; border: none; border-radius: 3px; margin-right: 0.5rem; padding: 0; }
+.filter-toggle-btn.gray { background-color: var(--color-text-dim); }
+.filter-toggle-btn.blue { background-color: var(--color-cyan-accent); }
+.filter-rows-container { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.filter-rows-container.collapsed { display: none; }
+.filter-rows-container.expanded { display: flex; }
+.filter-row { display: grid; grid-template-columns: 1fr; gap: 0.3rem; }
+@media (min-width: 480px) { .filter-row { grid-template-columns: 1fr 1fr; align-items: center; } }
+.filter-row label { font-size: 0.8rem; color: var(--color-text-secondary); padding-right: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.overlay-visible { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); z-index: 49; }
+.overlay-hidden { display: none; }
+
+/* ==============================================
+   BARRA DE FILTROS ACTIVOS
+   ============================================== */
+.active-filters-bar-hidden { display: none; }
+.active-filters-bar-visible {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem 0.75rem;
+    background: var(--color-bg-medium); border: 1px solid var(--color-border);
+    border-radius: 0.5rem; margin-bottom: 1rem;
+    height: auto; max-height: none; overflow: visible;
+}
+
+.active-filter-chip {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--color-cyan-glow); border: 1px solid var(--color-cyan-accent);
+    border-radius: 4px; padding: 0.35rem 0.6rem;
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-primary);
+    max-width: 100%; height: auto;
+}
+.schema-chip { border-color: var(--color-text-secondary); background: var(--color-border); }
+
+.chip-label {
+    display: flex; flex-wrap: wrap; gap: 0.3rem; 
+    white-space: normal; word-break: break-word; line-height: 1.3;
+}
+.chip-label .filter-name { white-space: normal; font-weight: 400; color: var(--color-text-secondary); }
+.chip-label .filter-value { color: var(--color-text-primary); font-weight: 700; white-space: normal; overflow: visible; text-overflow: clip; }
+
+.chip-remove-btn { 
+    background: none; border: none; color: var(--color-cyan-accent); font-weight: 700; 
+    cursor: pointer; padding: 0 0.25rem; min-width: 24px; height: 100%; 
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.chip-remove-btn:hover { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* ==============================================
+   TARJETAS, INPUTS Y LISTAS
+   ============================================== */
+.futuristic-card {
+    background-color: var(--color-bg-medium); border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-cyan-accent); border-radius: 0.5rem;
+    padding: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.search-panel { display: flex; flex-direction: column; }
+@media (min-width: 1024px) { .search-panel { height: calc(100vh - 11rem); max-height: 800px; } }
+
+.futuristic-title {
+    font-size: 1.15rem; font-weight: 600; color: var(--color-text-primary); margin: 0;
+    margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem;
+}
+.futuristic-subtitle {
+    font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin: 0 0 0.5rem 0;
+}
+
+.futuristic-input, .futuristic-select {
+    background-color: var(--color-bg-dark); border: 1px solid var(--color-border);
+    color: var(--color-text-primary); border-radius: 4px; padding: 0.6rem 0.8rem;
+    font-size: 0.85rem; width: 100%; box-sizing: border-box;
+}
+.futuristic-input:focus, .futuristic-select:focus { outline: none; border-color: var(--color-cyan-accent); }
+.futuristic-select {
+    -webkit-appearance: none; appearance: none; padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;
+}
+
+.futuristic-list { background-color: var(--color-bg-dark); border: 1px solid var(--color-border-light); border-radius: 4px; }
+.full-list-visible { margin-top: 0.75rem; flex-grow: 1; overflow-y: auto; border-radius: 4px; background-color: var(--color-bg-dark); }
+.futuristic-list .list-item {
+    padding: 0.45rem 0.75rem; border-bottom: 1px dashed var(--color-border);
+    cursor: pointer; font-size: 0.85rem; font-family: var(--font-mono);
+}
+.futuristic-list .list-item:hover { background-color: var(--color-border); color: var(--color-cyan-accent); }
+.futuristic-list .list-item.active {
+    background-color: var(--color-cyan-glow); color: var(--color-cyan-accent);
+    font-weight: 600; border-left: 3px solid var(--color-cyan-accent);
+}
+
+.spec-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem;
+}
+.spec-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+.spec-controls-hidden { display: none; }
+body.model-is-selected .spec-controls-visible { display: flex; gap: 0.5rem; }
+.spec-button {
+    background-color: var(--color-bg-medium); border: 1px solid var(--color-border-light);
+    color: var(--color-text-secondary); font-family: var(--font-mono); font-size: 0.8rem;
+    font-weight: 600; border-radius: 4px; cursor: pointer; padding: 0.2rem 0.4rem;
+}
+
+details.spec-group { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
+details.spec-group summary {
+    font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary);
+    font-family: var(--font-mono); padding: 0.5rem 0.75rem; background: var(--color-border);
+    display: flex; align-items: center; cursor: pointer; list-style: none;
+}
+details.spec-group summary::before {
+    content: ''; width: 12px; height: 12px; border-radius: 3px; margin-right: 0.5rem;
+    background-color: var(--color-text-dim);
+}
+details[open].spec-group summary::before { background-color: var(--color-cyan-accent); }
+.spec-group-content { padding: 0.75rem 1.25rem; border-top: 1px solid var(--color-border-light); background-color: var(--color-bg-dark); }
+.spec-row {
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 0.45rem 0; font-size: 0.85rem; border-bottom: 1px dotted var(--color-border-light);
+}
+@media (min-width: 768px) { .spec-row { flex-direction: row; } }
+.spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; }
+.spec-row .attr-value { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-mono); text-align: right; }
+
+.modal-hidden { display: none; }
+.modal-visible {
+    display: flex; position: fixed; z-index: 99; left: 0; top: 0;
+    width: 100%; height: 100%; align-items: center; justify-content: center;
+}
+.modal-content {
+    background: var(--color-bg-medium); border: 1px solid var(--color-border-light);
+    border-left: 3px solid var(--color-cyan-accent); border-radius: 0.5rem;
+    width: 90%; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
+.modal-close-btn { background: none; border: none; font-size: 1.75rem; color: var(--color-text-secondary); cursor: pointer; }
+
+/* FIX: white-space pre-wrap afectaba a la biblioteca creando huecos por la indentación HTML */
+.modal-body { 
+    padding: 1rem; 
+    overflow-y: auto; 
+    font-family: var(--font-mono); 
+    font-size: 0.8rem; 
+    color: var(--color-text-secondary); 
+    white-space: pre-wrap; /* Mantenemos pre-wrap para el README */
+}
+
+/* ==============================================
+   ESTILOS DE BIBLIOTECA (ULTRA COMPACTOS v4.4)
+   ============================================== */
+.library-modal-content {
+    max-width: 450px; /* Más estrecho */
+    max-height: 70vh; /* No ocupar toda la pantalla */
+}
+
+/* OVERRIDE CRÍTICO: Anular pre-wrap para eliminar huecos fantasma */
+.compact-body {
+    white-space: normal !important; 
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.compact-header {
+    padding: 0.5rem 1rem;
+}
+
+.library-section {
+    margin: 0;
+}
+
+.lib-sec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+}
+
+.library-desc {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--color-text-dim);
+    margin: 0;
+}
+
+/* Lista de Gamas Compacta */
+.library-list {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border-light);
+    border-radius: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.gama-toggle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.6rem; /* Ultra fino */
+    border-bottom: 1px dashed var(--color-border);
+    transition: background-color 0.2s;
+}
+.gama-toggle-item:hover { background-color: var(--color-border); }
+.gama-toggle-item:last-child { border-bottom: none; }
+
+.gama-toggle-label {
+    display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1;
+}
+.gama-checkbox { accent-color: var(--color-cyan-accent); width: 14px; height: 14px; cursor: pointer; }
+.gama-name { font-weight: 600; font-family: var(--font-mono); color: var(--color-text-primary); font-size: 0.85rem; }
+.gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); }
+
+/* Upload Area Compacta */
+.upload-area {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: space-between;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+.upload-label {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    margin: 0;
+    display: inline-flex; 
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-primary);
+    border-radius: 4px; cursor: pointer; font-weight: 600;
+    transition: all 0.2s;
+}
+.upload-label:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
+.upload-status { font-size: 0.75rem; color: var(--color-text-dim); font-family: var(--font-mono); text-align: right; }
