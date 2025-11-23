@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v4.3.0 Compact Library + Font)
+   Estilos para la App Principal (v4.3.1 Dual Font Mix)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -11,19 +11,21 @@
     --color-text-dim: #6b7280;
     --color-cyan-accent: #06b6d4;
     --color-cyan-glow: rgba(6, 182, 212, 0.25);
-    /* Fuente por defecto inicial */
-    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    
+    /* FUENTES DINÁMICAS */
+    /* Primaria: Cuerpo de texto, inputs, descripciones */
+    --font-primary: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* Secundaria: Títulos, Monospaced, Números, Datos Técnicos */
+    --font-secondary: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 }
 
 body {
     background-color: var(--color-bg-dark);
     color: var(--color-text-secondary);
-    font-family: var(--font-sans);
+    font-family: var(--font-primary); /* APLICADA AL BODY */
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     margin: 0;
-    /* Transición suave al cambiar la fuente */
     transition: background-color 0.3s, color 0.3s, font-family 0.1s;
 }
 
@@ -93,9 +95,10 @@ body.model-is-selected #selected-model-display { display: block; }
     padding-right: 50px; 
 }
 
-.app-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+/* Títulos usan Secundaria */
+.app-title { font-family: var(--font-secondary); font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; letter-spacing: -0.5px; }
 .app-version {
-    font-size: 0.75rem; padding: 0 0.3rem; font-family: var(--font-mono);
+    font-size: 0.75rem; padding: 0 0.3rem; font-family: var(--font-secondary); /* Secundaria */
     color: var(--color-cyan-accent); background-color: var(--color-bg-medium);
     border-radius: 4px; border: 1px solid var(--color-border);
     position: relative; top: -2px; white-space: nowrap;
@@ -103,13 +106,14 @@ body.model-is-selected #selected-model-display { display: block; }
 
 #selected-model-display.model-chip-hidden { display: none; }
 .model-chip-button {
-    font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
+    font-family: var(--font-secondary); /* Secundaria */
+    font-size: 0.85rem; font-weight: 600;
     color: var(--color-cyan-accent); background-color: var(--color-cyan-glow);
     border: 1px solid var(--color-cyan-accent); border-radius: 1rem;
     padding: 0.35rem 0.6rem 0.35rem 0.8rem; cursor: pointer;
     display: flex; align-items: center; gap: 0.5rem;
 }
-.model-chip-button span { font-family: var(--font-sans); font-weight: 900; font-size: 1rem; color: var(--color-text-primary); }
+.model-chip-button span { font-family: var(--font-primary); font-weight: 900; font-size: 1rem; color: var(--color-text-primary); }
 
 .header-right-controls { display: flex; width: 100%; }
 @media (min-width: 1024px) { .header-right-controls { width: auto; } }
@@ -137,7 +141,7 @@ body.model-is-selected #selected-model-display { display: block; }
     color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600;
     border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left;
     cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none;
-    box-sizing: border-box; margin-top: 0.25rem;
+    box-sizing: border-box; margin-top: 0.25rem; font-family: var(--font-primary);
 }
 .settings-menu-item:hover {
     border-color: var(--color-cyan-accent);
@@ -156,7 +160,7 @@ body.model-is-selected #selected-model-display { display: block; }
     border-radius: 0.5rem; padding: 0.6rem 0.9rem; cursor: pointer;
     display: flex; justify-content: space-between; align-items: center; width: 100%;
 }
-.smart-filter-summary::after { content: '[■]'; font-family: var(--font-mono); color: var(--color-cyan-accent); margin-left: 0.5rem; }
+.smart-filter-summary::after { content: '[■]'; font-family: var(--font-secondary); color: var(--color-cyan-accent); margin-left: 0.5rem; }
 .smart-filter-summary.active::after { content: '[-]'; }
 
 .smart-filter-content-hidden { display: none; }
@@ -181,6 +185,7 @@ body.model-is-selected #selected-model-display { display: block; }
 .smart-filters-list { display: flex; flex-direction: column; gap: 0.25rem; }
 .filter-group-wrapper { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
 .filter-group-title {
+    font-family: var(--font-secondary); /* Secundaria para Headers de Filtros */
     font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary);
     padding: 0.5rem 0.75rem; background: var(--color-border);
     display: flex; align-items: center; cursor: pointer; margin: 0;
@@ -213,7 +218,8 @@ body.model-is-selected #selected-model-display { display: block; }
     display: flex; align-items: center; gap: 0.5rem;
     background: var(--color-cyan-glow); border: 1px solid var(--color-cyan-accent);
     border-radius: 4px; padding: 0.35rem 0.6rem;
-    font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-primary);
+    font-family: var(--font-secondary); /* Secundaria para datos */
+    font-size: 0.8rem; color: var(--color-text-primary);
     max-width: 100%; height: auto;
 }
 .schema-chip { border-color: var(--color-text-secondary); background: var(--color-border); }
@@ -222,7 +228,7 @@ body.model-is-selected #selected-model-display { display: block; }
     display: flex; flex-wrap: wrap; gap: 0.3rem; 
     white-space: normal; word-break: break-word; line-height: 1.3;
 }
-.chip-label .filter-name { white-space: normal; font-weight: 400; color: var(--color-text-secondary); }
+.chip-label .filter-name { white-space: normal; font-weight: 400; color: var(--color-text-secondary); font-family: var(--font-primary); }
 .chip-label .filter-value { color: var(--color-text-primary); font-weight: 700; white-space: normal; overflow: visible; text-overflow: clip; }
 
 .chip-remove-btn { 
@@ -244,10 +250,12 @@ body.model-is-selected #selected-model-display { display: block; }
 @media (min-width: 1024px) { .search-panel { height: calc(100vh - 11rem); max-height: 800px; } }
 
 .futuristic-title {
+    font-family: var(--font-secondary); /* Secundaria */
     font-size: 1.15rem; font-weight: 600; color: var(--color-text-primary); margin: 0;
     margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem;
 }
 .futuristic-subtitle {
+    font-family: var(--font-secondary); /* Secundaria */
     font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin: 0 0 0.5rem 0;
 }
 
@@ -255,6 +263,7 @@ body.model-is-selected #selected-model-display { display: block; }
     background-color: var(--color-bg-dark); border: 1px solid var(--color-border);
     color: var(--color-text-primary); border-radius: 4px; padding: 0.6rem 0.8rem;
     font-size: 0.85rem; width: 100%; box-sizing: border-box;
+    font-family: var(--font-primary); /* Input usa primaria para legibilidad */
 }
 .futuristic-input:focus, .futuristic-select:focus { outline: none; border-color: var(--color-cyan-accent); }
 .futuristic-select {
@@ -267,7 +276,8 @@ body.model-is-selected #selected-model-display { display: block; }
 .full-list-visible { margin-top: 0.75rem; flex-grow: 1; overflow-y: auto; border-radius: 4px; background-color: var(--color-bg-dark); }
 .futuristic-list .list-item {
     padding: 0.45rem 0.75rem; border-bottom: 1px dashed var(--color-border);
-    cursor: pointer; font-size: 0.85rem; font-family: var(--font-mono);
+    cursor: pointer; font-size: 0.85rem; 
+    font-family: var(--font-secondary); /* Lista de modelos en secundaria */
 }
 .futuristic-list .list-item:hover { background-color: var(--color-border); color: var(--color-cyan-accent); }
 .futuristic-list .list-item.active {
@@ -279,19 +289,20 @@ body.model-is-selected #selected-model-display { display: block; }
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem;
 }
-.spec-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+.spec-title { font-family: var(--font-secondary); font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
 .spec-controls-hidden { display: none; }
 body.model-is-selected .spec-controls-visible { display: flex; gap: 0.5rem; }
 .spec-button {
     background-color: var(--color-bg-medium); border: 1px solid var(--color-border-light);
-    color: var(--color-text-secondary); font-family: var(--font-mono); font-size: 0.8rem;
+    color: var(--color-text-secondary); font-family: var(--font-secondary); font-size: 0.8rem;
     font-weight: 600; border-radius: 4px; cursor: pointer; padding: 0.2rem 0.4rem;
 }
 
 details.spec-group { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
 details.spec-group summary {
     font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary);
-    font-family: var(--font-mono); padding: 0.5rem 0.75rem; background: var(--color-border);
+    font-family: var(--font-secondary); /* Headers de specs en secundaria */
+    padding: 0.5rem 0.75rem; background: var(--color-border);
     display: flex; align-items: center; cursor: pointer; list-style: none;
 }
 details.spec-group summary::before {
@@ -305,8 +316,8 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
     padding: 0.45rem 0; font-size: 0.85rem; border-bottom: 1px dotted var(--color-border-light);
 }
 @media (min-width: 768px) { .spec-row { flex-direction: row; } }
-.spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; }
-.spec-row .attr-value { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-mono); text-align: right; }
+.spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; font-family: var(--font-primary); }
+.spec-row .attr-value { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-secondary); /* Valor en secundaria */ text-align: right; }
 
 .modal-hidden { display: none; }
 .modal-visible {
@@ -325,10 +336,10 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
 .modal-body { 
     padding: 1rem; 
     overflow-y: auto; 
-    font-family: var(--font-mono); 
+    font-family: var(--font-secondary); /* README en mono/secundaria */
     font-size: 0.8rem; 
     color: var(--color-text-secondary); 
-    white-space: pre-wrap; /* Mantenemos pre-wrap para el README */
+    white-space: pre-wrap; 
 }
 
 /* ==============================================
@@ -364,7 +375,7 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
 }
 
 .library-desc {
-    font-family: var(--font-sans);
+    font-family: var(--font-primary);
     font-size: 0.75rem;
     color: var(--color-text-dim);
     margin: 0;
@@ -396,8 +407,8 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
     display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1;
 }
 .gama-checkbox { accent-color: var(--color-cyan-accent); width: 14px; height: 14px; cursor: pointer; }
-.gama-name { font-weight: 600; font-family: var(--font-mono); color: var(--color-text-primary); font-size: 0.85rem; }
-.gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); }
+.gama-name { font-weight: 600; font-family: var(--font-secondary); color: var(--color-text-primary); font-size: 0.85rem; }
+.gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); font-family: var(--font-primary); }
 
 /* Upload Area Compacta */
 .upload-area {
@@ -422,6 +433,7 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
     color: var(--color-text-primary);
     border-radius: 4px; cursor: pointer; font-weight: 600;
     transition: all 0.2s;
+    font-family: var(--font-primary);
 }
 .upload-label:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
-.upload-status { font-size: 0.75rem; color: var(--color-text-dim); font-family: var(--font-mono); text-align: right; }
+.upload-status { font-size: 0.75rem; color: var(--color-text-dim); font-family: var(--font-secondary); text-align: right; }
