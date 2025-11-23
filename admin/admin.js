@@ -1,6 +1,6 @@
 /*
- * Lógica del Panel de Administración v3.4.1
- * Update: Exportación CSV corregida (BOM, Encoding y Layout sin huecos).
+ * Lógica del Panel de Administración v3.5.0
+ * Update: Exportación CSV Avanzada (3 Filas: Grupos, Códigos, Descripciones).
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
         homeBtn: document.getElementById('home-btn'),
         saveBtn: document.getElementById('save-btn'),
         allContentPanels: document.querySelectorAll('.content-panel'),
-
-        // Ajustes
         settingsBtn: document.getElementById('settings-btn'),
         settingsMenu: document.getElementById('settings-menu'),
         themeBtn: document.getElementById('theme-btn'),
@@ -19,42 +17,30 @@ document.addEventListener('DOMContentLoaded', () => {
         infoModal: document.getElementById('info-modal'),
         modalOverlay: document.getElementById('modal-overlay'),
         closeInfoModalBtn: document.getElementById('close-info-modal-btn'),
-
-        // Paneles
         panelGeneral: document.getElementById('panel-general'),
         navCardButtons: document.querySelectorAll('.nav-card'),
-
-        // Hub Modelo
         panelModelHub: document.getElementById('panel-model-hub'),
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
         createModelSchemaSelect: document.getElementById('create-model-schema-select'),
         createModelIdInput: document.getElementById('create-model-id'),
         createModelBtn: document.getElementById('create-model-btn'),
-
-        // Hub Esquema
         panelSchemaHub: document.getElementById('panel-schema-hub'),
         schemaResultsList: document.getElementById('schema-results-list'),
         newSchemaKeyInput: document.getElementById('new-schema-key'),
         createSchemaBtn: document.getElementById('create-schema-btn'),
-
-        // Editor Modelo
         panelEditModel: document.getElementById('panel-edit-model'),
         productTitle: document.getElementById('product-title'),
         editorForm: document.getElementById('editor-form'),
         editorPlaceholder: document.getElementById('editor-placeholder'),
         editModelIdInput: document.getElementById('edit-model-id'),
         editSchemaKeyDisplay: document.getElementById('edit-schema-key-display'),
-
-        // Editor Esquema
         panelEditSchema: document.getElementById('panel-edit-schema'),
         schemaTitle: document.getElementById('schema-title'),
         schemaEditorForm: document.getElementById('schema-editor-form'),
         schemaEditorPlaceholder: document.getElementById('schema-editor-placeholder'),
         editSchemaKeyInput: document.getElementById('edit-schema-key'),
         addGroupBtn: document.getElementById('add-group-btn'),
-
-        // Exportar
         panelExportGama: document.getElementById('panel-export-gama'),
         gamaExportSelect: document.getElementById('gama-export-select'),
         gamaExportList: document.getElementById('gama-export-list'),
@@ -62,102 +48,74 @@ document.addEventListener('DOMContentLoaded', () => {
         exportGamaCsvButton: document.getElementById('export-gama-csv-btn')
     };
 
-    // --- Variables de Estado ---
     let masterDatabase = [];
     let masterSchemaMap = {};
     let currentLoadedSchemaKey = null; 
     let currentActivePanel = 'general';
 
-    // --- Variables de Tema ---
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     
     let isLightMode = false;
     let currentAccentHue = 188;
 
-    // --- Init ---
     function initialize() {
         applyInitialTheme(); 
-
         setTimeout(() => {
             masterDatabase = window.APP_DB.products;
             masterSchemaMap = window.APP_DB.schemas;
-
-            if (masterDatabase.length > 0) {
-                masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-            }
-
+            if (masterDatabase.length > 0) masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             setupEventListeners();
-
             renderSearchResults(masterDatabase);
             populateSchemaList(); 
             populateGamaSelectors(); 
-
             showPanel('general');
             
             if(dom.exportGamaJsonButton) dom.exportGamaJsonButton.disabled = true;
             if(dom.exportGamaCsvButton) dom.exportGamaCsvButton.disabled = true;
             if(dom.addGroupBtn) dom.addGroupBtn.disabled = true; 
-
         }, 100);
     }
 
     function setupEventListeners() {
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
         dom.saveBtn.addEventListener('click', handleSaveClick);
-
-        dom.settingsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleSettingsMenu();
-        });
+        dom.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSettingsMenu(); });
         dom.themeBtn.addEventListener('click', handleThemeToggle);
         dom.infoBtn.addEventListener('click', showInfoModal);
         dom.closeInfoModalBtn.addEventListener('click', hideInfoModal);
         dom.modalOverlay.addEventListener('click', hideInfoModal);
-
         document.addEventListener('click', (e) => {
             if (dom.settingsMenu && dom.settingsMenu.style.display === 'block') {
-                if (!dom.settingsMenu.contains(e.target) && e.target !== dom.settingsBtn) {
-                    dom.settingsMenu.style.display = 'none';
-                }
+                if (!dom.settingsMenu.contains(e.target) && e.target !== dom.settingsBtn) dom.settingsMenu.style.display = 'none';
             }
         });
-
-        dom.navCardButtons.forEach(card => {
-            card.addEventListener('click', () => showPanel(card.dataset.panel));
-        });
-
+        dom.navCardButtons.forEach(card => card.addEventListener('click', () => showPanel(card.dataset.panel)));
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
         dom.createModelBtn.addEventListener('click', handleCreateModelClick);
-
         dom.schemaResultsList.addEventListener('click', handleSchemaLoadClick);
         dom.createSchemaBtn.addEventListener('click', handleSchemaCreateClick);
-
         dom.addGroupBtn.addEventListener('click', () => addGroupToEditor());
         dom.schemaEditorForm.addEventListener('click', handleSchemaEditorClicks);
-
         dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); 
         dom.exportGamaCsvButton.addEventListener('click', exportGamaAsCsv);
     }
 
-    // --- Lógica de Tema ---
     function applyInitialTheme() {
         const savedMode = localStorage.getItem('admin-theme-mode');
         isLightMode = (savedMode === 'light');
         currentAccentHue = Math.floor(Math.random() * 360);
-        if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-        else updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+        updatePaletteCSS(isLightMode ? lightPaletteHSL : darkPaletteHSL, currentAccentHue);
     }
 
     function handleThemeToggle() {
         isLightMode = !isLightMode;
         localStorage.setItem('admin-theme-mode', isLightMode ? 'light' : 'dark');
         currentAccentHue = Math.floor(Math.random() * 360);
-        if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-        else updatePaletteCSS(darkPaletteHSL, currentAccentHue);
+        updatePaletteCSS(isLightMode ? lightPaletteHSL : darkPaletteHSL, currentAccentHue);
         dom.settingsMenu.style.display = 'none';
     }
 
@@ -166,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newOtherHue = (accentHue + 0 + 360) % 360; 
         const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
         const root = document.documentElement;
-
         const vars = {
             '--color-cyan-accent': `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`,
             '--color-cyan-glow': `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`,
@@ -180,12 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
             '--color-text-secondary': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`,
             '--color-text-dim': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)`
         };
-
-        for (const [key, value] of Object.entries(vars)) {
-            root.style.setProperty(key, value);
-        }
-        if (isLightMode) root.classList.add('light-mode');
-        else root.classList.remove('light-mode');
+        for (const [key, value] of Object.entries(vars)) root.style.setProperty(key, value);
+        if (isLightMode) root.classList.add('light-mode'); else root.classList.remove('light-mode');
     }
 
     function hslToRgb(h, s, l) {
@@ -196,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
     }
 
-    // --- Funciones del Panel ---
     function handleSaveClick() {
         if (currentActivePanel === 'edit-model') exportDataFromEditor();
         else if (currentActivePanel === 'edit-schema') handleSchemaExportClick();
@@ -216,20 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function toggleSettingsMenu() {
-        dom.settingsMenu.style.display = (dom.settingsMenu.style.display === 'block') ? 'none' : 'block';
-    }
-    function showInfoModal() {
-        dom.infoModal.style.display = 'block';
-        dom.modalOverlay.style.display = 'block';
-        dom.settingsMenu.style.display = 'none'; 
-    }
-    function hideInfoModal() {
-        dom.infoModal.style.display = 'none';
-        dom.modalOverlay.style.display = 'none';
-    }
+    function toggleSettingsMenu() { dom.settingsMenu.style.display = (dom.settingsMenu.style.display === 'block') ? 'none' : 'block'; }
+    function showInfoModal() { dom.infoModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; dom.settingsMenu.style.display = 'none'; }
+    function hideInfoModal() { dom.infoModal.style.display = 'none'; dom.modalOverlay.style.display = 'none'; }
 
-    // --- Model Hub ---
     function applySearch() {
         const q = dom.modelSearchInput.value.toLowerCase().trim();
         const filtered = q === "" ? masterDatabase : masterDatabase.filter(p => p.model.toLowerCase().includes(q));
@@ -237,10 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function renderSearchResults(results) {
         dom.modelSearchResults.innerHTML = '';
-        if (results.length === 0) {
-            dom.modelSearchResults.innerHTML = '<div class="list-item dim">No se encontraron resultados.</div>';
-            return;
-        }
+        if (results.length === 0) { dom.modelSearchResults.innerHTML = '<div class="list-item dim">No se encontraron resultados.</div>'; return; }
         const frag = document.createDocumentFragment();
         results.forEach(p => {
             const item = document.createElement('div');
@@ -255,123 +194,83 @@ document.addEventListener('DOMContentLoaded', () => {
         const t = e.target.closest('.list-item');
         if (!t) return;
         const product = masterDatabase.find(p => p.model === t.dataset.model);
-        if (product) {
-            loadModelIntoEditor(product);
-            showPanel('edit-model');
-        }
+        if (product) { loadModelIntoEditor(product); showPanel('edit-model'); }
     }
     function handleCreateModelClick() {
         const schema = dom.createModelSchemaSelect.value;
         const id = dom.createModelIdInput.value.trim().toUpperCase();
-        if (!schema) return alert("Selecciona una gama.");
-        if (!id) return alert("Introduce un Model ID.");
+        if (!schema || !id) return alert("Datos incompletos.");
         if (/\s/.test(id)) return alert("El ID no puede tener espacios.");
         const existing = masterDatabase.find(p => p.model === id);
         if (existing) {
             if(!confirm(`El modelo ${id} ya existe. ¿Editarlo?`)) return;
-            loadModelIntoEditor(existing);
-            showPanel('edit-model');
-            return;
+            loadModelIntoEditor(existing); showPanel('edit-model'); return;
         }
         loadModelIntoEditor({ model: id, schema_key: schema, attributes: {} });
-        dom.createModelIdInput.value = '';
-        showPanel('edit-model');
+        dom.createModelIdInput.value = ''; showPanel('edit-model');
     }
 
-    // --- Schema Hub ---
     function populateSchemaList() {
         dom.schemaResultsList.innerHTML = '';
         const frag = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
             const item = document.createElement('div');
-            item.className = 'list-item';
-            item.dataset.schemaKey = key;
-            item.innerHTML = `<strong>${key}</strong>`;
-            frag.appendChild(item);
+            item.className = 'list-item'; item.dataset.schemaKey = key;
+            item.innerHTML = `<strong>${key}</strong>`; frag.appendChild(item);
         });
         dom.schemaResultsList.appendChild(frag);
     }
     function handleSchemaLoadClick(e) {
-        const t = e.target.closest('.list-item');
-        if (!t) return;
-        const key = t.dataset.schemaKey;
-        loadSchemaIntoEditor(key, JSON.parse(JSON.stringify(masterSchemaMap[key])));
+        const t = e.target.closest('.list-item'); if (!t) return;
+        loadSchemaIntoEditor(t.dataset.schemaKey, JSON.parse(JSON.stringify(masterSchemaMap[t.dataset.schemaKey])));
         showPanel('edit-schema');
     }
     function handleSchemaCreateClick() {
         const key = dom.newSchemaKeyInput.value.trim().toLowerCase();
-        if (!key) return alert("Introduce una clave para el esquema.");
-        if (masterSchemaMap[key]) {
-            if (!confirm("Ya existe. ¿Cargar?")) return;
-            loadSchemaIntoEditor(key, JSON.parse(JSON.stringify(masterSchemaMap[key])));
-        } else {
-            loadSchemaIntoEditor(key, []);
-        }
-        dom.newSchemaKeyInput.value = '';
-        showPanel('edit-schema');
+        if (!key) return alert("Introduce clave.");
+        if (masterSchemaMap[key] && !confirm("Ya existe. ¿Cargar?")) return;
+        loadSchemaIntoEditor(key, masterSchemaMap[key] ? JSON.parse(JSON.stringify(masterSchemaMap[key])) : []);
+        dom.newSchemaKeyInput.value = ''; showPanel('edit-schema');
     }
 
-    // --- Selectores ---
     function populateGamaSelectors() {
         const frag = document.createDocumentFragment();
         Object.keys(masterSchemaMap).forEach(key => {
-            const opt = document.createElement('option');
-            opt.value = key;
-            opt.textContent = key.charAt(0).toUpperCase() + key.slice(1);
-            frag.appendChild(opt);
+            const opt = document.createElement('option'); opt.value = key;
+            opt.textContent = key.charAt(0).toUpperCase() + key.slice(1); frag.appendChild(opt);
         });
-        if (dom.gamaExportSelect) {
-            dom.gamaExportSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
-            dom.gamaExportSelect.appendChild(frag.cloneNode(true));
-        }
-        if (dom.createModelSchemaSelect) {
-            dom.createModelSchemaSelect.innerHTML = '<option value="">-- Seleccionar Gama --</option>';
-            dom.createModelSchemaSelect.appendChild(frag.cloneNode(true));
-        }
+        if (dom.gamaExportSelect) { dom.gamaExportSelect.innerHTML = '<option value="">-- Seleccionar --</option>'; dom.gamaExportSelect.appendChild(frag.cloneNode(true)); }
+        if (dom.createModelSchemaSelect) { dom.createModelSchemaSelect.innerHTML = '<option value="">-- Seleccionar Gama --</option>'; dom.createModelSchemaSelect.appendChild(frag.cloneNode(true)); }
     }
 
     function populateGamaExportList() {
         const schema = dom.gamaExportSelect.value;
         dom.gamaExportList.innerHTML = '';
-        if (!schema) {
-            dom.exportGamaJsonButton.disabled = true;
-            dom.exportGamaCsvButton.disabled = true;
-            return;
-        }
-        dom.exportGamaJsonButton.disabled = false;
-        dom.exportGamaCsvButton.disabled = false;
-        
+        if (!schema) { dom.exportGamaJsonButton.disabled = true; dom.exportGamaCsvButton.disabled = true; return; }
+        dom.exportGamaJsonButton.disabled = false; dom.exportGamaCsvButton.disabled = false;
         const prods = masterDatabase.filter(p => p.schema_key === schema);
-        if (prods.length === 0) {
-            dom.gamaExportList.innerHTML = '<p class="dim p-2">Sin modelos.</p>';
-            return;
-        }
+        if (prods.length === 0) { dom.gamaExportList.innerHTML = '<p class="dim p-2">Sin modelos.</p>'; return; }
         const frag = document.createDocumentFragment();
         prods.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'gama-export-item';
+            const div = document.createElement('div'); div.className = 'gama-export-item';
             div.innerHTML = `<span>${p.model}</span><button class="export-item-button" data-model="${p.model}">JSON</button>`;
             frag.appendChild(div);
         });
         dom.gamaExportList.appendChild(frag);
     }
-
     function handleGamaExportClick(e) {
-        const t = e.target.closest('.export-item-button');
-        if (!t) return;
+        const t = e.target.closest('.export-item-button'); if (!t) return;
         const p = masterDatabase.find(x => x.model === t.dataset.model);
         if (p) generateAndDownloadProductFile(p, p.model);
     }
-
     function exportGamaAsJson() {
-        const schema = dom.gamaExportSelect.value;
-        if (!schema) return;
+        const schema = dom.gamaExportSelect.value; if (!schema) return;
         const prods = masterDatabase.filter(p => p.schema_key === schema);
         if (prods.length === 0) return alert("Gama vacía.");
         downloadFile(`GAMA_${schema.toUpperCase()}.json`, JSON.stringify(prods, null, 4), 'application/json;charset=utf-8');
     }
 
-    // --- [FIX v3.4.1] Exportación CSV Estructurada & Encoding ---
+    // --- [UPDATE v3.5.0] Exportación CSV 3 Filas (Groups, Codes, Descs) ---
     function exportGamaAsCsv() {
         const selectedSchema = dom.gamaExportSelect.value;
         if (!selectedSchema) return;
@@ -381,140 +280,92 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const schemaDef = masterSchemaMap[selectedSchema];
         
-        // Estructura solicitada:
-        // Fila 1: [SchemaKey, attrCode1, attrCode2...]
-        // Fila 2: ["Model ID", attrDesc1, attrDesc2...]
-        // Fila 3+: [ModelID_Value, val1, val2...]
-        
-        // Columna A:
-        // Fila 1: Schema Key
-        // Fila 2: Literal "Model ID"
-        // Fila 3+: Valor del Model ID
+        // Estructura 3 Filas:
+        // Fila 1 (Groups): [SchemaKey, "Identificación", "Grupo1", "Grupo1", "Grupo2"...]
+        // Fila 2 (Codes):  ["", "model", "attr_1", "attr_2", "attr_3"...]
+        // Fila 3 (Descs):  ["", "Modelo", "Desc 1", "Desc 2", "Desc 3"...]
+        // Fila 4+ (Data):  ["", "ID_Value", "Val 1", "Val 2", "Val 3"...]
+
+        let row1_groups = [selectedSchema, "Identificación"];
+        let row2_codes = ["", "model"];
+        let row3_descs = ["", "Modelo"];
         
         let attrKeys = [];
-        let row1_codes = [selectedSchema]; // A1
-        let row2_descs = ['Model ID'];     // A2
 
         if (schemaDef) {
             schemaDef.forEach(group => {
                 group.attrs.forEach(attr => {
-                    row1_codes.push(attr.code); // B1...
-                    row2_descs.push(attr.desc); // B2...
+                    row1_groups.push(group.group); // Repetir nombre del grupo por cada atributo
+                    row2_codes.push(attr.code);
+                    row3_descs.push(attr.desc);
                     attrKeys.push(attr.code);
                 });
             });
         } else {
-            // Fallback
+            // Fallback sin esquema
             const allKeys = new Set();
             products.forEach(p => Object.keys(p.attributes).forEach(k => allKeys.add(k)));
-            attrKeys = Array.from(allKeys);
-            attrKeys.forEach(key => {
-                row1_codes.push(key);
-                row2_descs.push(key);
+            Array.from(allKeys).forEach(key => {
+                row1_groups.push("Datos");
+                row2_codes.push(key);
+                row3_descs.push(key);
+                attrKeys.push(key);
             });
         }
 
-        // Sanitizar: Excel CSV usa punto y coma (;) en locales ES/EU
         const sanitize = (val) => {
             if (val === null || val === undefined) return "";
             val = String(val);
-            val = val.replace(/"/g, '""'); // Doblar comillas
-            // Si hay caracteres reservados, envolver en comillas
-            if (val.search(/("|\;|:|\n|\r)/g) >= 0) {
-                val = `"${val}"`;
-            }
+            val = val.replace(/"/g, '""');
+            if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`;
             return val;
         };
 
-        // Construir filas de datos
         const dataRows = products.map(p => {
-            // Col A: Model ID
-            let row = [sanitize(p.model)];
-            
-            // Cols B...: Atributos
+            let row = ["", sanitize(p.model)]; // Col A vacía en datos, Col B es ID
             attrKeys.forEach(key => {
                 let val = p.attributes[key] || ""; 
                 row.push(sanitize(val));
             });
-            
             return row.join(";");
         });
 
-        // Unir Cabeceras
-        const header1 = row1_codes.map(c => sanitize(c)).join(";");
-        const header2 = row2_descs.map(d => sanitize(d)).join(";");
+        const header1 = row1_groups.map(g => sanitize(g)).join(";");
+        const header2 = row2_codes.map(c => sanitize(c)).join(";");
+        const header3 = row3_descs.map(d => sanitize(d)).join(";");
 
-        // Contenido CSV completo
-        const csvString = header1 + "\n" + header2 + "\n" + dataRows.join("\n");
-
-        // [FIX ENCODING] Usar BOM \uFEFF dentro de un Blob, no concatenado al string
-        const blob = new Blob(["\uFEFF", csvString], { type: 'text/csv;charset=utf-8' });
-        
-        // Descargar
+        const csvContent = "\uFEFF" + header1 + "\n" + header2 + "\n" + header3 + "\n" + dataRows.join("\n");
         const filename = `GAMA_${selectedSchema.toUpperCase()}.csv`;
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        
+        downloadFile(filename, csvContent, 'text/csv;charset=utf-8');
     }
 
-
-    // --- Editor Modelo ---
     function loadModelIntoEditor(product) {
         currentLoadedSchemaKey = product.schema_key;
         const schema = masterSchemaMap[product.schema_key];
         if (!schema) return alert(`Esquema ${product.schema_key} no encontrado.`);
-
         const isNew = Object.keys(product.attributes).length === 0;
         dom.productTitle.textContent = isNew ? `Crear: ${product.model}` : `Editar: ${product.model}`;
         dom.editModelIdInput.value = product.model;
         dom.editSchemaKeyDisplay.value = product.schema_key;
-
         dom.editorForm.querySelectorAll('.form-group-title, .form-row').forEach(el => el.remove());
         dom.editorPlaceholder.style.display = 'none';
-
         const frag = document.createDocumentFragment();
         schema.forEach(group => {
-            const h3 = document.createElement('h3');
-            h3.className = 'form-group-title';
-            h3.textContent = group.group;
-            frag.appendChild(h3);
-
+            const h3 = document.createElement('h3'); h3.className = 'form-group-title'; h3.textContent = group.group; frag.appendChild(h3);
             group.attrs.forEach(attr => {
                 const val = product.attributes[attr.code] || "";
-                const row = document.createElement('div');
-                row.className = 'form-row';
+                const row = document.createElement('div'); row.className = 'form-row';
                 const uniqueId = `attr_${attr.code}_${Math.random().toString(36).substr(2,5)}`;
-                
-                const label = document.createElement('label');
-                label.className = 'futuristic-label';
-                label.htmlFor = uniqueId;
-                label.textContent = `${attr.desc} (${attr.code})`;
-
-                const ta = document.createElement('textarea');
-                ta.className = 'futuristic-textarea';
-                ta.id = uniqueId;
-                ta.name = attr.code; 
-                ta.rows = 1;
-                ta.value = val;
-                ta.addEventListener('input', () => {
-                    ta.style.height = 'auto';
-                    ta.style.height = (ta.scrollHeight) + 'px';
-                });
-                row.appendChild(label);
-                row.appendChild(ta);
-                frag.appendChild(row);
+                const label = document.createElement('label'); label.className = 'futuristic-label'; label.htmlFor = uniqueId; label.textContent = `${attr.desc} (${attr.code})`;
+                const ta = document.createElement('textarea'); ta.className = 'futuristic-textarea'; ta.id = uniqueId; ta.name = attr.code; 
+                ta.rows = 1; ta.value = val;
+                ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight) + 'px'; });
+                row.appendChild(label); row.appendChild(ta); frag.appendChild(row);
             });
         });
         dom.editorForm.appendChild(frag);
-        setTimeout(() => {
-            dom.editorForm.querySelectorAll('textarea').forEach(t => {
-                t.style.height = 'auto';
-                t.style.height = (t.scrollHeight) + 'px';
-            });
-        }, 10);
+        setTimeout(() => { dom.editorForm.querySelectorAll('textarea').forEach(t => { t.style.height = 'auto'; t.style.height = (t.scrollHeight) + 'px'; }); }, 10);
     }
 
     function exportDataFromEditor() {
@@ -523,30 +374,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!id) return alert("Falta Model ID.");
         const formData = new FormData(dom.editorForm);
         const attrs = {};
-        for (const [k, v] of formData.entries()) {
-            if (v.trim()) attrs[k] = v.trim();
-        }
-        generateAndDownloadProductFile({
-            model: id,
-            schema_key: currentLoadedSchemaKey,
-            attributes: attrs
-        }, id);
+        for (const [k, v] of formData.entries()) if (v.trim()) attrs[k] = v.trim();
+        generateAndDownloadProductFile({ model: id, schema_key: currentLoadedSchemaKey, attributes: attrs }, id);
         alert("JSON Generado.");
     }
-
-    function generateAndDownloadProductFile(obj, name) {
-        downloadFile(`${name}.json`, JSON.stringify(obj, null, 4), 'application/json;charset=utf-8');
-    }
+    function generateAndDownloadProductFile(obj, name) { downloadFile(`${name}.json`, JSON.stringify(obj, null, 4), 'application/json;charset=utf-8'); }
     function downloadFile(name, content, mime) {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([content], { type: mime }));
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+        a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
-    // --- Editor Esquema ---
     function loadSchemaIntoEditor(key, schema) {
         dom.schemaTitle.textContent = `Editando: ${key}`;
         dom.editSchemaKeyInput.value = key;
@@ -555,71 +392,42 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.addGroupBtn.disabled = false;
         schema.forEach(g => addGroupToEditor(g));
     }
-
     function addGroupToEditor(group = null) {
-        const div = document.createElement('div');
-        div.className = 'schema-group-box';
+        const div = document.createElement('div'); div.className = 'schema-group-box';
         const gName = group ? group.group : '';
         div.innerHTML = `
             <div class="schema-group-header">
-                <div class="control-group flex-grow">
-                    <label class="futuristic-label">Grupo:</label>
-                    <input type="text" class="futuristic-input w-full" data-type="group-name" value="${gName}" placeholder="NOMBRE GRUPO">
-                </div>
-                <button class="schema-action-btn schema-add-attr-btn">+ Attr</button>
-                <button class="schema-action-btn schema-remove-btn schema-remove-group-btn">Eliminar</button>
-            </div>
-            <div class="schema-attributes-container"></div>
-        `;
+                <div class="control-group flex-grow"><label class="futuristic-label">Grupo:</label><input type="text" class="futuristic-input w-full" data-type="group-name" value="${gName}" placeholder="NOMBRE GRUPO"></div>
+                <button class="schema-action-btn schema-add-attr-btn">+ Attr</button><button class="schema-action-btn schema-remove-btn schema-remove-group-btn">Eliminar</button>
+            </div><div class="schema-attributes-container"></div>`;
         const container = div.querySelector('.schema-attributes-container');
         if (group && group.attrs) group.attrs.forEach(a => addAttributeToGroup(a, container));
         dom.schemaEditorForm.appendChild(div);
     }
-
     function addAttributeToGroup(attr, container) {
-        const div = document.createElement('div');
-        div.className = 'schema-attr-row';
-        const c = attr ? attr.code : '';
-        const d = attr ? attr.desc : '';
-        div.innerHTML = `
-            <input type="text" class="futuristic-input" data-type="attr-code" value="${c}" placeholder="codigo_variable">
-            <input type="text" class="futuristic-input" data-type="attr-desc" value="${d}" placeholder="Descripción legible">
-            <button class="schema-action-btn schema-remove-btn schema-remove-attr-btn">✕</button>
-        `;
+        const div = document.createElement('div'); div.className = 'schema-attr-row';
+        const c = attr ? attr.code : ''; const d = attr ? attr.desc : '';
+        div.innerHTML = `<input type="text" class="futuristic-input" data-type="attr-code" value="${c}" placeholder="codigo"><input type="text" class="futuristic-input" data-type="attr-desc" value="${d}" placeholder="Descripción"><button class="schema-action-btn schema-remove-btn schema-remove-attr-btn">✕</button>`;
         container.appendChild(div);
     }
-
     function handleSchemaEditorClicks(e) {
-        if (e.target.closest('.schema-add-attr-btn')) {
-            e.preventDefault();
-            addAttributeToGroup(null, e.target.closest('.schema-group-box').querySelector('.schema-attributes-container'));
-        } else if (e.target.closest('.schema-remove-attr-btn')) {
-            e.preventDefault();
-            e.target.closest('.schema-attr-row').remove();
-        } else if (e.target.closest('.schema-remove-group-btn')) {
-            e.preventDefault();
-            if (confirm("¿Eliminar grupo?")) e.target.closest('.schema-group-box').remove();
-        }
+        if (e.target.closest('.schema-add-attr-btn')) { e.preventDefault(); addAttributeToGroup(null, e.target.closest('.schema-group-box').querySelector('.schema-attributes-container')); }
+        else if (e.target.closest('.schema-remove-attr-btn')) { e.preventDefault(); e.target.closest('.schema-attr-row').remove(); }
+        else if (e.target.closest('.schema-remove-group-btn')) { e.preventDefault(); if (confirm("¿Eliminar grupo?")) e.target.closest('.schema-group-box').remove(); }
     }
-
     function handleSchemaExportClick() {
-        const key = dom.editSchemaKeyInput.value.trim().toLowerCase();
-        if (!key) return alert("Falta Schema Key.");
-        const newSchema = [];
-        let valid = true;
+        const key = dom.editSchemaKeyInput.value.trim().toLowerCase(); if (!key) return alert("Falta Schema Key.");
+        const newSchema = []; let valid = true;
         dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach((gb, i) => {
-            const gName = gb.querySelector('input[data-type="group-name"]').value.trim();
-            if (!gName) { alert(`Grupo ${i+1} sin nombre.`); valid = false; return; }
+            const gName = gb.querySelector('input[data-type="group-name"]').value.trim(); if (!gName) { alert(`Grupo ${i+1} sin nombre.`); valid = false; return; }
             const attrs = [];
             gb.querySelectorAll('.schema-attr-row').forEach(row => {
-                const c = row.querySelector('input[data-type="attr-code"]').value.trim();
-                const d = row.querySelector('input[data-type="attr-desc"]').value.trim();
+                const c = row.querySelector('input[data-type="attr-code"]').value.trim(); const d = row.querySelector('input[data-type="attr-desc"]').value.trim();
                 if (c && d) attrs.push({ code: c, desc: d });
             });
             if (attrs.length > 0) newSchema.push({ group: gName, attrs: attrs });
         });
-        if (!valid) return;
-        if (newSchema.length === 0 && !confirm("Esquema vacío. ¿Guardar?")) return;
+        if (!valid) return; if (newSchema.length === 0 && !confirm("Esquema vacío.")) return;
         const varName = `${key.toUpperCase()}_SCHEMA_GROUPS`;
         const content = `/**\n * Schema: ${key}\n */\n\nconst ${varName} = ${JSON.stringify(newSchema, null, 4)};\n\nif (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {\n    window.APP_DB.registerSchema('${key}', ${varName});\n}\n`;
         downloadFile(`modulo${key.charAt(0).toUpperCase() + key.slice(1)}.js`, content, 'text/javascript;charset=utf-8');
