@@ -121,30 +121,32 @@
     <!-- Modal de Biblioteca / Gestión de Gamas -->
     <div id="library-modal" class="modal-hidden">
         <div class="modal-content library-modal-content">
-            <div class="modal-header">
-                <h2 class="spec-title" style="margin:0;">Biblioteca Virtual</h2>
+            <div class="modal-header compact-header">
+                <h2 class="spec-title" style="margin:0; font-size: 1.1rem;">Biblioteca Virtual</h2>
                 <button id="library-close-btn" class="modal-close-btn">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body compact-body">
                 
                 <!-- Sección 1: Gamas Activas -->
                 <div class="library-section">
-                    <h3 class="futuristic-subtitle">Gamas Cargadas</h3>
-                    <p class="library-desc">Activa o desactiva gamas para gestionar la base de datos en memoria.</p>
-                    <div id="library-gama-list" class="library-list futuristic-list">
+                    <div class="lib-sec-header">
+                        <h3 class="futuristic-subtitle" style="margin:0;">Gamas Cargadas</h3>
+                        <p class="library-desc">Gestiona la base de datos.</p>
+                    </div>
+                    <div id="library-gama-list" class="library-list">
                         <!-- Se rellena por JS con Checkboxes -->
                     </div>
                 </div>
 
-                <!-- Sección 2: Importar (Visualmente atenuada por ahora) -->
-                <div class="library-section" style="opacity: 0.7;">
-                    <h3 class="futuristic-subtitle">Importar Gama (Experimental)</h3>
+                <!-- Sección 2: Importar -->
+                <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem;">
+                    <h3 class="futuristic-subtitle" style="margin-bottom: 0.5rem;">Importar CSV</h3>
                     <div class="upload-area">
-                        <label for="csv-upload-input" class="upload-label futuristic-button">
-                            📂 Cargar CSV
+                        <label for="csv-upload-input" class="upload-label">
+                            📂 Cargar Archivo
                         </label>
                         <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        <span id="upload-status-text" class="upload-status">Formato Admin Requerido</span>
+                        <span id="upload-status-text" class="upload-status">Formato Admin (;)</span>
                     </div>
                 </div>
 
