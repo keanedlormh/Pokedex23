@@ -1,7 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.8.0
- * Update: Filtros contextuales. Los valores de los filtros se calculan dinámicamente
- * según la gama seleccionada para evitar contaminación cruzada de datos entre gamas.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.9.0
+ * Update: Contador dinámico de modelos en la cabecera de la lista.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
         body: document.body,
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
+        // Nuevo elemento capturado
+        modelListHeader: document.getElementById('model-list-header'),
         smartFilterToggle: document.getElementById('smart-filter-toggle'),
         smartFilterPanel: document.getElementById('smart-filter-panel'),
         filterOverlay: document.getElementById('filter-overlay'),
@@ -37,14 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const originalPlaceholder = dom.productDisplayPlaceholder;
     let masterDatabase = [];
     let masterSchemaMap = {};
-    // Eliminamos filterValueCache global para evitar mezcla de datos
     let attrCodeToDescMap = {};
 
     // --- Tema ---
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     
-    // Inicio en modo claro
     let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
 
@@ -56,8 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             
             buildAttributeCache();
-            // buildFilterValueCache(); // YA NO SE USA: El cálculo ahora es dinámico y contextual
-            
             setupEventListeners();
             populateSchemaSelector();
             populateSmartFilters('all');
@@ -178,8 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // buildFilterValueCache() ELIMINADA: Se calcula dinámicamente en populateSmartFilters
-    
     function populateSchemaSelector() {
         if (!dom.schemaFilterSelect) return;
         dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>';
@@ -203,11 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment.appendChild(placeholder); dom.smartFilterContainer.appendChild(fragment); return;
         } 
         
-        // LÓGICA DINÁMICA (FIX v3.8.0):
-        // 1. Obtenemos solo los productos de la gama seleccionada
         const relevantProducts = masterDatabase.filter(p => p.schema_key === schemaKey);
-        
-        // 2. Obtenemos el esquema de esa gama
         const schemaGroups = masterSchemaMap[schemaKey] || [];
 
         schemaGroups.forEach(group => {
@@ -220,12 +211,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let hasFiltersInGroup = false; 
             
             group.attrs.forEach(attr => {
-                // 3. Calculamos los valores disponibles SOLO dentro de relevantProducts
                 const rawValues = relevantProducts
                     .map(p => p.attributes[attr.code])
                     .filter(v => v && v !== 'unknown');
                 
-                // Crear Set para únicos y ordenar
                 const uniqueValues = [...new Set(rawValues)].sort((a, b) => {
                     const numA = parseFloat(a); const numB = parseFloat(b);
                     if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -310,9 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.schemaFilterSelect.value = 'all'; populateSmartFilters('all'); applyFiltersAndSearch(); 
         }
     }
+    
     function renderSearchResults(results, container) {
         if (!container) return;
         container.innerHTML = '';
+        
+        // ACTUALIZACIÓN DE CONTADOR
+        if (dom.modelListHeader) {
+            dom.modelListHeader.textContent = `Modelos (${results.length})`;
+        }
+
         if (results.length === 0) { container.innerHTML = '<div class="list-item" style="cursor: default; background: none; color: var(--color-text-dim);">No se encontraron resultados.</div>'; return; }
         const fragment = document.createDocumentFragment();
         results.forEach(product => {
@@ -321,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         container.appendChild(fragment);
     }
+    
     function displayProduct(product) {
         dom.productDisplayPlaceholder.style.display = 'none'; dom.specControls.className = 'spec-controls-visible'; 
         dom.productTitle.textContent = product.model;
