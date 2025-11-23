@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.2.1
- * Update: Reordenación alfabética automática tras importar CSV.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.2.2
+ * Update: Añadida funcionalidad de Fuentes Aleatorias
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
+        fontToggleButton: document.getElementById('font-toggle-btn'), // NUEVO
         infoToggleButton: document.getElementById('info-toggle-btn'),
         adminLinkButton: document.getElementById('admin-link-btn'),
         libraryBtn: document.getElementById('library-menu-toggle'),
@@ -63,6 +64,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
+
+    // --- Lista de Fuentes (23 Variedades) ---
+    const fontFamilies = [
+        "'Inter', system-ui, sans-serif",                   // 1. Default Modern
+        "Arial, Helvetica, sans-serif",                     // 2. Classic
+        "'Courier New', Courier, monospace",                // 3. Code
+        "Georgia, 'Times New Roman', Times, serif",         // 4. Elegant
+        "'Verdana', sans-serif",                            // 5. Wide
+        "'Trebuchet MS', 'Lucida Sans', sans-serif",        // 6. Humanist
+        "'Impact', Haettenschweiler, sans-serif",           // 7. Heavy
+        "'Comic Sans MS', 'Chalkboard SE', sans-serif",     // 8. Playful
+        "'Segoe UI', Roboto, Helvetica, sans-serif",        // 9. System UI
+        "'Garamond', 'Baskerville', serif",                 // 10. Old Style
+        "'Lucida Console', Monaco, monospace",              // 11. Retro Terminal
+        "'Tahoma', Geneva, sans-serif",                     // 12. Compact
+        "'Palatino Linotype', 'Book Antiqua', serif",       // 13. Bookish
+        "'Arial Black', Gadget, sans-serif",                // 14. Bold
+        "'Century Gothic', Futura, sans-serif",             // 15. Geometric
+        "'Bookman Old Style', serif",                       // 16. Slab Serif
+        "'Brush Script MT', cursive",                       // 17. Handwriting
+        "'Copperplate', 'Copperplate Gothic Light', serif",  // 18. Small Caps
+        "'Papyrus', fantasy",                               // 19. Ancient
+        "'Optima', sans-serif",                             // 20. Humanist Serif-like
+        "'Candara', sans-serif",                            // 21. Modern Clear
+        "'Perpetua', serif",                                // 22. Sharp Serif
+        "'Consolas', 'Andale Mono', monospace"              // 23. Modern Code
+    ];
 
     function initialize() {
         setTimeout(() => {
@@ -126,6 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
+        
+        // --- Nuevo Listener Fuente ---
+        if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleFontToggle);
+
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
 
         if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
@@ -638,11 +670,21 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Importada gama ${schemaKey} con ${count} modelos.`);
     }
 
-    function handleThemeToggle() {
+    function handleThemeToggle(e) {
+        // Evitar que el clic cierre el menú si se propagara
+        e.stopPropagation();
         isLightMode = !isLightMode;
         if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
         else { currentAccentHue = Math.floor(Math.random() * 360); updatePaletteCSS(darkPaletteHSL, currentAccentHue); }
     }
+
+    function handleFontToggle(e) {
+        e.stopPropagation(); // Importante: No cerrar menú
+        const randomFont = fontFamilies[Math.floor(Math.random() * fontFamilies.length)];
+        // Actualizamos variable CSS
+        document.documentElement.style.setProperty('--font-sans', randomFont);
+    }
+
     function updatePaletteCSS(baseHSL, accentHue) {
         const p = baseHSL;
         const hueDifference = 0;
