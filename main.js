@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v3.9.0
- * Update: Contador dinámico de modelos en la cabecera de la lista.
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.2.0
+ * Update: Parser CSV robusto compatible con Excel, limpieza de BOM y gestión de Gamas.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,37 +8,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. Elementos DOM ---
     const dom = {
         body: document.body,
+        // Búsqueda y Resultados
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
-        // Nuevo elemento capturado
         modelListHeader: document.getElementById('model-list-header'),
+        
+        // Filtros
         smartFilterToggle: document.getElementById('smart-filter-toggle'),
         smartFilterPanel: document.getElementById('smart-filter-panel'),
         filterOverlay: document.getElementById('filter-overlay'),
         smartFilterContainer: document.getElementById('smart-filters-container'),
         schemaFilterSelect: document.getElementById('schema-filter-select'),
+        activeFiltersBar: document.getElementById('active-filters-bar'),
+        
+        // Menú Ajustes
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
         infoToggleButton: document.getElementById('info-toggle-btn'),
         adminLinkButton: document.getElementById('admin-link-btn'),
+        libraryBtn: document.getElementById('library-menu-toggle'),
+        
+        // Modal Info
         readmeModal: document.getElementById('readme-modal'),
         readmeContent: document.getElementById('readme-content'),
         readmeCloseButton: document.getElementById('readme-close-btn'),
-        activeFiltersBar: document.getElementById('active-filters-bar'),
+        
+        // Detalles Producto
         productDisplayPlaceholder: document.getElementById('product-placeholder'),
         productTitle: document.getElementById('product-title'),
         productSpecsContainer: document.getElementById('product-specs'),
         specControls: document.getElementById('spec-controls'),
         expandAllButton: document.getElementById('expand-all-btn'),
         collapseAllButton: document.getElementById('collapse-all-btn'),
-        selectedModelDisplay: document.getElementById('selected-model-display')
+        selectedModelDisplay: document.getElementById('selected-model-display'),
+
+        // Biblioteca (Modal)
+        libraryModal: document.getElementById('library-modal'),
+        libraryCloseBtn: document.getElementById('library-close-btn'),
+        libraryGamaList: document.getElementById('library-gama-list'),
+        csvUploadInput: document.getElementById('csv-upload-input'),
+        uploadStatusText: document.getElementById('upload-status-text')
     };
 
     const originalPlaceholder = dom.productDisplayPlaceholder;
     let masterDatabase = [];
     let masterSchemaMap = {};
     let attrCodeToDescMap = {};
+    let activeSchemas = new Set(); 
 
     // --- Tema ---
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
@@ -54,13 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (masterDatabase.length === 0) console.warn("Base de datos vacía.");
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
             
+            Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
+
             buildAttributeCache();
             setupEventListeners();
             populateSchemaSelector();
             populateSmartFilters('all');
             populateFullModelList(); 
             
-            // Generar color aleatorio y aplicar tema CLARO al inicio
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(lightPaletteHSL, currentAccentHue);
             
@@ -89,8 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.activeFiltersBar.addEventListener('click', (e) => {
                 const btn = e.target.closest('.chip-remove-btn');
                 if (btn) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault(); e.stopPropagation();
                     const action = btn.dataset.action;
                     action === 'remove-schema' ? removeSchemaFilter() : removeActiveFilter(btn.dataset.attrCode);
                 }
@@ -99,9 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
         if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
         if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
+        
         if (dom.filterOverlay) {
             dom.filterOverlay.addEventListener('click', () => {
-                closeFilterPanel(); closeSettingsMenu(); closeReadmeModal();
+                closeFilterPanel(); closeSettingsMenu(); closeReadmeModal(); closeLibraryModal();
             });
         }
         if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
@@ -109,22 +127,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
+
+        if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
+        if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
+        if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
+        if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
     }
 
-    // --- LÓGICA DE FILTROS ---
-
+    // --- Lógica Filtros ---
     function removeActiveFilter(attrCode) {
         const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select'));
-        const targetSelects = allSelects.filter(s => 
-            s.dataset.attribute === attrCode || 
-            s.getAttribute('data-attribute') === attrCode
-        );
-
+        const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode);
         if (targetSelects.length > 0) {
             targetSelects.forEach(select => select.value = "");
             applyFiltersAndSearch();
         } else {
-            console.warn(`Select no encontrado para attrCode: ${attrCode}. Refrescando.`);
             applyFiltersAndSearch();
         }
     }
@@ -151,24 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.entries(filters).forEach(([attrCode, attrValue]) => {
             const attrDesc = attrCodeToDescMap[attrCode] || attrCode;
             const safeCode = attrCode.replace(/"/g, '&quot;');
-            
             const chip = document.createElement('div'); chip.className = 'active-filter-chip';
-            chip.innerHTML = `
-                <span class="chip-label">
-                    <span class="filter-name">${attrDesc}:</span>
-                    <span class="filter-value">${attrValue}</span>
-                </span>
-                <button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>
-            `;
+            chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`;
             fragment.appendChild(chip);
         });
         dom.activeFiltersBar.appendChild(fragment);
     }
 
-    // --- Funciones Auxiliares Standard ---
+    // --- Funciones Auxiliares ---
     function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
     
     function buildAttributeCache() {
+        attrCodeToDescMap = {};
         if (Object.keys(masterSchemaMap).length === 0) return;
         Object.values(masterSchemaMap).forEach(schema => {
             schema.forEach(group => { group.attrs.forEach(attr => { attrCodeToDescMap[attr.code] = attr.desc; }); });
@@ -177,18 +188,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function populateSchemaSelector() {
         if (!dom.schemaFilterSelect) return;
+        const currentValue = dom.schemaFilterSelect.value; 
         dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>';
         const fragment = document.createDocumentFragment();
-        Object.keys(masterSchemaMap).forEach(key => {
+        
+        Object.keys(masterSchemaMap).filter(k => activeSchemas.has(k)).forEach(key => {
             const option = document.createElement('option'); option.value = key;
             const friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
             option.textContent = friendlyName; fragment.appendChild(option);
         });
         dom.schemaFilterSelect.appendChild(fragment);
+        
+        if (activeSchemas.has(currentValue)) {
+            dom.schemaFilterSelect.value = currentValue;
+        } else {
+            dom.schemaFilterSelect.value = 'all';
+        }
     }
 
     function populateSmartFilters(schemaKey = 'all') {
-        if (!dom.smartFilterContainer || Object.keys(masterSchemaMap).length === 0) return;
+        if (!dom.smartFilterContainer) return;
         dom.smartFilterContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
         
@@ -198,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fragment.appendChild(placeholder); dom.smartFilterContainer.appendChild(fragment); return;
         } 
         
-        const relevantProducts = masterDatabase.filter(p => p.schema_key === schemaKey);
+        const relevantProducts = masterDatabase.filter(p => p.schema_key === schemaKey && activeSchemas.has(p.schema_key));
         const schemaGroups = masterSchemaMap[schemaKey] || [];
 
         schemaGroups.forEach(group => {
@@ -211,10 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let hasFiltersInGroup = false; 
             
             group.attrs.forEach(attr => {
-                const rawValues = relevantProducts
-                    .map(p => p.attributes[attr.code])
-                    .filter(v => v && v !== 'unknown');
-                
+                const rawValues = relevantProducts.map(p => p.attributes[attr.code]).filter(v => v && v !== 'unknown');
                 const uniqueValues = [...new Set(rawValues)].sort((a, b) => {
                     const numA = parseFloat(a); const numB = parseFloat(b);
                     if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
@@ -238,11 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const option = document.createElement('option'); option.value = value; option.textContent = value;
                         select.appendChild(option);
                     });
-                    
                     row.appendChild(label); row.appendChild(select); rowsContainer.appendChild(row);
                 }
             });
-            
             if (hasFiltersInGroup) { groupWrapper.appendChild(rowsContainer); fragment.appendChild(groupWrapper); }
         });
         dom.smartFilterContainer.appendChild(fragment);
@@ -251,9 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getAppliedFilters() {
         const filters = {};
         dom.smartFilterContainer.querySelectorAll('select').forEach(select => {
-            if (select.value) {
-                filters[select.dataset.attribute] = select.value;
-            }
+            if (select.value) filters[select.dataset.attribute] = select.value;
         });
         return filters;
     }
@@ -265,13 +277,18 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSearchResults(filteredProducts, dom.modelSearchResults);
         renderActiveFilters(attributeFilters);
     }
+
     function filterProducts(textQuery, attributeFilters) {
         const selectedSchema = dom.schemaFilterSelect.value;
         const hasTextQuery = textQuery.length > 0;
         const hasAttributeFilters = Object.keys(attributeFilters).length > 0;
         const hasSchemaFilter = selectedSchema !== 'all';
-        if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return masterDatabase;
-        return masterDatabase.filter(product => {
+        
+        let candidates = masterDatabase.filter(p => activeSchemas.has(p.schema_key));
+
+        if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return candidates;
+
+        return candidates.filter(product => {
             if (hasSchemaFilter && product.schema_key !== selectedSchema) return false;
             if (hasTextQuery && !product.model.toLowerCase().includes(textQuery)) return false;
             if (hasAttributeFilters) {
@@ -281,12 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
     }
+
     function handleResultClick(e) {
         const target = e.target.closest('.list-item');
         if (!target) return;
         document.querySelectorAll('.list-item.active').forEach(item => item.classList.remove('active'));
         target.classList.add('active');
-        closeFilterPanel(); closeSettingsMenu(); 
+        closeFilterPanel(); closeSettingsMenu(); closeLibraryModal();
         const model = target.dataset.model;
         const product = masterDatabase.find(p => p.model === model);
         if (product) {
@@ -294,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.body.classList.add('model-is-selected'); showSelectedModelChip(product.model);
         }
     }
+
     function removeSchemaFilter() {
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.value = 'all'; populateSmartFilters('all'); applyFiltersAndSearch(); 
@@ -303,12 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSearchResults(results, container) {
         if (!container) return;
         container.innerHTML = '';
-        
-        // ACTUALIZACIÓN DE CONTADOR
-        if (dom.modelListHeader) {
-            dom.modelListHeader.textContent = `Modelos (${results.length})`;
-        }
-
+        if (dom.modelListHeader) dom.modelListHeader.textContent = `Modelos (${results.length})`;
         if (results.length === 0) { container.innerHTML = '<div class="list-item" style="cursor: default; background: none; color: var(--color-text-dim);">No se encontraron resultados.</div>'; return; }
         const fragment = document.createDocumentFragment();
         results.forEach(product => {
@@ -325,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (productSchema) renderProductSpecs(product.attributes, productSchema);
         else dom.productSpecsContainer.innerHTML = '<p class="text-gray-400">Error: Esquema no encontrado.</p>';
     }
+
     function renderProductSpecs(attributes, schema) {
         dom.productSpecsContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
@@ -347,10 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dom.productSpecsContainer.appendChild(fragment);
     }
+
     function showSelectedModelChip(modelName) {
         dom.selectedModelDisplay.innerHTML = `<button id="clear-selection-btn" class="model-chip-button" title="Cerrar y volver a búsqueda">Modelo: ${modelName} <span>&times;</span></button>`;
         dom.selectedModelDisplay.querySelector('#clear-selection-btn').addEventListener('click', clearSelection);
     }
+
     function clearSelection() {
         dom.body.classList.remove('model-is-selected');
         dom.selectedModelDisplay.innerHTML = '';
@@ -363,6 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentActive = dom.modelSearchResults.querySelector('.list-item.active');
         if (currentActive) currentActive.classList.remove('active');
     }
+
+    // --- UI Controls ---
     function expandAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = true); }
     function collapseAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = false); }
     function toggleFilterGroup(titleElement) {
@@ -378,9 +397,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
     function openFilterPanel() {
         if (!dom.smartFilterPanel) return;
-        closeSettingsMenu(); closeReadmeModal();
+        closeSettingsMenu(); closeReadmeModal(); closeLibraryModal();
         dom.smartFilterPanel.className = 'smart-filter-content-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.smartFilterToggle.classList.add('active');
@@ -388,13 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeFilterPanel() {
         if (!dom.smartFilterPanel) return;
         dom.smartFilterPanel.className = 'smart-filter-content-hidden';
-        if (dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden') dom.filterOverlay.className = 'overlay-hidden';
+        checkOverlay();
         dom.smartFilterToggle.classList.remove('active');
     }
     function toggleFilterPanel() { dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel(); }
+    
     function openSettingsMenu() {
         if (!dom.settingsMenuPanel) return;
-        closeFilterPanel(); closeReadmeModal();
+        closeFilterPanel(); closeReadmeModal(); closeLibraryModal();
         dom.settingsMenuPanel.className = 'settings-menu-panel-open';
         dom.filterOverlay.className = 'overlay-visible';
         dom.settingsMenuToggle.classList.add('active');
@@ -402,15 +423,264 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeSettingsMenu() {
         if (!dom.settingsMenuPanel) return;
         dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
-        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.readmeModal.className === 'modal-hidden') dom.filterOverlay.className = 'overlay-hidden';
+        checkOverlay();
         dom.settingsMenuToggle.classList.remove('active');
     }
     function toggleSettingsMenu() { dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu(); }
-    function openReadmeModal() { closeFilterPanel(); closeSettingsMenu(); dom.readmeModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; }
-    function closeReadmeModal() {
-        dom.readmeModal.className = 'modal-hidden';
-        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden') dom.filterOverlay.className = 'overlay-hidden';
+    
+    function openReadmeModal() { closeFilterPanel(); closeSettingsMenu(); closeLibraryModal(); dom.readmeModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; }
+    function closeReadmeModal() { dom.readmeModal.className = 'modal-hidden'; checkOverlay(); }
+
+    function checkOverlay() {
+        if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && 
+            dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' &&
+            dom.readmeModal.className === 'modal-hidden' &&
+            dom.libraryModal.className === 'modal-hidden') {
+            dom.filterOverlay.className = 'overlay-hidden';
+        }
     }
+
+    // --- Biblioteca (FIXED CSV PARSER) ---
+    function openLibraryModal() {
+        closeSettingsMenu(); 
+        closeFilterPanel(); closeReadmeModal();
+        renderLibraryGamaList();
+        dom.libraryModal.className = 'modal-visible';
+        dom.filterOverlay.className = 'overlay-visible';
+        dom.uploadStatusText.textContent = "Formato Admin Requerido (Punto y coma)";
+        dom.csvUploadInput.value = "";
+    }
+
+    function closeLibraryModal() {
+        dom.libraryModal.className = 'modal-hidden';
+        checkOverlay();
+    }
+
+    function renderLibraryGamaList() {
+        dom.libraryGamaList.innerHTML = '';
+        Object.keys(masterSchemaMap).forEach(schemaKey => {
+            const isActive = activeSchemas.has(schemaKey);
+            const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1);
+            
+            const item = document.createElement('div');
+            item.className = 'gama-toggle-item';
+            item.innerHTML = `
+                <label class="gama-toggle-label">
+                    <input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}>
+                    <span class="gama-name">${friendlyName}</span>
+                </label>
+                <span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>
+            `;
+            dom.libraryGamaList.appendChild(item);
+        });
+    }
+
+    function handleGamaToggle(e) {
+        if (!e.target.matches('.gama-checkbox')) return;
+        const key = e.target.dataset.key;
+        const isChecked = e.target.checked;
+        
+        if (isChecked) activeSchemas.add(key);
+        else activeSchemas.delete(key);
+
+        const statusSpan = e.target.closest('.gama-toggle-item').querySelector('.gama-status');
+        statusSpan.textContent = isChecked ? 'Activa' : 'Oculta';
+        statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)';
+
+        populateSchemaSelector(); 
+        populateSmartFilters(dom.schemaFilterSelect.value); 
+        applyFiltersAndSearch(); 
+    }
+
+    function handleCsvUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        dom.uploadStatusText.textContent = `Procesando: ${file.name}...`;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const content = event.target.result;
+                parseAndImportCsv(content);
+                dom.uploadStatusText.textContent = `¡Importado con éxito!`;
+                dom.uploadStatusText.style.color = 'var(--color-cyan-accent)';
+                
+                buildAttributeCache();
+                populateSchemaSelector();
+                applyFiltersAndSearch();
+                renderLibraryGamaList(); 
+
+            } catch (error) {
+                console.error(error);
+                dom.uploadStatusText.textContent = `Error: Formato inválido`;
+                dom.uploadStatusText.style.color = '#ef4444';
+                alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8.");
+            }
+        };
+        // Importante: Forzar UTF-8 para leer tildes y BOM
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    /**
+     * Helper para dividir líneas CSV respetando comillas dobles.
+     * Maneja: "valor;con;punto;y;coma";valor_normal;"valor""con""comillas"
+     */
+    function parseCSVLine(text) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+
+            if (inQuotes) {
+                if (char === '"' && nextChar === '"') {
+                    // Comilla doble escapada ("") -> literal "
+                    current += '"';
+                    i++; // Saltar la siguiente comilla
+                } else if (char === '"') {
+                    // Fin de comillas
+                    inQuotes = false;
+                } else {
+                    // Carácter normal dentro de comillas
+                    current += char;
+                }
+            } else {
+                if (char === ';') {
+                    // Separador
+                    result.push(current);
+                    current = '';
+                } else if (char === '"') {
+                    // Inicio de comillas
+                    inQuotes = true;
+                } else {
+                    // Carácter normal
+                    current += char;
+                }
+            }
+        }
+        result.push(current); // Añadir el último campo
+        return result;
+    }
+
+    function parseAndImportCsv(csvText) {
+        // 1. Limpiar BOM si existe (\uFEFF) para evitar caracteres basura al inicio
+        // charCodeAt(0) === 65279 es el BOM
+        let cleanText = csvText;
+        if (cleanText.charCodeAt(0) === 0xFEFF) {
+            cleanText = cleanText.slice(1);
+        }
+
+        const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== ''); // Dividir por saltos de línea
+
+        if (lines.length < 3) throw new Error("CSV muy corto (Faltan cabeceras o datos)");
+
+        // --- Fila 1: Códigos ---
+        // A1: Schema Key, B1: 'model', C1+: Códigos de atributos
+        const row1 = parseCSVLine(lines[0]);
+        
+        const schemaKey = row1[0].toLowerCase().trim();
+        // Validar limpieza
+        if (!schemaKey || schemaKey.includes(' ')) throw new Error("Schema Key inválida en A1");
+
+        const attrCodes = row1.slice(1); // ["info_categoria", "info_nombre...", ...]
+        
+        // --- Fila 2: Descripciones ---
+        // A1: (Vacio o Label), B1: Label Model, C1+: Descripciones
+        const row2 = parseCSVLine(lines[1]);
+        const attrDescs = row2.slice(1); // ["Categoría...", "Código...", ...]
+
+        // Construir Esquema Dinámico
+        const newAttrs = [];
+        // Empezamos desde el índice 1 de attrCodes porque el índice 0 suele ser 'info_categoria'
+        // PERO: En el formato del admin, row1[0] es SchemaKey. row1[1] NO es model ID en el header exportado?
+        // Revisemos el formato exportado:
+        // Export: A1=Key, A2="Model ID".
+        // PERO Export función anterior: 
+        // row1_codes = [selectedSchema, 'model', attr1, attr2...]
+        // row2_descs = ['', 'Modelo', desc1, desc2...]
+        // Datos: ['', modelID, val1, val2...]
+        
+        // Ajuste al parser para coincidir con Export v3.4.1:
+        // row1[0] = SchemaKey. row1[1] = 'model'. row1[2] = attr1...
+        // row2[0] = ''. row2[1] = 'Modelo'. row2[2] = desc1...
+        // data[0] = ''. data[1] = ID. data[2] = val1...
+        
+        // Validemos si es formato 'v3.4.1' (con columna A vacía en datos) o formato plano 'v3.3.0'
+        // El usuario pasó un ejemplo plano: "pcs;info_categoria..."
+        // Vamos a detectar dinámicamente.
+        
+        let startIndexAttrs = 0;
+        let modelIndexInData = 0;
+
+        // Detección heurística:
+        if (row1[1] === 'model') {
+            // Formato con columna 'model' explicita en cabecera (v3.4.1 Admin)
+            startIndexAttrs = 2; // 0=Key, 1=Model, 2=Attr1
+            modelIndexInData = 1; // En datos: 0=Empty, 1=ID
+        } else {
+            // Formato plano (User raw text example): 0=Key, 1=Attr1... (Model ID es la primera columna de datos)
+            // En el ejemplo del usuario: "pcs;info_categoria..."
+            // Y los datos: "14Z90...;Portátiles..."
+            startIndexAttrs = 1;
+            modelIndexInData = 0;
+        }
+
+        for (let i = startIndexAttrs; i < row1.length; i++) {
+            if (row1[i]) {
+                newAttrs.push({
+                    code: row1[i],
+                    desc: (row2[i] && row2[i].trim()) ? row2[i] : row1[i]
+                });
+            }
+        }
+
+        const newSchemaGroup = [{
+            group: "Especificaciones Importadas",
+            attrs: newAttrs
+        }];
+
+        window.APP_DB.registerSchema(schemaKey, newSchemaGroup);
+        activeSchemas.add(schemaKey);
+
+        // --- Datos (Fila 3 en adelante) ---
+        let count = 0;
+        for (let i = 2; i < lines.length; i++) {
+            const cols = parseCSVLine(lines[i]);
+            
+            // Obtener Model ID
+            const modelId = cols[modelIndexInData];
+            if (!modelId) continue; // Fila vacía o corrupta
+
+            const attributes = {};
+            // Mapear atributos
+            for (let j = 0; j < newAttrs.length; j++) {
+                // El valor en CSV está en (startIndexAttrs + j)
+                const colIndex = startIndexAttrs + j;
+                if (cols[colIndex]) {
+                    attributes[newAttrs[j].code] = cols[colIndex];
+                }
+            }
+
+            const newProduct = {
+                model: modelId,
+                schema_key: schemaKey,
+                attributes: attributes
+            };
+
+            window.APP_DB.registerProduct(newProduct);
+            count++;
+        }
+
+        // Refrescar referencias
+        masterSchemaMap = window.APP_DB.schemas;
+        masterDatabase = window.APP_DB.products;
+        console.log(`Importada gama ${schemaKey} con ${count} modelos.`);
+    }
+
+    // --- Tema ---
     function handleThemeToggle() {
         isLightMode = !isLightMode;
         if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
@@ -442,8 +712,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
         return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
     }
+    
     async function showReadmeInfo() {
-        closeSettingsMenu(); openReadmeModal();
+        closeSettingsMenu(); closeLibraryModal(); openReadmeModal();
         if (dom.readmeContent.textContent === "" || dom.readmeContent.textContent.startsWith("Cargando...")) {
             try {
                 dom.readmeContent.textContent = "Cargando...";
@@ -456,5 +727,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+    
     initialize();
 });
