@@ -1,6 +1,6 @@
 /*
- * Lógica del Panel de Administración v3.3.0
- * Update: Exportación a CSV para Excel.
+ * Lógica del Panel de Administración v3.4.1
+ * Update: Exportación CSV corregida (BOM, Encoding y Layout sin huecos).
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gamaExportSelect: document.getElementById('gama-export-select'),
         gamaExportList: document.getElementById('gama-export-list'),
         exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
-        exportGamaCsvButton: document.getElementById('export-gama-csv-btn') // NUEVO
+        exportGamaCsvButton: document.getElementById('export-gama-csv-btn')
     };
 
     // --- Variables de Estado ---
@@ -95,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showPanel('general');
             
-            // Estado inicial botones
             if(dom.exportGamaJsonButton) dom.exportGamaJsonButton.disabled = true;
             if(dom.exportGamaCsvButton) dom.exportGamaCsvButton.disabled = true;
             if(dom.addGroupBtn) dom.addGroupBtn.disabled = true; 
@@ -107,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
         dom.saveBtn.addEventListener('click', handleSaveClick);
 
-        // Ajustes
         dom.settingsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleSettingsMenu();
@@ -125,29 +123,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Navegación Cards
         dom.navCardButtons.forEach(card => {
             card.addEventListener('click', () => showPanel(card.dataset.panel));
         });
 
-        // Buscador Modelos
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
         dom.createModelBtn.addEventListener('click', handleCreateModelClick);
 
-        // Esquemas
         dom.schemaResultsList.addEventListener('click', handleSchemaLoadClick);
         dom.createSchemaBtn.addEventListener('click', handleSchemaCreateClick);
 
-        // Editor Esquema
         dom.addGroupBtn.addEventListener('click', () => addGroupToEditor());
         dom.schemaEditorForm.addEventListener('click', handleSchemaEditorClicks);
 
-        // Exportar
         dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
         dom.gamaExportList.addEventListener('click', handleGamaExportClick);
         dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); 
-        // Listener NUEVO para CSV
         dom.exportGamaCsvButton.addEventListener('click', exportGamaAsCsv);
     }
 
@@ -204,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
     }
 
-    // --- Funciones del Panel --- (Resto de lógica igual que v3.2)
+    // --- Funciones del Panel ---
     function handleSaveClick() {
         if (currentActivePanel === 'edit-model') exportDataFromEditor();
         else if (currentActivePanel === 'edit-schema') handleSchemaExportClick();
@@ -379,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadFile(`GAMA_${schema.toUpperCase()}.json`, JSON.stringify(prods, null, 4), 'application/json;charset=utf-8');
     }
 
-    // --- [NUEVO] Exportación CSV ---
+    // --- [FIX v3.4.1] Exportación CSV Estructurada & Encoding ---
     function exportGamaAsCsv() {
         const selectedSchema = dom.gamaExportSelect.value;
         if (!selectedSchema) return;
@@ -387,59 +379,85 @@ document.addEventListener('DOMContentLoaded', () => {
         const products = masterDatabase.filter(p => p.schema_key === selectedSchema);
         if (products.length === 0) return alert("Gama vacía.");
         
-        // 1. Obtener estructura de columnas basada en el esquema
         const schemaDef = masterSchemaMap[selectedSchema];
-        let csvHeaders = ['Model ID', 'Schema Key'];
+        
+        // Estructura solicitada:
+        // Fila 1: [SchemaKey, attrCode1, attrCode2...]
+        // Fila 2: ["Model ID", attrDesc1, attrDesc2...]
+        // Fila 3+: [ModelID_Value, val1, val2...]
+        
+        // Columna A:
+        // Fila 1: Schema Key
+        // Fila 2: Literal "Model ID"
+        // Fila 3+: Valor del Model ID
+        
         let attrKeys = [];
+        let row1_codes = [selectedSchema]; // A1
+        let row2_descs = ['Model ID'];     // A2
 
         if (schemaDef) {
             schemaDef.forEach(group => {
                 group.attrs.forEach(attr => {
-                    // Usamos attr.code como cabecera para compatibilidad técnica
-                    csvHeaders.push(attr.code); 
+                    row1_codes.push(attr.code); // B1...
+                    row2_descs.push(attr.desc); // B2...
                     attrKeys.push(attr.code);
                 });
             });
         } else {
-            // Fallback si no hay esquema (raro): recolectar todas las claves de los productos
+            // Fallback
             const allKeys = new Set();
             products.forEach(p => Object.keys(p.attributes).forEach(k => allKeys.add(k)));
             attrKeys = Array.from(allKeys);
-            csvHeaders = csvHeaders.concat(attrKeys);
+            attrKeys.forEach(key => {
+                row1_codes.push(key);
+                row2_descs.push(key);
+            });
         }
 
-        // 2. Construir filas
-        const rows = products.map(p => {
-            // Fila base
-            let row = [p.model, p.schema_key];
+        // Sanitizar: Excel CSV usa punto y coma (;) en locales ES/EU
+        const sanitize = (val) => {
+            if (val === null || val === undefined) return "";
+            val = String(val);
+            val = val.replace(/"/g, '""'); // Doblar comillas
+            // Si hay caracteres reservados, envolver en comillas
+            if (val.search(/("|\;|:|\n|\r)/g) >= 0) {
+                val = `"${val}"`;
+            }
+            return val;
+        };
+
+        // Construir filas de datos
+        const dataRows = products.map(p => {
+            // Col A: Model ID
+            let row = [sanitize(p.model)];
             
-            // Valores de atributos alineados con las cabeceras
+            // Cols B...: Atributos
             attrKeys.forEach(key => {
-                let val = p.attributes[key] || ""; // Valor o cadena vacía
-                
-                // Sanitización CSV para Excel:
-                // 1. Escapar comillas dobles ( duplicarlas: " -> "" )
-                val = val.replace(/"/g, '""');
-                
-                // 2. Si contiene separador, salto de línea o comillas, envolver en comillas dobles
-                // IMPORTANTE: Usamos punto y coma (;) como separador para compatibilidad con Excel Español
-                if (val.search(/("|\;|:|\n)/g) >= 0) {
-                    val = `"${val}"`;
-                }
-                row.push(val);
+                let val = p.attributes[key] || ""; 
+                row.push(sanitize(val));
             });
             
-            // Unir con punto y coma
             return row.join(";");
         });
 
-        // 3. Unir todo con BOM para UTF-8 correcto en Excel
-        // \uFEFF es el Byte Order Mark
-        const csvContent = "\uFEFF" + csvHeaders.join(";") + "\n" + rows.join("\n");
+        // Unir Cabeceras
+        const header1 = row1_codes.map(c => sanitize(c)).join(";");
+        const header2 = row2_descs.map(d => sanitize(d)).join(";");
 
-        // 4. Descargar
+        // Contenido CSV completo
+        const csvString = header1 + "\n" + header2 + "\n" + dataRows.join("\n");
+
+        // [FIX ENCODING] Usar BOM \uFEFF dentro de un Blob, no concatenado al string
+        const blob = new Blob(["\uFEFF", csvString], { type: 'text/csv;charset=utf-8' });
+        
+        // Descargar
         const filename = `GAMA_${selectedSchema.toUpperCase()}.csv`;
-        downloadFile(filename, csvContent, 'text/csv;charset=utf-8');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
 
