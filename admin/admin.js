@@ -1,6 +1,6 @@
 /*
- * Lógica del Panel de Administración v3.4.2
- * Update: Fix inicialización de modales.
+ * Lógica del Panel de Administración v3.4.3
+ * Update: Fix UX - El menú de ajustes se mantiene abierto al cambiar de tema.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshUI();
             showPanel('general');
             
-            // Asegurar que el modal de librería empieza cerrado (redundancia de seguridad)
+            // Seguridad modales cerrados
             if (dom.libraryModal) dom.libraryModal.style.display = 'none';
             if (dom.infoModal) dom.infoModal.style.display = 'none';
             if (dom.modalOverlay) dom.modalOverlay.style.display = 'none';
@@ -100,18 +100,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEventListeners() {
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
         dom.saveBtn.addEventListener('click', handleSaveClick);
+
         dom.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSettingsMenu(); });
-        dom.themeBtn.addEventListener('click', handleThemeToggle);
+        dom.themeBtn.addEventListener('click', handleThemeToggle); // Listener de Tema
         dom.infoBtn.addEventListener('click', showInfoModal);
         dom.libraryBtn.addEventListener('click', openLibraryModal); 
         dom.closeInfoModalBtn.addEventListener('click', hideAllModals);
         dom.libraryCloseBtn.addEventListener('click', hideAllModals); 
         dom.modalOverlay.addEventListener('click', hideAllModals);
+        
         document.addEventListener('click', (e) => {
             if (dom.settingsMenu && dom.settingsMenu.style.display === 'block') {
-                if (!dom.settingsMenu.contains(e.target) && e.target !== dom.settingsBtn) dom.settingsMenu.style.display = 'none';
+                if (!dom.settingsMenu.contains(e.target) && e.target !== dom.settingsBtn) {
+                    dom.settingsMenu.style.display = 'none';
+                }
             }
         });
+
         dom.navCardButtons.forEach(card => card.addEventListener('click', () => showPanel(card.dataset.panel)));
         dom.modelSearchInput.addEventListener('input', applySearch);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
@@ -128,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
     }
 
-    // ... (Lógica de Tema, Navegación, Modales y Hubs se mantiene igual) ...
+    // --- Lógica de Tema (FIX: Menú se mantiene abierto) ---
     function applyInitialTheme() {
         const savedMode = localStorage.getItem('admin-theme-mode');
         isLightMode = (savedMode === 'light');
@@ -136,14 +141,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
         else updatePaletteCSS(darkPaletteHSL, currentAccentHue);
     }
-    function handleThemeToggle() {
+
+    function handleThemeToggle(e) {
+        // Evitar que el click se propague y cierre el menú (aunque el stopPropagation del settingsBtn ya ayuda)
+        if (e) e.stopPropagation(); 
+
         isLightMode = !isLightMode;
         localStorage.setItem('admin-theme-mode', isLightMode ? 'light' : 'dark');
+        
         currentAccentHue = Math.floor(Math.random() * 360);
+        
         if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue);
         else updatePaletteCSS(darkPaletteHSL, currentAccentHue);
-        dom.settingsMenu.style.display = 'none';
+        
+        // ELIMINADO: dom.settingsMenu.style.display = 'none'; 
+        // Ahora el menú permanece abierto para múltiples cambios.
     }
+
     function updatePaletteCSS(baseHSL, accentHue) {
         const p = baseHSL; const newOtherHue = (accentHue + 0 + 360) % 360; const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l); const root = document.documentElement;
         const vars = {
@@ -182,7 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function openLibraryModal() { dom.settingsMenu.style.display = 'none'; dom.infoModal.style.display = 'none'; renderLibraryGamaList(); dom.libraryModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; dom.uploadStatusText.textContent = "Formato Admin Requerido (Punto y coma)"; dom.csvUploadInput.value = ""; }
     function hideAllModals() { dom.infoModal.style.display = 'none'; dom.libraryModal.style.display = 'none'; dom.modalOverlay.style.display = 'none'; }
 
-    // --- Biblioteca Logic ---
     function renderLibraryGamaList() {
         dom.libraryGamaList.innerHTML = '';
         Object.keys(masterSchemaMap).forEach(schemaKey => {
@@ -207,8 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; refreshUI(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error CSV: Asegúrate de usar el formato 3 filas."); }
         }; reader.readAsText(file, 'UTF-8');
     }
-    
-    // --- Parser CSV ---
     function parseCSVLine(text) {
         const result = []; let current = ''; let inQuotes = false;
         for (let i = 0; i < text.length; i++) {
@@ -238,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Importada gama ${schemaKey} con ${count} modelos.`);
     }
 
-    // --- Filtrado Admin (usando activeSchemas) ---
+    // --- Filtrado Admin (activeSchemas) ---
     function applySearch() {
         const q = dom.modelSearchInput.value.toLowerCase().trim();
         const filtered = masterDatabase.filter(p => p.model.toLowerCase().includes(q) && activeSchemas.has(p.schema_key));
