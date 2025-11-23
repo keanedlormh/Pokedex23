@@ -1,8 +1,7 @@
 /* ==============================================
-   Estilos para el Admin Panel v3.2.0
+   Estilos para el Admin Panel v3.3.0 (Updated)
    ============================================== */
 
-/* :root define el tema oscuro por defecto */
 :root {
     --color-bg-dark: #0D1117;
     --color-bg-medium: #161B22;
@@ -15,9 +14,10 @@
     --color-cyan-glow: rgba(6, 182, 212, 0.25);
     --color-green-accent: #10b981;
     --color-red-accent: #f43f5e;
-    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    --header-height: 50px;
+    
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'ui-monospace', monospace;
+    --header-height: 60px;
 }
 
 html.light-mode {
@@ -32,422 +32,292 @@ html.light-mode {
     --color-cyan-glow: rgba(12, 133, 153, 0.15);
 }
 
-
 body {
     background-color: var(--color-bg-dark);
     color: var(--color-text-secondary);
     font-family: var(--font-sans);
-    line-height: 1.5;
-    padding-top: var(--header-height); 
+    margin: 0;
+    padding-top: var(--header-height);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg-medium); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--color-bg-medium); }
 ::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
 
+/* Helpers */
+.w-full { width: 100%; }
+.flex-grow { flex-grow: 1; }
+.mb-4 { margin-bottom: 1rem; }
+.mt-2 { margin-top: 0.5rem; }
+.text-gray-400 { color: var(--color-text-secondary); }
+.text-xs { font-size: 0.75rem; }
+.dim { color: var(--color-text-dim); }
 
 /* ==============================================
-   1. Encabezado Fijo
+   1. Encabezado
    ============================================== */
 .admin-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1rem;
-    height: var(--header-height);
+    position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
     background-color: var(--color-bg-dark);
     border-bottom: 1px solid var(--color-border);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 101;
+    z-index: 100;
+    display: flex; align-items: center;
+    padding: 0 1.5rem;
     box-sizing: border-box;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-@media (min-width: 768px) {
-    .admin-header { padding: 0 1.5rem; }
 }
 
 .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    width: 100%; max-width: 1400px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
 }
 
 .app-title-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    text-align: left;
+    background: none; border: none; padding: 0; cursor: pointer;
+    display: flex; align-items: center;
 }
 .app-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    transition: color 0.2s ease;
+    font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0;
 }
-.app-title-btn:hover .app-title {
-    color: var(--color-cyan-accent);
-}
-
 .app-version {
-    font-size: 0.7rem;
-    padding: 0 0.3rem;
-    font-family: var(--font-mono);
-    color: var(--color-cyan-accent);
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    position: relative;
-    top: -1px;
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    font-size: 0.75rem; padding: 0.1rem 0.4rem;
+    color: var(--color-cyan-accent); background: var(--color-bg-medium);
+    border: 1px solid var(--color-border); border-radius: 4px;
+    margin-left: 0.5rem; font-family: var(--font-mono);
+    vertical-align: middle;
 }
 
+.header-right { display: flex; align-items: center; gap: 1rem; }
+
+/* Botones Header */
 .header-icon-btn {
-    background: none;
+    background: var(--color-bg-medium);
     border: 1px solid var(--color-border);
     color: var(--color-text-secondary);
     border-radius: 4px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    font-size: 1rem;
-    margin-left: 0.75rem;
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1.2rem;
     transition: all 0.2s ease;
 }
 .header-icon-btn:hover {
     border-color: var(--color-cyan-accent);
     color: var(--color-cyan-accent);
+    box-shadow: 0 0 10px var(--color-cyan-glow);
 }
-
 
 .header-save-btn {
-    height: 34px;
-    padding: 0 1.2rem;
-    margin-left: auto;
     background-color: var(--color-green-accent);
     border-color: var(--color-green-accent);
+    height: 34px;
 }
 .header-save-btn:hover {
-    background-color: #059669;
-    border-color: #059669;
+    background-color: #059669; 
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
 }
-
 
 /* ==============================================
-   2. Área de Contenido y Paneles
+   2. Menú de Ajustes
    ============================================== */
-.admin-content-area {
-    padding: 1.5rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    transition: all 0.2s ease-in-out;
-}
-.content-panel {
-    display: none;
-}
-.content-panel.active {
-    display: block;
-}
+.settings-wrapper { position: relative; }
 
-.main-panel-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.5rem;
-    transition: border-color 0.3s ease, color 0.3s ease;
-}
-
-
-/* ==============================================
-   3. Panel General
-   ============================================== */
-.nav-card-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-}
-@media (min-width: 768px) {
-    .nav-card-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-@media (min-width: 1024px) {
-    .nav-card-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-.nav-card {
+.settings-dropdown {
+    position: absolute;
+    top: calc(100% + 0.75rem); right: 0;
+    width: 200px;
     background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
-    border-bottom: 3px solid var(--color-border);
-}
-.nav-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--color-border-light);
-    border-bottom-color: var(--color-cyan-accent);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-.nav-card-icon {
-    font-size: 1.75rem;
-    display: block;
-    margin-bottom: 0.75rem;
-}
-.nav-card h3 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: 0.25rem;
-    transition: color 0.3s ease;
-}
-.nav-card p {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    line-height: 1.4;
-    transition: color 0.3s ease;
-}
-
-
-/* ==============================================
-   4. Tarjetas y Paneles
-   ============================================== */
-.futuristic-card {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-cyan-accent);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, border-color 0.3s ease, border-left-color 0.3s ease;
-}
-.search-panel {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - var(--header-height) - 3rem);
-    overflow-y: auto; /* Permitir scroll si las secciones son largas */
-}
-.futuristic-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.4rem;
-    flex-shrink: 0;
-    transition: border-color 0.3s ease, color 0.3s ease;
-}
-.spec-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: 0.75rem;
-    flex-shrink: 0;
-    transition: color 0.3s ease;
-}
-
-
-/* ==============================================
-   5. Inputs y Botones
-   ============================================== */
-.futuristic-input,
-.futuristic-select,
-.futuristic-textarea {
-    background-color: var(--color-bg-dark);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-primary);
-    border-radius: 4px;
-    padding: 0.6rem 0.8rem;
-    font-size: 0.85rem;
-    transition: all 0.2s ease-in-out;
-    box-sizing: border-box;
-    font-family: var(--font-mono);
-}
-.futuristic-input:focus,
-.futuristic-select:focus,
-.futuristic-textarea:focus {
-    outline: none;
-    border-color: var(--color-cyan-accent);
-    box-shadow: 0 0 0 3px var(--color-cyan-glow);
-}
-.futuristic-textarea {
-    width: 100%;
-    min-height: 40px;
-    resize: vertical;
-}
-.futuristic-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.25rem;
-    display: block;
-    transition: color 0.3s ease;
-}
-.futuristic-button {
-    background-color: var(--color-cyan-accent);
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    letter-spacing: 0.05em;
-    border: 1px solid var(--color-cyan-accent);
-    transition: all 0.2s ease-in-out;
-    cursor: pointer;
-    box-sizing: border-box;
-    height: 34px;
-    padding: 0 1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    text-align: center;
-}
-.futuristic-button:hover {
-    background-color: #0891b2;
-    border-color: #0891b2;
-    box-shadow: 0 0 15px var(--color-cyan-glow);
-}
-html.light-mode .futuristic-button {
-    color: #ffffff;
-}
-html.light-mode .futuristic-button:hover {
-    background-color: #0c8599;
-    border-color: #0c8599;
-}
-
-.futuristic-button:disabled {
-    background-color: var(--color-border);
-    border-color: var(--color-border-light);
-    color: var(--color-text-dim);
-    cursor: not-allowed;
-}
-
-
-/* ==============================================
-   6. Lista de Búsqueda
-   ============================================== */
-.futuristic-list {
-    background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border-light);
-    border-radius: 4px;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-.full-list-visible {
-    margin-top: 0.75rem;
-    flex-grow: 1;
-    overflow-y: auto;
-    border-radius: 4px;
-    background-color: var(--color-bg-dark);
-    transition: all 0.3s ease;
-}
-.futuristic-list .list-item {
-    padding: 0.45rem 0.75rem;
-    border-bottom: 1px dashed var(--color-border);
-    cursor: pointer;
-    transition: all 0.15s ease-in-out, background-color 0.3s, color 0.3s, border-color 0.3s;
-    font-size: 0.85rem;
-    font-family: var(--font-mono);
-}
-.futuristic-list .list-item:last-child {
-    border-bottom: none;
-}
-.futuristic-list .list-item:hover {
-    background-color: var(--color-border);
-    color: var(--color-cyan-accent);
-}
-
-
-/* ==============================================
-   7. Panel Editor (Modelo)
-   ============================================== */
-.editor-card {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
     border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    padding: 0.5rem;
+    z-index: 200;
+    display: none; 
 }
 
-.editor-key-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 0.75rem;
+.settings-dropdown-btn {
+    display: flex; align-items: center; gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 0.8rem;
     background: var(--color-bg-dark);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    margin-bottom: 0.75rem;
-    flex-shrink: 0; 
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-@media (min-width: 768px) {
-    .editor-key-fields {
-        flex-direction: row;
-    }
-}
-
-.control-group {
-    flex-grow: 1;
-}
-#edit-schema-key-display {
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-
-.editor-form-fields {
-    overflow-y: auto;
-    padding-right: 0.5rem;
-}
-
-.form-group-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    font-family: var(--font-mono);
-    padding: 0.5rem 0;
-    background: var(--color-border);
-    margin: 1rem 0 0.75rem 0;
-    padding-left: 0.75rem;
-    border-radius: 4px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-.form-row {
-    margin-bottom: 0.75rem;
-}
-.form-row .futuristic-label {
-    font-size: 0.75rem;
-    font-family: var(--font-mono);
     color: var(--color-text-secondary);
+    font-size: 0.85rem; font-weight: 600;
+    text-decoration: none; text-align: left;
+    cursor: pointer;
+    margin-bottom: 0.25rem;
+    box-sizing: border-box;
+    transition: all 0.2s;
 }
-
+.settings-dropdown-btn:hover {
+    border-color: var(--color-cyan-accent);
+    color: var(--color-cyan-accent);
+}
+.settings-dropdown-btn:last-child { margin-bottom: 0; }
 
 /* ==============================================
-   8. Panel Exportar Gama
+   3. Layout Principal
    ============================================== */
+.admin-content-area {
+    padding: 2rem; max-width: 1400px; margin: 0 auto;
+}
+.content-panel { display: none; }
+.content-panel.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Panel General Cards */
+.nav-card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;
+}
+.nav-card {
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-bottom: 3px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 2rem; text-align: left;
+    cursor: pointer; transition: all 0.2s;
+}
+.nav-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-cyan-accent);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.nav-card-icon { font-size: 2rem; display: block; margin-bottom: 1rem; }
+.nav-card h3 { margin: 0 0 0.5rem 0; color: var(--color-text-primary); }
+.nav-card p { margin: 0; color: var(--color-text-secondary); font-size: 0.9rem; }
+
+/* ==============================================
+   4. UI Components
+   ============================================== */
+.futuristic-card {
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-cyan-accent);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.center-limit { max-width: 800px; margin: 0 auto; }
+
+.futuristic-title {
+    font-size: 1.1rem; font-weight: 700; color: var(--color-text-primary);
+    margin: 0 0 1rem 0; padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.futuristic-input, .futuristic-select, .futuristic-textarea {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    border-radius: 4px; padding: 0.7rem;
+    font-family: var(--font-mono); font-size: 0.85rem;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+.futuristic-input:focus, .futuristic-select:focus, .futuristic-textarea:focus {
+    outline: none; border-color: var(--color-cyan-accent);
+    box-shadow: 0 0 0 3px var(--color-cyan-glow);
+}
+
+.futuristic-button {
+    background: var(--color-cyan-accent); color: #fff;
+    border: 1px solid var(--color-cyan-accent);
+    border-radius: 4px; font-weight: 600; font-size: 0.85rem;
+    padding: 0.6rem 1.2rem; cursor: pointer;
+    transition: all 0.2s;
+}
+.futuristic-button:hover {
+    background: #0891b2; border-color: #0891b2;
+    box-shadow: 0 0 15px var(--color-cyan-glow);
+}
+.futuristic-button:disabled {
+    background: var(--color-bg-medium); border-color: var(--color-border);
+    color: var(--color-text-dim); cursor: not-allowed; box-shadow: none;
+}
+
+/* Estilos específicos para el botón CSV */
+.csv-button {
+    background-color: var(--color-green-accent);
+    border-color: var(--color-green-accent);
+}
+.csv-button:hover {
+    background-color: #059669; /* Un verde más oscuro */
+    border-color: #059669;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+.futuristic-label {
+    display: block; margin-bottom: 0.4rem;
+    color: var(--color-text-secondary); font-size: 0.8rem; font-weight: 600;
+}
+
+/* Listas */
+.futuristic-list {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+.full-list-visible { max-height: 300px; overflow-y: auto; }
+.short-list { max-height: 200px; margin-bottom: 1rem; }
+
+.list-item {
+    padding: 0.75rem; border-bottom: 1px dashed var(--color-border);
+    cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem;
+    display: flex; justify-content: space-between;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:hover { background: var(--color-border); color: var(--color-cyan-accent); }
+
+/* ==============================================
+   5. Editor Fullscreen
+   ============================================== */
+body.fullscreen-editor-active .admin-content-area { padding: 0; max-width: none; }
+body.fullscreen-editor-active .content-panel.active {
+    height: calc(100vh - var(--header-height));
+}
+body.fullscreen-editor-active .editor-card {
+    height: 100%; border: none; border-radius: 0;
+    display: flex; flex-direction: column;
+    padding: 1rem 2rem; box-sizing: border-box;
+}
+
+.editor-header { margin-bottom: 1rem; flex-shrink: 0; }
+.editor-form-fields { flex-grow: 1; overflow-y: auto; padding-right: 0.5rem; }
+
+.editor-key-fields {
+    display: flex; gap: 1rem; padding: 1rem;
+    background: var(--color-bg-dark); border: 1px solid var(--color-border);
+    border-radius: 4px; margin-bottom: 1.5rem;
+}
+.control-group { flex: 1; }
+
+.form-group-title {
+    background: var(--color-border); color: var(--color-text-primary);
+    padding: 0.5rem 1rem; border-radius: 4px; margin: 1.5rem 0 1rem 0;
+    font-size: 0.9rem; font-family: var(--font-mono);
+}
+.form-row { margin-bottom: 1rem; }
+
+/* Schema Editor */
+.schema-group-box {
+    background: var(--color-bg-dark); border: 1px solid var(--color-border);
+    padding: 1rem; margin-bottom: 1rem; border-radius: 4px;
+}
+.schema-group-header { display: flex; gap: 0.5rem; align-items: flex-end; margin-bottom: 1rem; }
+.schema-action-btn {
+    height: 38px; padding: 0 0.8rem; font-size: 0.75rem; font-weight: bold;
+    border-radius: 4px; cursor: pointer; border: 1px solid; background: transparent;
+}
+.schema-add-attr-btn { color: var(--color-green-accent); border-color: var(--color-green-accent); }
+.schema-add-attr-btn:hover { background: rgba(16, 185, 129, 0.1); }
+
+.schema-remove-btn { color: var(--color-red-accent); border-color: var(--color-red-accent); }
+.schema-remove-btn:hover { background: rgba(244, 63, 94, 0.1); }
+
+.schema-attr-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+/* Export Controls */
 .gama-export-controls {
     display: flex;
     flex-wrap: wrap;
@@ -455,324 +325,48 @@ html.light-mode .futuristic-button:hover {
     align-items: flex-end; 
     margin-bottom: 1rem;
 }
-.gama-export-controls .control-group {
-    flex-grow: 1;
-    min-width: 200px;
+.export-buttons-container {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .gama-export-list {
-    max-height: calc(100vh - var(--header-height) - 220px);
-    overflow-y: auto;
-    padding-right: 0.5rem;
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-border);
+    max-height: 300px; overflow-y: auto; margin-top: 1rem;
+    background: var(--color-bg-dark); border: 1px solid var(--color-border);
     border-radius: 4px;
-    padding: 0.5rem;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 .gama-export-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px dashed var(--color-border-light);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    transition: border-color 0.3s ease;
-}
-.gama-export-item span {
-    color: var(--color-text-primary);
-    font-weight: 600;
-    transition: color 0.3s ease;
+    padding: 0.6rem; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px dashed var(--color-border);
 }
 .export-item-button {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border-light);
-    color: var(--color-text-secondary);
-    font-family: var(--font-sans);
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-    padding: 0.3rem 0.6rem;
-    transition: all 0.15s ease, background-color 0.3s, color 0.3s, border-color 0.3s;
+    font-size: 0.7rem; padding: 0.2rem 0.5rem;
+    background: var(--color-bg-medium); border: 1px solid var(--color-border); color: var(--color-text-secondary);
+    border-radius: 3px; cursor: pointer;
 }
-.export-item-button:hover {
-    background-color: var(--color-border-light);
-    color: var(--color-cyan-accent);
-    border-color: var(--color-cyan-accent);
-}
-
+.export-item-button:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
 
 /* ==============================================
-   9. Panel Editor de Esquemas
+   6. Modals
    ============================================== */
-.schema-add-group-btn {
-    background-color: var(--color-green-accent);
-    border-color: var(--color-green-accent);
-    width: 100%;
-    flex-shrink: 0; 
-    height: 34px;
-}
-.schema-add-group-btn:hover {
-    background-color: #059669;
-}
-.schema-group-box {
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-border-light);
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-.schema-group-header {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-end;
-    margin-bottom: 0.75rem;
-}
-.schema-group-header .control-group {
-    flex-grow: 1;
-}
-.schema-action-btn {
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease, background-color 0.3s;
-    height: 30px;
-    padding: 0 0.6rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    text-align: center;
-}
-
-.schema-add-attr-btn {
-    background-color: var(--color-bg-medium);
-    border-color: var(--color-green-accent);
-    color: var(--color-green-accent);
-}
-.schema-add-attr-btn:hover {
-    background-color: rgba(16, 185, 129, 0.1);
-}
-
-.schema-remove-btn {
-    background-color: var(--color-bg-medium);
-    border-color: var(--color-red-accent);
-    color: var(--color-red-accent);
-}
-.schema-remove-btn:hover {
-    background-color: rgba(244, 63, 94, 0.1);
-}
-.schema-attributes-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-left: 1rem;
-    border-left: 2px solid var(--color-border);
-    transition: border-color 0.3s ease;
-}
-.schema-attr-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
-}
-@media (min-width: 1024px) {
-    .schema-attr-row {
-        flex-direction: row;
-        align-items: center;
-    }
-}
-
-.schema-attr-row .futuristic-input {
-    height: 30px;
-    padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
-}
-.schema-attr-row .futuristic-input[data-type="attr-code"] {
-    flex-grow: 1;
-    min-width: 150px;
-}
-.schema-attr-row .futuristic-input[data-type="attr-desc"] {
-    flex-grow: 3;
-    min-width: 250px;
-}
-.schema-attr-row .schema-remove-btn {
-    flex-shrink: 0;
-}
-.w-full { width: 100%; }
-.text-gray-400 { color: var(--color-text-secondary); transition: color 0.3s ease; }
-
-
-/* ==============================================
-   10. MODO FULLSCREEN EDITOR
-   ============================================== */
-body.fullscreen-editor-active .admin-content-area {
-    max-width: none;
-    margin: 0;
-    padding: 0;
-}
-
-body.fullscreen-editor-active .content-panel.active {
-    height: calc(100vh - var(--header-height));
-    padding: 0; 
-    box-sizing: border-box;
-    display: flex; 
-    flex-direction: column;
-}
-
-body.fullscreen-editor-active .editor-card {
-    height: 100%;
-    max-height: none;
-    display: flex;
-    flex-direction: column;
-    padding: 0.75rem;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    background-color: transparent;
-}
-@media (min-width: 768px) {
-    body.fullscreen-editor-active .editor-card {
-        padding: 1rem;
-    }
-}
-
-
-body.fullscreen-editor-active .editor-form-fields {
-    flex-grow: 1;
-    max-height: none;
-    overflow-y: auto;
-    padding-right: 0.5rem;
-}
-
-/* ==============================================
-   11. Settings & Modal
-   ============================================== */
-.settings-dropdown {
-    position: fixed;
-    top: calc(var(--header-height) - 1px);
-    right: 1rem;
-    z-index: 102;
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-top: none;
-    border-radius: 0 0 0.5rem 0.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    min-width: 220px;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.settings-dropdown-btn {
-    display: block;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    background: none;
-    border: none;
-    border-bottom: 1px solid var(--color-border);
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s ease, background-color 0.3s, color 0.3s, border-color 0.3s;
-    text-decoration: none;
-    box-sizing: border-box;
-}
-.settings-dropdown-btn:last-child {
-    border-bottom: none;
-}
-
-.settings-dropdown-btn:hover {
-    background-color: var(--color-bg-dark);
-    color: var(--color-cyan-accent);
-}
-
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 200;
-    transition: background-color 0.3s ease;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 200;
 }
-html.light-mode .modal-overlay {
-    background: rgba(255, 255, 255, 0.7);
-}
-
 .modal-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 201;
-    width: 90%;
-    max-width: 600px;
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 201; width: 90%; max-width: 500px;
 }
-
-.info-modal-content {
-    padding: 0;
-}
-
+.info-modal-content { padding: 0; overflow: hidden; }
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--color-border);
-    transition: border-color 0.3s ease;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem; border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-medium);
 }
-.modal-header .futuristic-title {
-    margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-text-dim);
-    cursor: pointer;
-    padding: 0.5rem;
-    line-height: 1;
-    transition: color 0.2s ease;
-}
-.modal-close-btn:hover {
-    color: var(--color-red-accent);
-}
-
-.modal-body {
-    padding: 1rem;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-.modal-body h3 {
-    color: var(--color-text-primary);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    transition: color 0.3s ease;
-}
-.modal-body p {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-}
+.modal-header .futuristic-title { margin: 0; border: none; padding: 0; }
+.modal-close-btn { background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer; }
+.modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
 .modal-body pre {
-    background-color: var(--color-bg-dark);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 0.75rem;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    white-space: pre-wrap;
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    background: var(--color-bg-dark); border: 1px solid var(--color-border);
+    padding: 1rem; border-radius: 4px; white-space: pre-wrap; color: var(--color-text-secondary); font-size: 0.85rem;
 }
