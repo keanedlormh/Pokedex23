@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- [CAMBIO v3.2.0] Título actualizado -->
-    <title>Admin - Enciclopedia Técnica v3.2.0</title>
+    <title>Admin - Enciclopedia Técnica v3.3.0</title>
 
-    <link rel="stylesheet" href="/admin/admin.css">
-
+    <link rel="stylesheet" href="admin.css">
 
     <!-- ============================================== -->
-    <!-- Bootloader v3.1.2 (Sin cambios funcionales)  -->
+    <!-- Bootloader v3.1.2 (DB Síncrona)              -->
     <!-- ============================================== -->
     <script>
-        // 1. Definir la BD global
         window.APP_DB = {
             products: [],
             schemas: {},
@@ -21,10 +18,8 @@
             registerSchema: function(key, schemaGroups) { this.schemas[key] = schemaGroups; }
         };
 
-        // 2. Definir la ruta base (estamos en /admin/, la BD está en /)
-        const basePath = '/';
+        const basePath = '/'; // Asume que admin está en /admin/ y la DB en /db/
 
-        // 3. Cargar el manifest (SÍNCRONO)
         const xhr = new XMLHttpRequest();
         xhr.open('GET', basePath + 'db/manifest.json', false);
         xhr.send(null);
@@ -32,75 +27,74 @@
         if (xhr.status === 200) {
             const manifest = JSON.parse(xhr.responseText);
 
-            // 4. Escribir las etiquetas <script> de los esquemas
             manifest.schemas.forEach(path => {
                 document.write('<script src="' + basePath + path + '" defer><\/script>');
             });
 
-            // 5. Cargar y registrar las gamas JSON a granel (SÍNCRONO)
             manifest.bulk_gamas.forEach(jsonPath => {
                 const jsonXhr = new XMLHttpRequest();
-                jsonXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                jsonXhr.open('GET', basePath + jsonPath, false);
                 jsonXhr.send(null);
-
                 if (jsonXhr.status === 200) {
-                    const products = JSON.parse(jsonXhr.responseText);
-                    products.forEach(product => {
-                        window.APP_DB.registerProduct(product);
-                    });
-                } else {
-                    console.error("ERROR: No se pudo cargar el archivo JSON de gama: " + jsonPath);
+                    JSON.parse(jsonXhr.responseText).forEach(p => window.APP_DB.registerProduct(p));
                 }
             });
 
-            // 6. Cargar y registrar los productos .json individuales (SÍNCRONO)
             Object.values(manifest.products).forEach(productList => {
                 productList.forEach(jsonPath => {
                     const jsonProductXhr = new XMLHttpRequest();
-                    jsonProductXhr.open('GET', basePath + jsonPath, false); // Carga síncrona
+                    jsonProductXhr.open('GET', basePath + jsonPath, false);
                     jsonProductXhr.send(null);
-
                     if (jsonProductXhr.status === 200) {
-                        const product = JSON.parse(jsonProductXhr.responseText);
-                        window.APP_DB.registerProduct(product);
-                    } else {
-                        console.error("ERROR: No se pudo cargar el archivo JSON de producto: " + jsonPath);
+                        window.APP_DB.registerProduct(JSON.parse(jsonProductXhr.responseText));
                     }
                 });
             });
 
         } else {
             console.error("ERROR CRÍTICO: No se pudo cargar '/db/manifest.json'.");
-            alert("ERROR CRÍTICO: No se pudo cargar la base de datos. Revise la consola.");
         }
     </script>
-    <!-- ============================================== -->
-    <!-- FIN DEL BOOTLOADER                           -->
-    <!-- ============================================== -->
-
-    <script src="/admin/admin.js" defer></script>
+    <script src="admin.js" defer></script>
 </head>
 
 <body>
 
-    <!-- Cabecera Única -->
+    <!-- Cabecera Estilo Pokedex -->
     <header class="admin-header">
         <div class="header-content">
             <div class="header-left">
-                <button id="home-btn" class="app-title-btn">
-                    <!-- [CAMBIO v3.2.0] Versión actualizada -->
-                    <h1 class="app-title">Administrador <span class="app-version">v3.2.0</span></h1>
+                <button id="home-btn" class="app-title-btn" title="Volver al Panel General">
+                    <h1 class="app-title">Admin <span class="app-version">v3.3.0</span></h1>
                 </button>
             </div>
 
-            <button id="save-btn" class="header-save-btn futuristic-button" style="display: none;">
-                Guardar
-            </button>
+            <div class="header-right">
+                <!-- Botón Guardar (Contextual) -->
+                <button id="save-btn" class="header-save-btn futuristic-button" style="display: none;">
+                    Guardar Cambios
+                </button>
 
-            <button id="settings-btn" class="header-icon-btn" title="Ajustes">
-                ⚙️
-            </button>
-
+                <!-- Botón Ajustes -->
+                <div class="settings-wrapper">
+                    <button id="settings-btn" class="header-icon-btn" title="Ajustes">
+                        ⚙️
+                    </button>
+                    
+                    <!-- Menú Desplegable (Estilo Pokedex) -->
+                    <div id="settings-menu" class="settings-dropdown" style="display: none;">
+                        <button id="theme-btn" class="settings-dropdown-btn">
+                            🎨 Tema
+                        </button>
+                        <button id="info-btn" class="settings-dropdown-btn">
+                            ℹ️ Info Admin
+                        </button>
+                        <a href="../index.html" class="settings-dropdown-btn">
+                            📖 Pokedex
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -115,180 +109,154 @@
                 <button class="nav-card" data-panel="model-hub">
                     <span class="nav-card-icon">📝</span>
                     <h3>Gestor de Modelos</h3>
-                    <!-- [CAMBIO v3.2.0] Descripción actualizada -->
-                    <p>Crear nuevos modelos o editar los existentes.</p>
+                    <p>Crear nuevos modelos o editar especificaciones de los existentes.</p>
                 </button>
 
                 <button class="nav-card" data-panel="schema-hub">
                     <span class="nav-card-icon">🏗️</span>
-                    <h3>Editar Módulo de Gama</h3>
-                    <p>Crear o modificar la estructura (.js) de una gama de productos.</p>
+                    <h3>Editor de Gamas</h3>
+                    <p>Modificar la estructura de atributos (.js) de una gama.</p>
                 </button>
 
                 <button class="nav-card" data-panel="export-gama">
                     <span class="nav-card-icon">📦</span>
-                    <h3>Exportar Gama Completa</h3>
-                    <p>Exportar todos los modelos de una gama a un único fichero .json.</p>
+                    <h3>Exportar Gama</h3>
+                    <p>Descargar datos en JSON o CSV (Excel) para gestión masiva.</p>
                 </button>
 
             </div>
         </div>
 
-        <!-- [MODIFICADO v3.2.0] Panel "Hub" para Cargar/Crear Modelos -->
+        <!-- Panel "Hub" Modelos -->
         <div id="panel-model-hub" class="content-panel">
-            <div class="futuristic-card search-panel" style="max-width: 800px; margin: 0 auto;">
+            <div class="futuristic-card search-panel center-limit">
                 
-                <!-- Sección 1: Buscar -->
                 <h2 class="futuristic-title">1. Editar Modelo Existente</h2>
-                <input type="text" id="search-model" placeholder="Escribe un modelo (ej: S95TR)" class="futuristic-input w-full">
-                <div id="model-results-list" class="futuristic-list full-list-visible" style="max-height: 200px; overflow-y: auto; margin-bottom: 2rem;">
-                    <!-- Relleno por JS -->
-                </div>
+                <input type="text" id="search-model" placeholder="Buscar modelo (ej: OLED65...)" class="futuristic-input w-full">
+                <div id="model-results-list" class="futuristic-list full-list-visible short-list"></div>
 
-                <!-- Sección 2: Crear Nuevo -->
-                <h2 class="futuristic-title" style="margin-top: 1rem;">2. Crear Nuevo Modelo</h2>
-                <div class="control-group" style="padding: 1rem; background: var(--color-bg-dark); border-radius: 4px; border: 1px solid var(--color-border);">
-                     
-                     <div style="margin-bottom: 1rem;">
-                        <label for="create-model-schema-select" class="futuristic-label">Selecciona Gama / Tipo de Producto:</label>
+                <h2 class="futuristic-title" style="margin-top: 2rem;">2. Crear Nuevo Modelo</h2>
+                <div class="control-group-box">
+                     <div class="mb-4">
+                        <label for="create-model-schema-select" class="futuristic-label">Gama / Tipo de Producto:</label>
                         <select id="create-model-schema-select" class="futuristic-select w-full">
                             <option value="">-- Seleccionar Gama --</option>
-                            <!-- Relleno por JS -->
                         </select>
                      </div>
 
-                     <div style="margin-bottom: 1rem;">
-                        <label for="create-model-id" class="futuristic-label">Nuevo Model ID (ej: OLED65C4):</label>
-                        <input type="text" id="create-model-id" class="futuristic-input w-full" placeholder="Introduce el ID del nuevo modelo">
+                     <div class="mb-4">
+                        <label for="create-model-id" class="futuristic-label">Nuevo Model ID:</label>
+                        <input type="text" id="create-model-id" class="futuristic-input w-full" placeholder="EJ: 55QNED80T6A">
                      </div>
 
-                     <button id="create-model-btn" class="futuristic-button" style="width: 100%;">Crear y Editar</button>
+                     <button id="create-model-btn" class="futuristic-button w-full">Crear y Editar</button>
                 </div>
             </div>
         </div>
 
-        <!-- Panel "Hub" para Cargar/Crear Esquemas -->
+        <!-- Panel "Hub" Esquemas -->
         <div id="panel-schema-hub" class="content-panel">
-            <div class="futuristic-card search-panel" style="max-width: 800px; margin: 0 auto;">
-                <h2 class="futuristic-title">1. Cargar Esquema Existente</h2>
-                <div id="schema-results-list" class="futuristic-list full-list-visible">
-                    <!-- Relleno por JS -->
-                </div>
-                <h2 class="futuristic-title" style="margin-top: 1rem;">2. Crear Nuevo Esquema</h2>
-                <div class="control-group" style="padding: 0.5rem; background: var(--color-bg-dark); border-radius: 4px;">
-                     <label for="new-schema-key" class="futuristic-label">Nueva Clave de Esquema (ej: monitores):</label>
-                     <input type="text" id="new-schema-key" class="futuristic-input w-full" placeholder="monitores">
-                     <button id="create-schema-btn" class="futuristic-button" style="margin-top: 0.5rem; width: 100%;">Crear y Editar</button>
+            <div class="futuristic-card search-panel center-limit">
+                <h2 class="futuristic-title">1. Cargar Esquema</h2>
+                <div id="schema-results-list" class="futuristic-list full-list-visible short-list"></div>
+                
+                <h2 class="futuristic-title" style="margin-top: 2rem;">2. Nuevo Esquema</h2>
+                <div class="control-group-box">
+                     <label for="new-schema-key" class="futuristic-label">Clave (Key) del Esquema:</label>
+                     <input type="text" id="new-schema-key" class="futuristic-input w-full" placeholder="ej: proyectores">
+                     <button id="create-schema-btn" class="futuristic-button w-full mt-2">Crear Estructura</button>
                 </div>
             </div>
         </div>
 
-        <!-- Panel de Editor de Modelo (Fullscreen) -->
+        <!-- Panel Editor de Modelo -->
         <div id="panel-edit-model" class="content-panel">
             <div class="editor-card">
-                <h2 id="product-title" class="spec-title">Editor de Modelo</h2>
+                <div class="editor-header">
+                    <h2 id="product-title" class="spec-title">Editor</h2>
+                </div>
 
                 <form id="editor-form" class="editor-form-fields">
                     <div class="editor-key-fields">
                         <div class="control-group">
-                            <label for="edit-model-id" class="futuristic-label">Model ID (Editable):</label>
-                            <input type="text" id="edit-model-id" class="futuristic-input w-full" placeholder="Cargar un modelo...">
+                            <label for="edit-model-id" class="futuristic-label">Model ID:</label>
+                            <input type="text" id="edit-model-id" class="futuristic-input w-full">
                         </div>
                         <div class="control-group">
-                            <label for="edit-schema-key-display" class="futuristic-label">Schema Key (Automático):</label>
-                            <input type="text" id="edit-schema-key-display" class="futuristic-input w-full" placeholder="..." readonly style="background-color: var(--color-border); cursor: not-allowed;">
+                            <label for="edit-schema-key-display" class="futuristic-label">Gama:</label>
+                            <input type="text" id="edit-schema-key-display" class="futuristic-input w-full" readonly disabled>
                         </div>
                     </div>
-
-                    <p id="editor-placeholder" class="text-gray-400">Carga un modelo desde el panel "Editar Modelo" para empezar.</p>
-
-                    <!-- Relleno por JS con los atributos del modelo -->
+                    <p id="editor-placeholder" class="text-gray-400">Carga un modelo para editar.</p>
                 </form>
             </div>
         </div>
 
-        <!-- Panel de Editor de Esquema (Fullscreen) -->
+        <!-- Panel Editor de Esquema -->
         <div id="panel-edit-schema" class="content-panel">
             <div class="editor-card">
-                 <h2 id="schema-title" class="spec-title">Editor de Módulo de Gama</h2>
+                 <h2 id="schema-title" class="spec-title">Editor de Gama</h2>
 
                 <div id="schema-editor-form" class="editor-form-fields">
                     <div class="editor-key-fields">
                         <div class="control-group">
-                            <label for="edit-schema-key" class="futuristic-label">Schema Key (Editable):</label>
-                            <input type="text" id="edit-schema-key" class="futuristic-input w-full" placeholder="Cargar o crear un esquema...">
+                            <label for="edit-schema-key" class="futuristic-label">Schema Key:</label>
+                            <input type="text" id="edit-schema-key" class="futuristic-input w-full" readonly disabled>
                         </div>
                     </div>
-
-                    <p id="schema-editor-placeholder" class="text-gray-400">Carga un módulo o crea uno nuevo desde el panel "Editar Módulo de Gama".</p>
-
-                    <!-- Relleno dinámicamente por JS -->
+                    <p id="schema-editor-placeholder" class="text-gray-400">Carga un esquema para editar.</p>
                 </div>
 
-                <button id="add-group-btn" class="futuristic-button schema-add-group-btn" style="margin-top: 1rem;">+ Añadir Grupo</button>
+                <button id="add-group-btn" class="futuristic-button schema-add-group-btn">+ Añadir Grupo</button>
             </div>
         </div>
 
-        <!-- Panel de Exportar Gama -->
+        <!-- Panel Exportar -->
         <div id="panel-export-gama" class="content-panel">
-            <div class="futuristic-card" style="max-width: 800px; margin: 0 auto;">
-                <h2 class="futuristic-title">Exportar Gama Completa</h2>
+            <div class="futuristic-card center-limit">
+                <h2 class="futuristic-title">Exportación Masiva</h2>
 
                 <div class="gama-export-controls">
-                    <div class="control-group">
-                        <label for="gama-export-select" class="futuristic-label">Selecciona una gama:</label>
-                        <select id="gama-export-select" class="futuristic-select">
+                    <div class="control-group flex-grow" style="width: 100%; margin-bottom: 1rem;">
+                        <label for="gama-export-select" class="futuristic-label">Selecciona Gama:</label>
+                        <select id="gama-export-select" class="futuristic-select w-full">
                             <option value="">-- Seleccionar --</option>
-                            <!-- Relleno por JS -->
                         </select>
                     </div>
-                    <button id="export-gama-json-btn" class="futuristic-button">
-                        Exportar Gama a JSON
-                    </button>
+                    
+                    <div class="export-buttons-container">
+                        <button id="export-gama-json-btn" class="futuristic-button">
+                            ⬇ JSON Completo
+                        </button>
+                        <!-- NUEVO BOTÓN CSV -->
+                        <button id="export-gama-csv-btn" class="futuristic-button csv-button">
+                            📊 CSV (Excel)
+                        </button>
+                    </div>
                 </div>
 
-                <div id="gama-export-list" class="gama-export-list">
-                    <!-- Relleno por JS con los modelos -->
-                </div>
+                <div id="gama-export-list" class="gama-export-list"></div>
             </div>
         </div>
 
     </main>
 
-    <!-- Menú desplegable de Ajustes -->
-    <div id="settings-menu" class="settings-dropdown" style="display: none;">
-        <button id="theme-btn" class="settings-dropdown-btn">
-            🎨 Tema
-        </button>
-        <button id="info-btn" class="settings-dropdown-btn">
-            ℹ️ Info del Proyecto
-        </button>
-        <a href="/" class="settings-dropdown-btn">
-            📖 Volver a Enciclopedia
-        </a>
-    </div>
-
-    <!-- Modal de Información -->
+    <!-- Modal Info -->
     <div id="modal-overlay" class="modal-overlay" style="display: none;"></div>
     <div id="info-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
             <div class="modal-header">
-                <h2 class="futuristic-title">Información del Proyecto</h2>
+                <h2 class="futuristic-title">Info del Administrador</h2>
                 <button id="close-info-modal-btn" class="modal-close-btn">✕</button>
             </div>
             <div class="modal-body">
-                <!-- [CAMBIO v3.2.0] Versión actualizada -->
-                <h3>Enciclopedia Técnica - Admin Panel v3.2.0</h3>
-                <p>Gestión integral de modelos y gamas.</p>
+                <h3>Enciclopedia Técnica - Admin v3.3.0</h3>
+                <p>Herramienta de gestión de contenidos.</p>
                 <pre>
-CHANGELOG v3.2.0:
-----------------
-- [NUEVO] Opción "Crear Nuevo Modelo" en el Gestor de Modelos.
-  Permite seleccionar una gama existente y generar una plantilla
-  vacía para un nuevo producto.
-
-CHANGELOG v3.1.5:
-- [MEJORA] Cambio de tema Light/Dark en lugar de aleatorio.
+Versión 3.3.0
+- [NUEVO] Exportación a CSV compatible con Excel.
+- Tema dinámico aleatorio.
+- Sincronización visual completa.
                 </pre>
             </div>
         </div>
