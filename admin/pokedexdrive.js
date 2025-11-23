@@ -1,181 +1,199 @@
 /**
- * Pokedex Drive Meta-Constructor
- * Genera un archivo HTML monolítico (Single-File) con la BD actual incrustada.
+ * Pokedex Drive Meta-Constructor v7.0 (Filtered Viewer Edition)
+ * Genera un archivo HTML 'Viewer-Only' (sin admin) que contiene
+ * ÚNICAMENTE los datos de las gamas activas en la biblioteca actual.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // Referencias DOM
-    const driveTrigger = document.getElementById('drive-builder-trigger');
-    const driveModal = document.getElementById('drive-modal');
-    const driveCloseBtn = document.getElementById('drive-close-btn');
-    const progressFill = document.getElementById('drive-progress-fill');
-    const percentText = document.getElementById('drive-percent-text');
-    const consoleLog = document.getElementById('drive-log-console');
-    const actionArea = document.getElementById('drive-action-area');
-    const downloadAgainBtn = document.getElementById('drive-download-again-btn');
+
+    // --- REFERENCIAS UI ---
+    const ui = {
+        trigger: document.getElementById('drive-builder-trigger'),
+        modal: document.getElementById('drive-modal'),
+        closeBtn: document.getElementById('drive-close-btn'),
+        progress: document.getElementById('drive-progress-fill'),
+        percent: document.getElementById('drive-percent-text'),
+        log: document.getElementById('drive-log-console'),
+        actions: document.getElementById('drive-action-area'),
+        downloadBtn: document.getElementById('drive-download-again-btn')
+    };
 
     let generatedBlobUrl = null;
 
-    if (driveTrigger) {
-        driveTrigger.addEventListener('click', startDriveBuild);
-    }
+    // --- LISTENERS ---
+    if (ui.trigger) ui.trigger.addEventListener('click', startDriveBuild);
+    if (ui.closeBtn) ui.closeBtn.addEventListener('click', () => ui.modal.style.display = 'none');
+    if (ui.downloadBtn) ui.downloadBtn.addEventListener('click', () => { if (generatedBlobUrl) triggerDownload(generatedBlobUrl); });
 
-    if (driveCloseBtn) {
-        driveCloseBtn.addEventListener('click', () => {
-            driveModal.style.display = 'none';
-        });
-    }
-
-    if (downloadAgainBtn) {
-        downloadAgainBtn.addEventListener('click', () => {
-            if (generatedBlobUrl) triggerDownload(generatedBlobUrl);
-        });
-    }
-
+    // --- PROCESO DE CONSTRUCCIÓN ---
     async function startDriveBuild() {
         // Reset UI
-        driveModal.style.display = 'block';
-        driveCloseBtn.style.display = 'none'; // Bloquear cierre durante proceso
-        actionArea.style.display = 'none';
-        progressFill.style.width = '0%';
-        percentText.textContent = '0%';
-        consoleLog.innerHTML = '<div class="log-line active">> Iniciando secuencia de construcción...</div>';
+        ui.modal.style.display = 'block';
+        ui.closeBtn.style.display = 'none';
+        ui.actions.style.display = 'none';
+        updateProgress(0);
+        log("Iniciando constructor Pokedex Drive (Viewer Mode)...", "active");
         generatedBlobUrl = null;
 
         try {
-            // --- PASO 1: Obtener Recursos Base (20%) ---
-            await wait(500);
-            log("Leyendo estructura HTML base...", "active");
-            const htmlResponse = await fetch('../index.html');
-            let htmlContent = await htmlResponse.text();
-            updateProgress(10);
-
-            log("Leyendo hoja de estilos (style.css)...", "active");
-            const cssResponse = await fetch('../style.css');
-            const cssContent = await cssResponse.text();
-            updateProgress(20);
-
-            log("Leyendo lógica principal (main.js)...", "active");
-            const jsResponse = await fetch('../main.js');
-            const jsContent = await jsResponse.text();
+            // --- PASO 1: Obtener Recursos Base (Archivos Físicos) ---
+            await wait(300);
+            log("Leyendo código fuente del visor...");
+            
+            // Carga paralela para eficiencia
+            const [htmlRaw, cssRaw, jsRaw] = await Promise.all([
+                fetchText('../index.html'),
+                fetchText('../style.css'),
+                fetchText('../main.js')
+            ]);
+            
             updateProgress(30);
 
+            // --- PASO 2: Procesar HTML (Limpieza) ---
+            log("Limpiando dependencias externas...");
+            let htmlContent = htmlRaw;
 
-            // --- PASO 2: Procesar HTML (Limpieza) (50%) ---
-            await wait(500);
-            log("Limpiando dependencias externas...", "active");
-            
-            // Eliminar link CSS externo
+            // 2.1 Eliminar link CSS externo (lo inyectaremos inline)
             htmlContent = htmlContent.replace(/<link rel="stylesheet" href="style.css">/, '');
-            
-            // Eliminar Bootloader original (El bloque de script que carga manifest.json)
-            // Usamos un regex no avaricioso que busca el script que contiene 'APP_DB' y 'manifest.json'
+
+            // 2.2 Eliminar Bootloader AJAX original
+            // Elimina el bloque <script> que carga manifest.json y hace los XHR
             htmlContent = htmlContent.replace(/<script>[\s\S]*?manifest\.json[\s\S]*?<\/script>/, '');
 
-            // Eliminar referencia externa a main.js
+            // 2.3 Eliminar referencia externa a main.js (lo inyectaremos inline)
             htmlContent = htmlContent.replace(/<script src="main.js" defer><\/script>/, '');
 
-            // Eliminar Botón de Admin (Seguridad por oscuridad/UX)
-            // Buscamos el enlace al admin y lo quitamos
+            // 2.4 Eliminar acceso al Admin (Seguridad y Limpieza)
+            // Busca el botón/enlace al admin y lo elimina del HTML
             htmlContent = htmlContent.replace(/<a href="admin\/index\.html".*?id="admin-link-btn".*?>.*?<\/a>/, '');
 
             updateProgress(50);
 
+            // --- PASO 3: Filtrado y Serialización de Datos (Lógica Nueva) ---
+            await wait(200);
+            log("Analizando gamas activas en biblioteca...", "active");
 
-            // --- PASO 3: Serializar Datos (Base de Datos) (70%) ---
-            await wait(500);
-            log("Serializando Base de Datos (In-Memory)...", "active");
+            // 3.1 Detectar Gamas Activas desde el DOM (Checkboxes)
+            // admin.js renderiza esto al inicio, así que el DOM existe aunque el modal esté cerrado.
+            const activeCheckboxes = document.querySelectorAll('.gama-checkbox:checked');
+            const activeKeys = new Set();
+            
+            activeCheckboxes.forEach(cb => {
+                activeKeys.add(cb.dataset.key);
+            });
 
-            // Creamos un Bootloader Estático
-            const dbData = {
-                products: window.APP_DB.products, // Los datos actuales del admin
-                schemas: window.APP_DB.schemas
-            };
+            log(`> Gamas seleccionadas: ${activeKeys.size}`);
 
+            // 3.2 Filtrar Base de Datos Global (APP_DB)
+            const sourceSchemas = window.APP_DB.schemas;
+            const sourceProducts = window.APP_DB.products;
+
+            const filteredSchemas = {};
+            const filteredProducts = [];
+
+            // Solo copiamos esquemas activos
+            activeKeys.forEach(key => {
+                if (sourceSchemas[key]) {
+                    filteredSchemas[key] = sourceSchemas[key];
+                }
+            });
+
+            // Solo copiamos productos cuya gama esté activa
+            sourceProducts.forEach(p => {
+                if (activeKeys.has(p.schema_key)) {
+                    filteredProducts.push(p);
+                }
+            });
+
+            log(`> Productos empaquetados: ${filteredProducts.length}`);
+
+            // 3.3 Crear Bootloader Estático
             const staticBootloader = `
     <style>
-        ${cssContent}
+        ${cssRaw}
     </style>
     <script>
         /** * Pokedex Drive - Offline Data Layer
          * Generated: ${new Date().toLocaleString()}
+         * Gamas: ${Array.from(activeKeys).join(', ') || 'Ninguna'}
          */
         window.APP_DB = {
-            products: ${JSON.stringify(dbData.products)},
-            schemas: ${JSON.stringify(dbData.schemas)},
-            // Métodos dummy para compatibilidad si main.js los llama, 
-            // aunque en modo lectura no deberían usarse.
+            products: ${JSON.stringify(filteredProducts)},
+            schemas: ${JSON.stringify(filteredSchemas)},
+            // Métodos dummy para compatibilidad (Read-Only)
             registerProduct: function(p) { this.products.push(p); },
             registerSchema: function(k, s) { this.schemas[k] = s; }
         };
-        // Flag para indicar modo Drive
+        // Flag de entorno
         window.IS_POKEDEX_DRIVE = true;
     </script>
             `;
 
-            updateProgress(70);
+            updateProgress(75);
 
+            // --- PASO 4: Ensamblaje Final ---
+            log("Inyectando código y estilos...");
 
-            // --- PASO 4: Ensamblaje (90%) ---
-            await wait(400);
-            log("Inyectando código y estilos...", "active");
-
-            // Inyectamos CSS y Data en el Head
+            // Inyectar CSS + Datos en el HEAD
             htmlContent = htmlContent.replace('</head>', `${staticBootloader}\n</head>`);
 
-            // Inyectamos Main JS al final del body (como defer)
-            const mainJsBlock = `<script>\n${jsContent}\n</script>`;
+            // Inyectar Lógica Main.js en el BODY (evitando cierre prematuro de script)
+            const safeJs = jsRaw.replace(/<\/script>/g, '<\\/script>');
+            const mainJsBlock = `<script>\n${safeJs}\n</script>`;
+            
             htmlContent = htmlContent.replace('</body>', `${mainJsBlock}\n</body>`);
 
-            // Cambiar Título
-            htmlContent = htmlContent.replace(/<title>.*?<\/title>/, '<title>Pokedex Drive (Offline)</title>');
+            // Cambiar Título para diferenciar
+            htmlContent = htmlContent.replace(/<title>.*?<\/title>/, '<title>Pokedex Drive (Viewer)</title>');
 
             updateProgress(90);
 
+            // --- PASO 5: Generación y Descarga ---
+            await wait(400);
+            log("Generando binario .html...", "success");
 
-            // --- PASO 5: Finalización y Descarga (100%) ---
-            await wait(600);
-            log("Generando binario .html...", "active");
-            
             const blob = new Blob([htmlContent], { type: 'text/html' });
             generatedBlobUrl = URL.createObjectURL(blob);
 
             updateProgress(100);
-            log("¡Construcción exitosa!", "success");
 
-            // UI Final
-            driveCloseBtn.style.display = 'block';
-            actionArea.style.display = 'block';
-            
+            // Activar UI final
+            ui.closeBtn.style.display = 'block';
+            ui.actions.style.display = 'block';
+
             // Descarga automática
             triggerDownload(generatedBlobUrl);
 
         } catch (error) {
             console.error(error);
             log(`ERROR CRÍTICO: ${error.message}`, "error");
-            progressFill.style.backgroundColor = 'var(--color-red-accent)';
-            driveCloseBtn.style.display = 'block';
+            ui.progress.style.backgroundColor = 'var(--color-red-accent)';
+            ui.closeBtn.style.display = 'block';
         }
     }
 
     // --- Helpers ---
 
+    async function fetchText(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Fallo al cargar ${url}`);
+        return await res.text();
+    }
+
     function log(message, type = '') {
-        // Quitar clase active de la línea anterior
-        const prev = consoleLog.querySelector('.active');
+        const prev = ui.log.querySelector('.active');
         if (prev) prev.classList.remove('active');
 
         const line = document.createElement('div');
         line.className = `log-line ${type}`;
         line.textContent = `> ${message}`;
-        consoleLog.appendChild(line);
-        consoleLog.scrollTop = consoleLog.scrollHeight;
+        ui.log.appendChild(line);
+        ui.log.scrollTop = ui.log.scrollHeight;
     }
 
     function updateProgress(percent) {
-        progressFill.style.width = `${percent}%`;
-        percentText.textContent = `${percent}%`;
+        ui.progress.style.width = `${percent}%`;
+        ui.percent.textContent = `${percent}%`;
     }
 
     function wait(ms) {
@@ -185,7 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerDownload(url) {
         const a = document.createElement('a');
         a.href = url;
-        a.download = `PokedexDrive_v${new Date().toISOString().slice(0,10)}.html`;
+        const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        a.download = `PokedexDrive_Viewer_${date}.html`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
