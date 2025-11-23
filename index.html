@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokedex LG v13.14</title>
+    <title>Pokedex LG v13.19</title>
     <link rel="stylesheet" href="style.css">
     <!-- Bootloader v2.9.8 -->
     <script>
@@ -45,7 +45,7 @@
             
             <!-- BLOQUE 1: Título y Chip de Modelo -->
             <div class="header-left">
-                <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.13.14</span></h1>
+                <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.23.11.28</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"></div>
             </div>
 
@@ -83,7 +83,8 @@
         <div class="main-layout">
             <aside class="sidebar-column">
                 <div class="futuristic-card search-panel">
-                    <h2 class="futuristic-title">Búsqueda por Modelo</h2>
+                    <!-- MODIFICADO: Añadido ID para el contador -->
+                    <h2 id="model-list-header" class="futuristic-title">Modelos (...)</h2>
                     <input type="text" id="search-model" placeholder="..." class="futuristic-input w-full">
                     <div id="model-results-list" class="futuristic-list full-list-visible"></div>
                 </div>
