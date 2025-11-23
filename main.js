@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLibraryGamaList();
         dom.libraryModal.className = 'modal-visible';
         dom.filterOverlay.className = 'overlay-visible';
-        dom.uploadStatusText.textContent = "Formato Admin Requerido (Punto y coma)";
+        dom.uploadStatusText.textContent = "Formato Admin (CSV)";
         dom.csvUploadInput.value = "";
     }
 
@@ -579,7 +579,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const startIndex = 2; 
 
         // Reconstruir Esquema Agrupado
-        // Iteramos las columnas y agrupamos por el nombre de Fila 1
         const tempSchema = {}; // Map<GroupName, Array<Attrs>>
         const groupOrder = []; // Para mantener orden
 
@@ -597,7 +596,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Convertir a formato de la App
         const newSchemaGroup = groupOrder.map(gName => ({
             group: gName,
             attrs: tempSchema[gName]
