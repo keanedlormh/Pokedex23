@@ -460,4 +460,5 @@ if (window.APP_DB && typeof window.APP_DB.registerSchema === 'function') {
     window.APP_DB.registerSchema('tvs', TVS_SCHEMA_GROUPS);
 } else {
     console.error("Error: APP_DB no inicializada.");
+
 }
