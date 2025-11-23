@@ -1,5 +1,5 @@
 /* ==============================================
-   Estilos para la App Principal (v4.1.0 Library UI Polish)
+   Estilos para la App Principal (v4.3.0 Compact Library)
    ============================================== */
 :root {
     --color-bg-dark: #0D1117;
@@ -317,33 +317,64 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
 .modal-close-btn { background: none; border: none; font-size: 1.75rem; color: var(--color-text-secondary); cursor: pointer; }
-.modal-body { padding: 1rem; overflow-y: auto; font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-secondary); white-space: pre-wrap; }
+
+/* FIX: white-space pre-wrap afectaba a la biblioteca creando huecos por la indentación HTML */
+.modal-body { 
+    padding: 1rem; 
+    overflow-y: auto; 
+    font-family: var(--font-mono); 
+    font-size: 0.8rem; 
+    color: var(--color-text-secondary); 
+    white-space: pre-wrap; /* Mantenemos pre-wrap para el README */
+}
 
 /* ==============================================
-   ESTILOS DE BIBLIOTECA (Calibrados v4.1)
+   ESTILOS DE BIBLIOTECA (ULTRA COMPACTOS v4.4)
    ============================================== */
 .library-modal-content {
-    max-width: 600px;
-}
-.library-section {
-    margin-bottom: 2rem;
-}
-.library-desc {
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
-    color: var(--color-text-dim);
-    margin-bottom: 1rem;
+    max-width: 450px; /* Más estrecho */
+    max-height: 70vh; /* No ocupar toda la pantalla */
 }
 
-/* Lista de Gamas */
+/* OVERRIDE CRÍTICO: Anular pre-wrap para eliminar huecos fantasma */
+.compact-body {
+    white-space: normal !important; 
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.compact-header {
+    padding: 0.5rem 1rem;
+}
+
+.library-section {
+    margin: 0;
+}
+
+.lib-sec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+}
+
+.library-desc {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--color-text-dim);
+    margin: 0;
+}
+
+/* Lista de Gamas Compacta */
 .library-list {
     display: flex;
     flex-direction: column;
-    /* Reutiliza estilos de lista futurista */
     background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border-light);
     border-radius: 4px;
-    max-height: 200px;
+    max-height: 150px;
     overflow-y: auto;
 }
 
@@ -351,75 +382,43 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 0.8rem;
+    padding: 0.35rem 0.6rem; /* Ultra fino */
     border-bottom: 1px dashed var(--color-border);
     transition: background-color 0.2s;
 }
-.gama-toggle-item:hover {
-    background-color: var(--color-border);
-}
+.gama-toggle-item:hover { background-color: var(--color-border); }
 .gama-toggle-item:last-child { border-bottom: none; }
 
 .gama-toggle-label {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    flex-grow: 1;
+    display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1;
 }
-.gama-checkbox {
-    accent-color: var(--color-cyan-accent);
-    width: 16px; height: 16px;
-    cursor: pointer;
-}
-.gama-name {
-    font-weight: 600;
-    font-family: var(--font-mono);
-    color: var(--color-text-primary);
-    font-size: 0.9rem;
-}
-.gama-status {
-    font-size: 0.7rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: var(--color-text-dim);
-}
+.gama-checkbox { accent-color: var(--color-cyan-accent); width: 14px; height: 14px; cursor: pointer; }
+.gama-name { font-weight: 600; font-family: var(--font-mono); color: var(--color-text-primary); font-size: 0.85rem; }
+.gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); }
 
-/* Upload Area (Estética Futurista) */
+/* Upload Area Compacta */
 .upload-area {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
+    justify-content: space-between;
     background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    padding: 1rem;
+    padding: 0.5rem;
 }
 .upload-label {
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
-    margin-bottom: 0; /* Override */
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    margin: 0;
     display: inline-flex; 
     align-items: center;
     justify-content: center;
-    /* Hereda de .futuristic-button si se aplica la clase, o definimos aquí */
     background: var(--color-bg-medium);
     border: 1px solid var(--color-border-light);
     color: var(--color-text-primary);
+    border-radius: 4px; cursor: pointer; font-weight: 600;
+    transition: all 0.2s;
 }
-.upload-label:hover {
-    border-color: var(--color-cyan-accent);
-    color: var(--color-cyan-accent);
-}
-.upload-status {
-    font-size: 0.8rem;
-    color: var(--color-text-dim);
-    font-family: var(--font-mono);
-}
-.futuristic-button { /* Re-definido para consistencia si no estaba */
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border-light);
-    color: var(--color-text-primary);
-    border-radius: 4px; cursor: pointer;
-    font-weight: 600;
-}
+.upload-label:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
+.upload-status { font-size: 0.75rem; color: var(--color-text-dim); font-family: var(--font-mono); text-align: right; }
