@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.6
- * Update: Importación Texto y Gestión de Fuentes
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.7
+ * Update: UX Búsqueda (Clear Button & Active State)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,7 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dom = {
         body: document.body,
         modelSearchInput: document.getElementById('search-model'),
+        searchClearBtn: document.getElementById('clear-search-btn'), // NUEVO
         modelSearchResults: document.getElementById('model-results-list'),
+        // ... (Resto de referencias igual)
         modelListHeader: document.getElementById('model-list-header'),
         smartFilterToggle: document.getElementById('smart-filter-toggle'),
         smartFilterPanel: document.getElementById('smart-filter-panel'),
@@ -39,75 +41,22 @@ document.addEventListener('DOMContentLoaded', () => {
         libraryGamaList: document.getElementById('library-gama-list'),
         csvUploadInput: document.getElementById('csv-upload-input'),
         uploadStatusText: document.getElementById('upload-status-text'),
-        // Text Import
         csvTextInput: document.getElementById('csv-text-input'),
         csvTextBtn: document.getElementById('csv-text-btn')
     };
 
+    // ... (Variables de estado y Paletas igual) ...
     const originalPlaceholder = dom.productDisplayPlaceholder;
     let masterDatabase = [];
     let masterSchemaMap = {};
     let attrCodeToDescMap = {};
     let activeSchemas = new Set(); 
-
-    // Paletas
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
-
-    // FUENTES: Listas ampliadas
-    const fontGroupPrimary = [
-        "'Inter', system-ui, sans-serif",
-        "Arial, Helvetica, sans-serif",
-        "'Segoe UI', Roboto, Helvetica, sans-serif",
-        "'Verdana', sans-serif",
-        "'Trebuchet MS', 'Lucida Sans', sans-serif",
-        "'Tahoma', Geneva, sans-serif",
-        "'Gill Sans', 'Gill Sans MT', Calibri, sans-serif",
-        "'Optima', sans-serif",
-        "'Candara', sans-serif",
-        "'Century Gothic', Futura, sans-serif",
-        "'Franklin Gothic Medium', 'Arial Narrow', sans-serif",
-        "'Geneva', Verdana, sans-serif",
-        "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        "'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif",
-        "'Cambria', Georgia, serif",
-        "Georgia, 'Times New Roman', Times, serif",
-        "'Garamond', 'Baskerville', serif",
-        "'Palatino Linotype', 'Book Antiqua', serif",
-        "'Bookman Old Style', serif",
-        "'Times New Roman', Times, serif",
-        "'Didot', serif",
-        "'American Typewriter', serif",
-        "'Lucida Bright', Georgia, serif"
-    ];
-
-    const fontGroupSecondary = [
-        "'ui-monospace', 'SFMono-Regular', 'Menlo', monospace",
-        "'Courier New', Courier, monospace",
-        "'Lucida Console', Monaco, monospace",
-        "'Consolas', 'Andale Mono', monospace",
-        "'Monaco', 'Courier New', monospace",
-        "'Brush Script MT', cursive",
-        "'Copperplate', 'Copperplate Gothic Light', serif",
-        "'Papyrus', fantasy",
-        "'Impact', Haettenschweiler, sans-serif",
-        "'Arial Black', Gadget, sans-serif",
-        "'Comic Sans MS', 'Chalkboard SE', sans-serif",
-        "'Courier', monospace",
-        "'Lucida Sans Typewriter', monospace",
-        "'Perpetua', serif",
-        "'Rockwell', 'Courier Bold', serif",
-        "'Baskerville Old Face', serif",
-        "'Haettenschweiler', 'Impact', sans-serif",
-        "'Chalkduster', fantasy",
-        "'Luminari', fantasy",
-        "'Trattatello', fantasy",
-        "'Big Caslon', serif",
-        "'Bodoni MT', serif",
-        "'OCR A Std', monospace"
-    ];
+    const fontGroupPrimary = ["'Inter', system-ui, sans-serif", "Arial, Helvetica, sans-serif", "'Segoe UI', Roboto, Helvetica, sans-serif", "'Verdana', sans-serif", "'Trebuchet MS', 'Lucida Sans', sans-serif", "'Tahoma', Geneva, sans-serif", "'Gill Sans', 'Gill Sans MT', Calibri, sans-serif", "'Optima', sans-serif", "'Candara', sans-serif", "'Century Gothic', Futura, sans-serif", "'Franklin Gothic Medium', 'Arial Narrow', sans-serif", "'Geneva', Verdana, sans-serif", "'Helvetica Neue', Helvetica, Arial, sans-serif", "'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif", "'Cambria', Georgia, serif", "Georgia, 'Times New Roman', Times, serif", "'Garamond', 'Baskerville', serif", "'Palatino Linotype', 'Book Antiqua', serif", "'Bookman Old Style', serif", "'Times New Roman', Times, serif", "'Didot', serif", "'American Typewriter', serif", "'Lucida Bright', Georgia, serif"];
+    const fontGroupSecondary = ["'ui-monospace', 'SFMono-Regular', 'Menlo', monospace", "'Courier New', Courier, monospace", "'Lucida Console', Monaco, monospace", "'Consolas', 'Andale Mono', monospace", "'Monaco', 'Courier New', monospace", "'Brush Script MT', cursive", "'Copperplate', 'Copperplate Gothic Light', serif", "'Papyrus', fantasy", "'Impact', Haettenschweiler, sans-serif", "'Arial Black', Gadget, sans-serif", "'Comic Sans MS', 'Chalkboard SE', sans-serif", "'Courier', monospace", "'Lucida Sans Typewriter', monospace", "'Perpetua', serif", "'Rockwell', 'Courier Bold', serif", "'Baskerville Old Face', serif", "'Haettenschweiler', 'Impact', sans-serif", "'Chalkduster', fantasy", "'Luminari', fantasy", "'Trattatello', fantasy", "'Big Caslon', serif", "'Bodoni MT', serif", "'OCR A Std', monospace"];
 
     function initialize() {
         setTimeout(() => {
@@ -115,24 +64,37 @@ document.addEventListener('DOMContentLoaded', () => {
             masterSchemaMap = window.APP_DB.schemas;
             if (masterDatabase.length === 0) console.warn("Base de datos vacía.");
             masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-            
             Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
-
             buildAttributeCache();
             setupEventListeners();
             populateSchemaSelector();
             populateSmartFilters('all');
             populateFullModelList(); 
-            
             currentAccentHue = Math.floor(Math.random() * 360);
             updatePaletteCSS(lightPaletteHSL, currentAccentHue);
-            
             dom.paletteToggleButton.innerHTML = '🎨 Tema';
         }, 100);
     }
 
     function setupEventListeners() {
-        if (dom.modelSearchInput) dom.modelSearchInput.addEventListener('input', applyFiltersAndSearch);
+        // MODIFICADO: Listener de Input con gestión de UI
+        if (dom.modelSearchInput) {
+            dom.modelSearchInput.addEventListener('input', (e) => {
+                handleSearchInputUI(e.target);
+                applyFiltersAndSearch();
+            });
+        }
+        
+        // NUEVO: Listener para el botón de borrar
+        if (dom.searchClearBtn) {
+            dom.searchClearBtn.addEventListener('click', () => {
+                dom.modelSearchInput.value = '';
+                handleSearchInputUI(dom.modelSearchInput);
+                applyFiltersAndSearch();
+                dom.modelSearchInput.focus(); // Devolver el foco
+            });
+        }
+
         if (dom.schemaFilterSelect) {
             dom.schemaFilterSelect.addEventListener('change', () => {
                 populateSmartFilters(dom.schemaFilterSelect.value);
@@ -171,21 +133,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
-        
         if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleDualFontToggle);
-
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
-
         if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
         if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
         if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
         if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
-        
-        // Importación de Texto
         if (dom.csvTextBtn) dom.csvTextBtn.addEventListener('click', handleTextImport);
     }
 
-    // --- Funciones Lógicas ---
+    // --- NUEVO: Función Auxiliar para UI de Búsqueda ---
+    function handleSearchInputUI(input) {
+        const hasText = input.value.length > 0;
+        if (hasText) {
+            input.classList.add('has-text');
+            if (dom.searchClearBtn) dom.searchClearBtn.style.display = 'block';
+        } else {
+            input.classList.remove('has-text');
+            if (dom.searchClearBtn) dom.searchClearBtn.style.display = 'none';
+        }
+    }
+
+    // ... (Resto de lógica de filtros, render, etc. IGUAL que v4.6) ...
+    // [COPIAR TODO EL RESTO DE FUNCIONES AQUÍ, NO HA CAMBIADO NADA MÁS]
+    
     function removeActiveFilter(attrCode) { const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select')); const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode); if (targetSelects.length > 0) { targetSelects.forEach(select => select.value = ""); applyFiltersAndSearch(); } else { applyFiltersAndSearch(); } }
     function renderActiveFilters(filters) { if (!dom.activeFiltersBar) return; const currentSchema = dom.schemaFilterSelect.value; const hasSchemaFilter = currentSchema !== 'all'; const hasAttrFilters = Object.keys(filters).length > 0; if (!hasSchemaFilter && !hasAttrFilters) { dom.activeFiltersBar.className = 'active-filters-bar-hidden'; dom.activeFiltersBar.innerHTML = ''; return; } dom.activeFiltersBar.className = 'active-filters-bar-visible'; dom.activeFiltersBar.innerHTML = ''; const fragment = document.createDocumentFragment(); if (hasSchemaFilter) { const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1); const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`; fragment.appendChild(schemaChip); } Object.entries(filters).forEach(([attrCode, attrValue]) => { const attrDesc = attrCodeToDescMap[attrCode] || attrCode; const safeCode = attrCode.replace(/"/g, '&quot;'); const chip = document.createElement('div'); chip.className = 'active-filter-chip'; chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`; fragment.appendChild(chip); }); dom.activeFiltersBar.appendChild(fragment); }
     function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
@@ -218,30 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeLibraryModal() { dom.libraryModal.className = 'modal-hidden'; checkOverlay(); }
     function renderLibraryGamaList() { dom.libraryGamaList.innerHTML = ''; Object.keys(masterSchemaMap).forEach(schemaKey => { const isActive = activeSchemas.has(schemaKey); const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1); const item = document.createElement('div'); item.className = 'gama-toggle-item'; item.innerHTML = `<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}><span class="gama-name">${friendlyName}</span></label><span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>`; dom.libraryGamaList.appendChild(item); }); }
     function handleGamaToggle(e) { if (!e.target.matches('.gama-checkbox')) return; const key = e.target.dataset.key; const isChecked = e.target.checked; if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); const statusSpan = e.target.closest('.gama-toggle-item').querySelector('.gama-status'); statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; populateSchemaSelector(); populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); }
-    
     function handleCsvUpload(e) { const file = e.target.files[0]; if (!file) return; dom.uploadStatusText.textContent = `Procesando: ${file.name}...`; const reader = new FileReader(); reader.onload = (event) => { try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado con éxito!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8."); } }; reader.readAsText(file, 'UTF-8'); }
-    
-    function handleTextImport() {
-        const text = dom.csvTextInput.value.trim();
-        if (!text) return;
-        dom.uploadStatusText.textContent = "Procesando texto...";
-        try {
-            parseAndImportCsv(text);
-            dom.uploadStatusText.textContent = "¡Texto importado!";
-            dom.uploadStatusText.style.color = 'var(--color-cyan-accent)';
-            dom.csvTextInput.value = ""; 
-            
-            buildAttributeCache();
-            populateSchemaSelector();
-            applyFiltersAndSearch();
-            renderLibraryGamaList();
-        } catch (error) {
-            console.error(error);
-            dom.uploadStatusText.textContent = "Error: Texto inválido";
-            dom.uploadStatusText.style.color = '#ef4444';
-        }
-    }
-
+    function handleTextImport() { const text = dom.csvTextInput.value.trim(); if (!text) return; dom.uploadStatusText.textContent = "Procesando texto..."; try { parseAndImportCsv(text); dom.uploadStatusText.textContent = "¡Texto importado!"; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; dom.csvTextInput.value = ""; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = "Error: Texto inválido"; dom.uploadStatusText.style.color = '#ef4444'; } }
     function parseCSVLine(text) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < text.length; i++) { const char = text[i]; const nextChar = text[i + 1]; if (inQuotes) { if (char === '"' && nextChar === '"') { current += '"'; i++; } else if (char === '"') { inQuotes = false; } else { current += char; } } else { if (char === ';') { result.push(current); current = ''; } else if (char === '"') { inQuotes = true; } else { current += char; } } } result.push(current); return result; }
     function parseAndImportCsv(csvText) { let cleanText = csvText; if (cleanText.charCodeAt(0) === 0xFEFF) { cleanText = cleanText.slice(1); } const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== ''); if (lines.length < 4) throw new Error("CSV muy corto"); const rowGroups = parseCSVLine(lines[0]); const schemaKey = rowGroups[0].toLowerCase().trim(); if (!schemaKey) throw new Error("Falta Schema Key"); const rowCodes = parseCSVLine(lines[1]); const rowDescs = parseCSVLine(lines[2]); const startIndex = 2; const tempSchema = {}; const groupOrder = []; for (let i = startIndex; i < rowCodes.length; i++) { const groupName = rowGroups[i] || "Otros"; const code = rowCodes[i]; const desc = rowDescs[i] || code; if (code) { if (!tempSchema[groupName]) { tempSchema[groupName] = []; groupOrder.push(groupName); } tempSchema[groupName].push({ code, desc }); } } const newSchemaGroup = groupOrder.map(gName => ({ group: gName, attrs: tempSchema[gName] })); window.APP_DB.registerSchema(schemaKey, newSchemaGroup); activeSchemas.add(schemaKey); let count = 0; for (let i = 3; i < lines.length; i++) { const cols = parseCSVLine(lines[i]); const modelId = cols[1]; if (!modelId) continue; const attributes = {}; for (let j = startIndex; j < rowCodes.length; j++) { const code = rowCodes[j]; if (code && cols[j]) { attributes[code] = cols[j]; } } const newProduct = { model: modelId, schema_key: schemaKey, attributes: attributes }; window.APP_DB.registerProduct(newProduct); count++; } masterSchemaMap = window.APP_DB.schemas; masterDatabase = window.APP_DB.products; masterDatabase.sort((a, b) => a.model.localeCompare(b.model)); console.log(`Importada gama ${schemaKey} con ${count} modelos.`); }
     function handleThemeToggle(e) { e.stopPropagation(); isLightMode = !isLightMode; if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue); else { currentAccentHue = Math.floor(Math.random() * 360); updatePaletteCSS(darkPaletteHSL, currentAccentHue); } }
