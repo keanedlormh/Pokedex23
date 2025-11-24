@@ -1,6 +1,6 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.4
- * Update: Importación Directa de Texto (TXT/Clipboard)
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.6
+ * Update: Importación Texto y Gestión de Fuentes
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,20 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. Elementos DOM ---
     const dom = {
         body: document.body,
-        // Búsqueda y Resultados
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
         modelListHeader: document.getElementById('model-list-header'),
-        
-        // Filtros
         smartFilterToggle: document.getElementById('smart-filter-toggle'),
         smartFilterPanel: document.getElementById('smart-filter-panel'),
         filterOverlay: document.getElementById('filter-overlay'),
         smartFilterContainer: document.getElementById('smart-filters-container'),
         schemaFilterSelect: document.getElementById('schema-filter-select'),
         activeFiltersBar: document.getElementById('active-filters-bar'),
-        
-        // Menú Ajustes
         settingsMenuToggle: document.getElementById('settings-menu-toggle'),
         settingsMenuPanel: document.getElementById('settings-menu-panel'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
@@ -29,13 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
         infoToggleButton: document.getElementById('info-toggle-btn'),
         adminLinkButton: document.getElementById('admin-link-btn'),
         libraryBtn: document.getElementById('library-menu-toggle'),
-        
-        // Modal Info
         readmeModal: document.getElementById('readme-modal'),
         readmeContent: document.getElementById('readme-content'),
         readmeCloseButton: document.getElementById('readme-close-btn'),
-        
-        // Detalles Producto
         productDisplayPlaceholder: document.getElementById('product-placeholder'),
         productTitle: document.getElementById('product-title'),
         productSpecsContainer: document.getElementById('product-specs'),
@@ -43,15 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
         expandAllButton: document.getElementById('expand-all-btn'),
         collapseAllButton: document.getElementById('collapse-all-btn'),
         selectedModelDisplay: document.getElementById('selected-model-display'),
-
-        // Biblioteca (Modal)
         libraryModal: document.getElementById('library-modal'),
         libraryCloseBtn: document.getElementById('library-close-btn'),
         libraryGamaList: document.getElementById('library-gama-list'),
         csvUploadInput: document.getElementById('csv-upload-input'),
         uploadStatusText: document.getElementById('upload-status-text'),
-        
-        // NUEVO: Importación de Texto
+        // Text Import
         csvTextInput: document.getElementById('csv-text-input'),
         csvTextBtn: document.getElementById('csv-text-btn')
     };
@@ -62,13 +50,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let attrCodeToDescMap = {};
     let activeSchemas = new Set(); 
 
-    // ... (Resto de variables de tema sin cambios) ...
+    // Paletas
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     let isLightMode = true; 
     let currentAccentHue = darkPaletteHSL.accent.h;
-    const fontGroupPrimary = ["'Inter', system-ui, sans-serif", "Arial, Helvetica, sans-serif", "'Segoe UI', Roboto, Helvetica, sans-serif", "'Verdana', sans-serif", "'Trebuchet MS', 'Lucida Sans', sans-serif"];
-    const fontGroupSecondary = ["'ui-monospace', 'SFMono-Regular', 'Menlo', monospace", "'Courier New', Courier, monospace", "'Lucida Console', Monaco, monospace", "'Consolas', 'Andale Mono', monospace"];
+
+    // FUENTES: Listas ampliadas
+    const fontGroupPrimary = [
+        "'Inter', system-ui, sans-serif",
+        "Arial, Helvetica, sans-serif",
+        "'Segoe UI', Roboto, Helvetica, sans-serif",
+        "'Verdana', sans-serif",
+        "'Trebuchet MS', 'Lucida Sans', sans-serif",
+        "'Tahoma', Geneva, sans-serif",
+        "'Gill Sans', 'Gill Sans MT', Calibri, sans-serif",
+        "'Optima', sans-serif",
+        "'Candara', sans-serif",
+        "'Century Gothic', Futura, sans-serif",
+        "'Franklin Gothic Medium', 'Arial Narrow', sans-serif",
+        "'Geneva', Verdana, sans-serif",
+        "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        "'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif",
+        "'Cambria', Georgia, serif",
+        "Georgia, 'Times New Roman', Times, serif",
+        "'Garamond', 'Baskerville', serif",
+        "'Palatino Linotype', 'Book Antiqua', serif",
+        "'Bookman Old Style', serif",
+        "'Times New Roman', Times, serif",
+        "'Didot', serif",
+        "'American Typewriter', serif",
+        "'Lucida Bright', Georgia, serif"
+    ];
+
+    const fontGroupSecondary = [
+        "'ui-monospace', 'SFMono-Regular', 'Menlo', monospace",
+        "'Courier New', Courier, monospace",
+        "'Lucida Console', Monaco, monospace",
+        "'Consolas', 'Andale Mono', monospace",
+        "'Monaco', 'Courier New', monospace",
+        "'Brush Script MT', cursive",
+        "'Copperplate', 'Copperplate Gothic Light', serif",
+        "'Papyrus', fantasy",
+        "'Impact', Haettenschweiler, sans-serif",
+        "'Arial Black', Gadget, sans-serif",
+        "'Comic Sans MS', 'Chalkboard SE', sans-serif",
+        "'Courier', monospace",
+        "'Lucida Sans Typewriter', monospace",
+        "'Perpetua', serif",
+        "'Rockwell', 'Courier Bold', serif",
+        "'Baskerville Old Face', serif",
+        "'Haettenschweiler', 'Impact', sans-serif",
+        "'Chalkduster', fantasy",
+        "'Luminari', fantasy",
+        "'Trattatello', fantasy",
+        "'Big Caslon', serif",
+        "'Bodoni MT', serif",
+        "'OCR A Std', monospace"
+    ];
 
     function initialize() {
         setTimeout(() => {
@@ -132,21 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
+        
         if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleDualFontToggle);
+
         if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
+
         if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
         if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
         if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
         if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
         
-        // NUEVO: Listener Importación de Texto
+        // Importación de Texto
         if (dom.csvTextBtn) dom.csvTextBtn.addEventListener('click', handleTextImport);
     }
 
-    // ... (Lógica Filtros, Render, UI Controls sin cambios - omitido para brevedad) ...
-    // [INCLUIR AQUÍ TODAS LAS FUNCIONES EXISTENTES DE FILTROS Y RENDERIZADO]
-    
-    // Re-implementación breve de funciones clave para contexto:
+    // --- Funciones Lógicas ---
     function removeActiveFilter(attrCode) { const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select')); const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode); if (targetSelects.length > 0) { targetSelects.forEach(select => select.value = ""); applyFiltersAndSearch(); } else { applyFiltersAndSearch(); } }
     function renderActiveFilters(filters) { if (!dom.activeFiltersBar) return; const currentSchema = dom.schemaFilterSelect.value; const hasSchemaFilter = currentSchema !== 'all'; const hasAttrFilters = Object.keys(filters).length > 0; if (!hasSchemaFilter && !hasAttrFilters) { dom.activeFiltersBar.className = 'active-filters-bar-hidden'; dom.activeFiltersBar.innerHTML = ''; return; } dom.activeFiltersBar.className = 'active-filters-bar-visible'; dom.activeFiltersBar.innerHTML = ''; const fragment = document.createDocumentFragment(); if (hasSchemaFilter) { const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1); const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`; fragment.appendChild(schemaChip); } Object.entries(filters).forEach(([attrCode, attrValue]) => { const attrDesc = attrCodeToDescMap[attrCode] || attrCode; const safeCode = attrCode.replace(/"/g, '&quot;'); const chip = document.createElement('div'); chip.className = 'active-filter-chip'; chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`; fragment.appendChild(chip); }); dom.activeFiltersBar.appendChild(fragment); }
     function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
@@ -182,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function handleCsvUpload(e) { const file = e.target.files[0]; if (!file) return; dom.uploadStatusText.textContent = `Procesando: ${file.name}...`; const reader = new FileReader(); reader.onload = (event) => { try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado con éxito!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8."); } }; reader.readAsText(file, 'UTF-8'); }
     
-    // --- NUEVA FUNCIONALIDAD: IMPORTAR DESDE TEXTO ---
     function handleTextImport() {
         const text = dom.csvTextInput.value.trim();
         if (!text) return;
@@ -191,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parseAndImportCsv(text);
             dom.uploadStatusText.textContent = "¡Texto importado!";
             dom.uploadStatusText.style.color = 'var(--color-cyan-accent)';
-            dom.csvTextInput.value = ""; // Limpiar input tras éxito
+            dom.csvTextInput.value = ""; 
             
             buildAttributeCache();
             populateSchemaSelector();
