@@ -141,14 +141,17 @@
 
                 <!-- Sección 2: Importar -->
                 <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem;">
-                    <h3 class="futuristic-subtitle" style="margin-bottom: 0.5rem;">Importar CSV</h3>
+                    <h3 class="futuristic-subtitle" style="margin-bottom: 0.5rem;">Importar Datos</h3>
                     <div class="upload-area">
-                        <label for="csv-upload-input" class="upload-label">
-                            📂 Cargar Archivo
-                        </label>
+                        <!-- FILE UPLOAD -->
+                        <label for="csv-upload-input" class="upload-label" title="Cargar archivo .csv">📂 Archivo</label>
                         <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        <span id="upload-status-text" class="upload-status">Formato Admin (;)</span>
+                        
+                        <!-- TEXT IMPORT -->
+                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
+                        <button id="csv-text-btn" class="upload-label">📥 TXT</button>
                     </div>
+                    <div id="upload-status-text" class="upload-status">Formato Admin (;)</div>
                 </div>
 
             </div>
