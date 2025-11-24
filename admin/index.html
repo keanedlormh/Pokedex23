@@ -3,31 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Pokedex Drive</title>
+    <title>Admin - Enciclopedia Técnica v3.4.3</title>
 
     <link rel="stylesheet" href="admin.css">
 
     <!-- Bootloader -->
     <script>
         window.APP_DB = { products: [], schemas: {}, registerProduct: function(p) { this.products.push(p); }, registerSchema: function(k, s) { this.schemas[k] = s; } };
-        const basePath = '../'; // Ajustado para salir de /admin/
+        const basePath = '../'; 
         const xhr = new XMLHttpRequest();
         xhr.open('GET', basePath + 'db/manifest.json', false);
         xhr.send(null);
         if (xhr.status === 200) {
             const manifest = JSON.parse(xhr.responseText);
-            // Cargar esquemas
-            manifest.schemas.forEach(path => { 
-                document.write('<script src="' + basePath + path + '" defer><\/script>'); 
-            });
-            // Cargar productos bulk
+            manifest.schemas.forEach(path => { document.write('<script src="' + basePath + path + '" defer><\/script>'); });
             manifest.bulk_gamas.forEach(jsonPath => { 
                 const x = new XMLHttpRequest(); 
                 x.open('GET', basePath + jsonPath, false); 
                 x.send(null); 
                 if (x.status === 200) JSON.parse(x.responseText).forEach(pr => window.APP_DB.registerProduct(pr)); 
             });
-            // Cargar productos individuales
             Object.values(manifest.products).forEach(productList => { 
                 productList.forEach(jsonPath => { 
                     const x = new XMLHttpRequest(); 
@@ -39,7 +34,6 @@
         } else { console.error("Error Crítico: DB no cargada en Admin."); }
     </script>
     <script src="admin.js" defer></script>
-    <!-- Script del Meta-constructor -->
     <script src="pokedexdrive.js" defer></script>
 </head>
 
@@ -47,7 +41,7 @@
     <header class="admin-header">
         <div class="header-content">
             <div class="header-left">
-                <button id="home-btn" class="app-title-btn"><h1 class="app-title">🔘 Pokedex Drive <span class="app-version">v.13.14</span></h1></button>
+                <button id="home-btn" class="app-title-btn"><h1 class="app-title">Admin <span class="app-version">v3.4.3</span></h1></button>
             </div>
             <div class="header-right">
                 <button id="save-btn" class="header-save-btn futuristic-button" style="display: none;">Guardar Cambios</button>
@@ -77,12 +71,12 @@
                 <button id="drive-builder-trigger" class="nav-card special-card">
                     <span class="nav-card-icon">💾</span>
                     <h3>Pokedex Drive</h3>
-                    <p>Compilar versión Offline</p>
+                    <p>Compilar versión Offline (.html)</p>
                 </button>
             </div>
         </div>
 
-        <!-- HUBS & EDITORES (Mantenidos compactos como en tu versión original) -->
+        <!-- HUBS & EDITORES -->
         <div id="panel-model-hub" class="content-panel"><div class="futuristic-card search-panel center-limit"><h2 class="futuristic-title">1. Editar Modelo</h2><input type="text" id="search-model" placeholder="..." class="futuristic-input w-full"><div id="model-results-list" class="futuristic-list full-list-visible short-list"></div><h2 class="futuristic-title" style="margin-top:2rem;">2. Crear Nuevo</h2><div class="control-group-box"><div class="mb-4"><label class="futuristic-label">Gama:</label><select id="create-model-schema-select" class="futuristic-select w-full"><option value="">--</option></select></div><div class="mb-4"><label class="futuristic-label">ID:</label><input type="text" id="create-model-id" class="futuristic-input w-full"></div><button id="create-model-btn" class="futuristic-button w-full">Crear</button></div></div></div>
         
         <div id="panel-schema-hub" class="content-panel"><div class="futuristic-card search-panel center-limit"><h2 class="futuristic-title">1. Cargar Esquema</h2><div id="schema-results-list" class="futuristic-list full-list-visible short-list"></div><h2 class="futuristic-title" style="margin-top:2rem;">2. Nuevo Esquema</h2><div class="control-group-box"><label class="futuristic-label">Clave:</label><input type="text" id="new-schema-key" class="futuristic-input w-full"><button id="create-schema-btn" class="futuristic-button w-full mt-2">Crear</button></div></div></div>
@@ -94,7 +88,7 @@
         <div id="panel-export-gama" class="content-panel"><div class="futuristic-card center-limit"><h2 class="futuristic-title">Exportación</h2><div class="gama-export-controls"><div class="control-group flex-grow" style="width:100%;margin-bottom:1rem;"><label class="futuristic-label">Gama:</label><select id="gama-export-select" class="futuristic-select w-full"><option value="">--</option></select></div><div class="export-buttons-container"><button id="export-gama-json-btn" class="futuristic-button">⬇ JSON</button><button id="export-gama-csv-btn" class="futuristic-button csv-button">📊 CSV</button></div></div><div id="gama-export-list" class="gama-export-list"></div></div></div>
     </main>
 
-    <!-- Modal Biblioteca -->
+    <!-- Modal Biblioteca ACTUALIZADO -->
     <div id="library-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card library-modal-content">
             <div class="modal-header">
@@ -108,12 +102,17 @@
                     <div id="library-gama-list" class="library-list"></div>
                 </div>
                 <div>
-                    <h3 class="library-section-title">Importar Gama (CSV)</h3>
+                    <h3 class="library-section-title">Importar Datos</h3>
                     <div class="upload-area">
-                        <label for="csv-upload-input" class="upload-btn-label">📂 Cargar CSV</label>
+                        <!-- FILE UPLOAD -->
+                        <label for="csv-upload-input" class="upload-btn-label">📂 Archivo</label>
                         <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        <span id="upload-status-text" class="upload-status-text">Formato Admin Requerido (3 filas)</span>
+                        
+                        <!-- TEXT IMPORT -->
+                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
+                        <button id="csv-text-btn" class="upload-btn-label">📥 TXT</button>
                     </div>
+                    <span id="upload-status-text" class="upload-status-text">Formato Admin (;)</span>
                 </div>
             </div>
         </div>
@@ -124,62 +123,22 @@
     <div id="info-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
             <div class="modal-header">
-                <h2 class="futuristic-title" style="margin:0;">Info del Proyecto</h2>
+                <h2 class="futuristic-title" style="margin:0;">Info del Administrador</h2>
                 <button id="close-info-modal-btn" class="modal-close-btn">✕</button>
             </div>
             <div class="modal-body">
-                <h3>Pokedex Drive</h3>
+                <h3>Enciclopedia Técnica - Admin v3.4.3</h3>
                 <pre>
-Proyecto Pokedex Drive
-
-[ Centralización y Portabilidad de Datos ]
-
-
-Se trata de una solución integral diseñada para unificar, visualizar y filtrar nuestro catálogo de productos de una manera ágil y eficiente.
-
-A nivel técnico, la herramienta destaca por su sencillez y robustez: es una aplicación web estática (basada en HTML, CSS y JavaScript) que se ejecuta enteramente en el navegador del dispositivo del usuario. Esto elimina la necesidad de instalaciones complejas o servidores externos, garantizando rapidez y privacidad.
-
-A continuación, detallo las funcionalidades clave y cómo pueden ayudarnos en el día a día:
-
-1. Pokedex v13.14: Visualización y Análisis (La Base)
-
-La herramienta resuelve la dispersión de datos actual mediante un entorno unificado:
- 
-* Búsqueda y Overview: Permite localizar cualquier modelo instantáneamente. Además de la ficha técnica completa, el sistema genera automáticamente un grupo "Overview", destacando los atributos más relevantes para el cliente de un solo vistazo.
-
- * Filtros Inteligentes: Un potente panel lateral permite filtrar toda una gama de productos por atributos específicos. Los filtros se combinan entre sí y con la búsqueda por texto, actualizando la lista en tiempo real e incluyendo un contador dinámico para cuantificar cuántos modelos cumplen con los criterios exactos.
-
- * Biblioteca Virtual: Permite gestionar la base de datos en tiempo real. Podemos activar o desactivar gamas completas según la necesidad del momento, e incluso importar nuevos datos desde archivos CSV (como nuestras tablas de Excel actuales) directamente en la aplicación.
-
-2. Pokedex Drive:
-La Solución Offline
-
-El "Metaconstructor" alojado en el panel de administración de la herramienta, permite generar la Pokedex Drive.
-
- * ¿Qué es? Es una aplicación completa contenida en un único archivo HTML portátil.
-
- * ¿Qué hace? Funciona exactamente igual que la versión completa (buscadores, filtros, visualización), pero sin necesidad de conexión a internet ni menús de administración.
-
- * Personalización: El Metaconstructor lee la configuración de la Biblioteca Virtual y genera el archivo Pokedex Drive conteniendo únicamente las gamas que hayamos seleccionado. Esto nos permite crear catálogos personalizados "a medida" para diferentes departamentos o usos específicos.
-
-Seguridad y Privacidad de Datos
-
-Al tratarse de una arquitectura de ejecución local:
-
- * Los datos no viajan a ninguna nube ni servidor externo.
-
- * La Pokedex Drive permite transformar archivos Excel dispersos en una aplicación interactiva, funcional y privada, que reside únicamente en el equipo del especialista.
-
-Está disponible para su uso inmediato.
-
-23.11.2025
-
+Versión 3.4.3
+- [NEW] Importación rápida TXT en biblioteca.
+- Pokedex Drive (Meta-constructor Offline).
+- Gestión de modelos y esquemas en memoria.
                 </pre>
             </div>
         </div>
     </div>
 
-    <!-- NUEVO: Modal de Meta-constructor (Drive) -->
+    <!-- Modal de Meta-constructor (Drive) -->
     <div id="drive-modal" class="modal-container" style="display: none; z-index: 210;">
         <div class="info-modal-content futuristic-card drive-modal-content">
             <div class="modal-header">
@@ -187,20 +146,15 @@ Está disponible para su uso inmediato.
                 <button id="drive-close-btn" class="modal-close-btn" style="display: none;">&times;</button>
             </div>
             <div class="modal-body drive-body">
-                <!-- Barra de Progreso -->
                 <div class="drive-progress-container">
                     <div class="drive-progress-bar">
                         <div id="drive-progress-fill" class="drive-progress-fill" style="width: 0%;"></div>
                     </div>
                     <span id="drive-percent-text" class="drive-percent">0%</span>
                 </div>
-
-                <!-- Log tipo Terminal -->
                 <div id="drive-log-console" class="drive-console">
                     <div class="log-line">> Inicializando Meta-constructor...</div>
                 </div>
-
-                <!-- Área de Acción Final -->
                 <div id="drive-action-area" class="drive-actions" style="display: none;">
                     <p class="success-message">¡Compilación completada!</p>
                     <button id="drive-download-again-btn" class="futuristic-button w-full">Descargar de nuevo</button>
