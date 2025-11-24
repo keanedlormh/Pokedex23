@@ -42,29 +42,22 @@
     <div class="container">
         <!-- HEADER -->
         <header class="app-header">
-            
-            <!-- BLOQUE 1: Título y Chip de Modelo -->
             <div class="header-left">
                 <h1 class="app-title">Pokedex LG 📟 <span class="app-version">v.13.14</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"></div>
             </div>
 
-            <!-- BLOQUE 2: Botón de Ajustes (FIJO ARRIBA A LA DERECHA) -->
             <div class="settings-menu-wrapper absolute-top-right">
-                
                 <button id="settings-menu-toggle" class="settings-button" title="Ajustes">⚙️</button>
-                
                 <div id="settings-menu-panel" class="settings-menu-panel-hidden">
                     <button id="library-menu-toggle" class="settings-menu-item">📚 Biblioteca</button>
                     <button id="palette-toggle-btn" class="settings-menu-item">🎨 Tema</button>
-                    <!-- Botón de Fuente Dual -->
                     <button id="font-toggle-btn" class="settings-menu-item">📄 Texto</button>
                     <button id="info-toggle-btn" class="settings-menu-item">ℹ️ Info</button>
                     <a href="admin/index.html" target="_blank" id="admin-link-btn" class="settings-menu-item">☣️ Admin</a>
                 </div>
             </div>
 
-            <!-- BLOQUE 3: Controles (Filtros) -->
             <div class="header-right-controls">
                 <div id="smart-filter-system" class="smart-filter-wrapper-v2">
                     <button id="smart-filter-toggle" class="smart-filter-summary">Filtros</button>
@@ -81,15 +74,19 @@
             </div> 
         </header>
 
-        <!-- Barra de filtros activos -->
         <div id="active-filters-bar" class="active-filters-bar-hidden"></div>
 
-        <!-- Layout principal -->
         <div class="main-layout">
             <aside class="sidebar-column">
                 <div class="futuristic-card search-panel">
                     <h2 id="model-list-header" class="futuristic-title">Modelos (...)</h2>
-                    <input type="text" id="search-model" placeholder="..." class="futuristic-input w-full">
+                    
+                    <!-- NUEVO: Wrapper de búsqueda con botón X -->
+                    <div class="search-wrapper">
+                        <input type="text" id="search-model" placeholder="..." class="futuristic-input w-full">
+                        <button id="clear-search-btn" class="search-clear-btn" style="display: none;">&times;</button>
+                    </div>
+
                     <div id="model-results-list" class="futuristic-list full-list-visible"></div>
                 </div>
             </aside>
@@ -119,7 +116,6 @@
         </div>
     </div>
 
-    <!-- Modal de Biblioteca / Gestión de Gamas -->
     <div id="library-modal" class="modal-hidden">
         <div class="modal-content library-modal-content">
             <div class="modal-header compact-header">
@@ -127,36 +123,25 @@
                 <button id="library-close-btn" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body compact-body">
-                
-                <!-- Sección 1: Gamas Activas -->
                 <div class="library-section">
                     <div class="lib-sec-header">
                         <h3 class="futuristic-subtitle" style="margin:0;">Gamas Cargadas</h3>
                         <p class="library-desc">Gestiona la base de datos.</p>
                     </div>
-                    <div id="library-gama-list" class="library-list">
-                        <!-- Se rellena por JS con Checkboxes -->
-                    </div>
+                    <div id="library-gama-list" class="library-list"></div>
                 </div>
-
-                <!-- Sección 2: Importar -->
                 <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem;">
                     <h3 class="futuristic-subtitle" style="margin-bottom: 0.5rem;">Importar Datos</h3>
                     <div class="upload-area">
-                        <!-- FILE UPLOAD -->
                         <label for="csv-upload-input" class="upload-label" title="Cargar archivo .csv">📂 Archivo</label>
                         <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        
-                        <!-- TEXT IMPORT -->
                         <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
                         <button id="csv-text-btn" class="upload-label">📥 TXT</button>
                     </div>
                     <div id="upload-status-text" class="upload-status">Formato Admin (;)</div>
                 </div>
-
             </div>
         </div>
     </div>
-
 </body>
 </html>
