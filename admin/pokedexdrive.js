@@ -1,9 +1,9 @@
 /**
- * Pokedex Drive Meta-Constructor v8.1 (Title Fix)
- * Genera un archivo HTML 'Viewer-Only' con:
- * 1. Reemplazo GLOBAL de título (Header + Title tag).
- * 2. Versión dinámica por fecha.
- * 3. Base de datos filtrada.
+ * Pokedex Drive Meta-Constructor v9.0 (Updated UI Support)
+ * Genera un archivo HTML 'Viewer-Only' sincronizado con las últimas mejoras:
+ * - Búsqueda reactiva (Botón X e iluminación).
+ * - Importación de texto/portapapeles en biblioteca.
+ * - Filtros y estilos actualizados.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,14 +34,16 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.closeBtn.style.display = 'none';
         ui.actions.style.display = 'none';
         updateProgress(0);
-        log("Iniciando constructor Pokedex Drive v8.1...", "active");
+        log("Iniciando constructor Pokedex Drive v9.0...", "active");
         generatedBlobUrl = null;
 
         try {
-            // --- PASO 1: Obtener Recursos Base ---
+            // --- PASO 1: Obtener Recursos Base (FileSystem) ---
             await wait(300);
-            log("Leyendo código fuente del visor...");
+            log("Leyendo última versión del código fuente...");
             
+            // Leemos los archivos físicos para asegurar que tenemos la última versión
+            // con los cambios del buscador y la importación de texto.
             const [htmlRaw, cssRaw, jsRaw] = await Promise.all([
                 fetchText('../index.html'),
                 fetchText('../style.css'),
@@ -51,13 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
             updateProgress(30);
 
             // --- PASO 2: Procesar HTML (Limpieza) ---
-            log("Limpiando dependencias externas...");
+            log("Limpiando dependencias externas y admin...");
             let htmlContent = htmlRaw;
 
+            // Eliminar links y scripts externos
             htmlContent = htmlContent.replace(/<link rel="stylesheet" href="style.css">/, '');
             htmlContent = htmlContent.replace(/<script>[\s\S]*?manifest\.json[\s\S]*?<\/script>/, '');
             htmlContent = htmlContent.replace(/<script src="main.js" defer><\/script>/, '');
-            htmlContent = htmlContent.replace(/<a href="admin\/index\.html".*?id="admin-link-btn".*?>.*?<\/a>/, '');
+            
+            // Eliminar acceso al Admin (Botón del menú de ajustes)
+            // Usamos un regex flexible para capturar el enlace independientemente de sus atributos
+            htmlContent = htmlContent.replace(/<a\s+href="admin\/index\.html"[\s\S]*?<\/a>/, '');
 
             updateProgress(50);
 
@@ -65,10 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
             await wait(200);
             log("Empaquetando gamas activas...", "active");
 
+            // Detectar Gamas Activas desde Checkboxes del Admin
             const activeCheckboxes = document.querySelectorAll('.gama-checkbox:checked');
             const activeKeys = new Set();
             activeCheckboxes.forEach(cb => activeKeys.add(cb.dataset.key));
 
+            // Filtrar DB
             const sourceSchemas = window.APP_DB.schemas;
             const sourceProducts = window.APP_DB.products;
             const filteredSchemas = {};
@@ -79,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             log(`> Objetos empaquetados: ${filteredProducts.length}`);
 
+            // Crear Bootloader Estático
             const staticBootloader = `
     <style>
         ${cssRaw}
@@ -98,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateProgress(75);
 
             // --- PASO 4: Personalización e Inyección ---
-            log("Personalizando UI y versión...");
+            log("Personalizando UI, versión e información...");
 
             // 4.1 Calcular Fecha (v.dd.mm.aa)
             const date = new Date();
@@ -107,8 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const yy = String(date.getFullYear()).slice(-2);
             const versionString = `v.${dd}.${mm}.${yy}`;
 
-            // 4.2 Reemplazo GLOBAL de Título (FIX v8.1)
-            // Usamos la bandera /g para reemplazar TANTO el <title> como el <h1>
+            // 4.2 Reemplazo GLOBAL de Título (Header + Title tag)
             htmlContent = htmlContent.replace(/Pokedex LG/g, 'Pokedex Drive');
 
             // 4.3 Reemplazar Versión en Header
@@ -139,9 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
 🏴‍☠️`;
 
             let jsModified = jsRaw;
+            // Regex robusto para encontrar el bloque if/try/catch del readme
+            // Coincide con: if (dom.readme... === "") { try { ... } catch(e) { ... } }
             const fetchLogicRegex = /if\s*\(dom\.readmeContent\.textContent\s*===\s*""[\s\S]*?catch\s*\(error\)\s*\{[\s\S]*?\}\s*?\}/;
+            
             jsModified = jsModified.replace(fetchLogicRegex, `dom.readmeContent.textContent = ${JSON.stringify(infoText)};`);
 
+            // Escapar scripts para evitar cierre prematuro
             const safeJs = jsModified.replace(/<\/script>/g, '<\\/script>');
             const mainJsBlock = `<script>\n${safeJs}\n</script>`;
 
@@ -149,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             htmlContent = htmlContent.replace('</head>', `${staticBootloader}\n</head>`);
             htmlContent = htmlContent.replace('</body>', `${mainJsBlock}\n</body>`);
             
-            // Reforzar título de pestaña con versión
+            // Actualizar título de pestaña
             htmlContent = htmlContent.replace(/<title>.*?<\/title>/, `<title>Pokedex Drive (${versionString})</title>`);
 
             updateProgress(90);
