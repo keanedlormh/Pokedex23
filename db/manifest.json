@@ -2,11 +2,13 @@
     "schemas": [
         "db/schemas/moduloSoundbars.js",
         "db/schemas/moduloTVs.js",
+        "db/schemas/moduloEjemplo.js",
         "db/schemas/moduloPCs.js"
     ],
     "bulk_gamas": [
         "db/gamas/soundbars.json",
         "db/gamas/tvs.json",
+        "db/gamas/ejemplo.json",
         "db/gamas/pcs.json"
     ]
 }
