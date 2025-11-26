@@ -1,17 +1,16 @@
 /*
- * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.7
- * Update: UX Búsqueda (Clear Button & Active State)
+ * Enciclopedia Técnica Futurista - Lógica Principal (main.js) v4.8
+ * Update: Descarga de CSV por Gama desde Biblioteca
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. Elementos DOM ---
+    // ... (Referencias DOM y Variables igual que v4.7) ...
     const dom = {
         body: document.body,
         modelSearchInput: document.getElementById('search-model'),
-        searchClearBtn: document.getElementById('clear-search-btn'), // NUEVO
+        searchClearBtn: document.getElementById('clear-search-btn'),
         modelSearchResults: document.getElementById('model-results-list'),
-        // ... (Resto de referencias igual)
         modelListHeader: document.getElementById('model-list-header'),
         smartFilterToggle: document.getElementById('smart-filter-toggle'),
         smartFilterPanel: document.getElementById('smart-filter-panel'),
@@ -45,12 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
         csvTextBtn: document.getElementById('csv-text-btn')
     };
 
-    // ... (Variables de estado y Paletas igual) ...
     const originalPlaceholder = dom.productDisplayPlaceholder;
     let masterDatabase = [];
     let masterSchemaMap = {};
     let attrCodeToDescMap = {};
     let activeSchemas = new Set(); 
+
+    // ... (Paletas y Fuentes igual que v4.7) ...
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
     let isLightMode = true; 
@@ -77,58 +77,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
-        // MODIFICADO: Listener de Input con gestión de UI
         if (dom.modelSearchInput) {
             dom.modelSearchInput.addEventListener('input', (e) => {
                 handleSearchInputUI(e.target);
                 applyFiltersAndSearch();
             });
         }
-        
-        // NUEVO: Listener para el botón de borrar
         if (dom.searchClearBtn) {
             dom.searchClearBtn.addEventListener('click', () => {
                 dom.modelSearchInput.value = '';
                 handleSearchInputUI(dom.modelSearchInput);
                 applyFiltersAndSearch();
-                dom.modelSearchInput.focus(); // Devolver el foco
+                dom.modelSearchInput.focus();
             });
         }
 
-        if (dom.schemaFilterSelect) {
-            dom.schemaFilterSelect.addEventListener('change', () => {
-                populateSmartFilters(dom.schemaFilterSelect.value);
-                applyFiltersAndSearch();
-            });
-        }
-        if (dom.smartFilterContainer) {
-            dom.smartFilterContainer.addEventListener('change', applyFiltersAndSearch);
-            dom.smartFilterContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('filter-toggle-btn') || e.target.closest('.filter-group-title')) {
-                    const titleEl = e.target.closest('.filter-group-title');
-                    if (titleEl) toggleFilterGroup(titleEl);
-                }
-            });
-        }
-        if (dom.activeFiltersBar) {
-            dom.activeFiltersBar.addEventListener('click', (e) => {
-                const btn = e.target.closest('.chip-remove-btn');
-                if (btn) {
-                    e.preventDefault(); e.stopPropagation();
-                    const action = btn.dataset.action;
-                    action === 'remove-schema' ? removeSchemaFilter() : removeActiveFilter(btn.dataset.attrCode);
-                }
-            });
-        }
+        if (dom.schemaFilterSelect) dom.schemaFilterSelect.addEventListener('change', () => { populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); });
+        if (dom.smartFilterContainer) { dom.smartFilterContainer.addEventListener('change', applyFiltersAndSearch); dom.smartFilterContainer.addEventListener('click', (e) => { if (e.target.classList.contains('filter-toggle-btn') || e.target.closest('.filter-group-title')) { const titleEl = e.target.closest('.filter-group-title'); if (titleEl) toggleFilterGroup(titleEl); } }); }
+        if (dom.activeFiltersBar) { dom.activeFiltersBar.addEventListener('click', (e) => { const btn = e.target.closest('.chip-remove-btn'); if (btn) { e.preventDefault(); e.stopPropagation(); const action = btn.dataset.action; action === 'remove-schema' ? removeSchemaFilter() : removeActiveFilter(btn.dataset.attrCode); } }); }
         if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
         if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
         if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
-        
-        if (dom.filterOverlay) {
-            dom.filterOverlay.addEventListener('click', () => {
-                closeFilterPanel(); closeSettingsMenu(); closeReadmeModal(); closeLibraryModal();
-            });
-        }
+        if (dom.filterOverlay) dom.filterOverlay.addEventListener('click', () => { closeFilterPanel(); closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); });
         if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
         if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
         if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
@@ -138,25 +108,132 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
         if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
         if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
-        if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
         if (dom.csvTextBtn) dom.csvTextBtn.addEventListener('click', handleTextImport);
-    }
-
-    // --- NUEVO: Función Auxiliar para UI de Búsqueda ---
-    function handleSearchInputUI(input) {
-        const hasText = input.value.length > 0;
-        if (hasText) {
-            input.classList.add('has-text');
-            if (dom.searchClearBtn) dom.searchClearBtn.style.display = 'block';
-        } else {
-            input.classList.remove('has-text');
-            if (dom.searchClearBtn) dom.searchClearBtn.style.display = 'none';
+        
+        // MODIFICADO: Listener en la lista de gamas (delegación)
+        if (dom.libraryGamaList) {
+            dom.libraryGamaList.addEventListener('click', (e) => {
+                // Caso 1: Click en el botón de descarga
+                if (e.target.matches('.gama-download-btn')) {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    exportGamaToCSV(e.target.dataset.key);
+                    return;
+                }
+                // Caso 2: Click en el checkbox o label (burbujeo manejado por 'change' event abajo, o click directo aquí)
+                // El evento 'change' en el input es más seguro para checkboxes
+            });
+            
+            dom.libraryGamaList.addEventListener('change', handleGamaToggle);
         }
     }
 
-    // ... (Resto de lógica de filtros, render, etc. IGUAL que v4.6) ...
-    // [COPIAR TODO EL RESTO DE FUNCIONES AQUÍ, NO HA CAMBIADO NADA MÁS]
-    
+    // --- Funciones Biblioteca Actualizadas ---
+
+    function renderLibraryGamaList() {
+        dom.libraryGamaList.innerHTML = '';
+        Object.keys(masterSchemaMap).forEach(schemaKey => {
+            const isActive = activeSchemas.has(schemaKey);
+            const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1);
+            
+            const item = document.createElement('div');
+            item.className = 'gama-toggle-item';
+            // Estructura actualizada con botón de descarga
+            item.innerHTML = `
+                <label class="gama-toggle-label">
+                    <input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}>
+                    <span class="gama-name">${friendlyName}</span>
+                </label>
+                <div class="gama-actions-right">
+                    <button class="gama-download-btn" data-key="${schemaKey}" title="Descargar CSV de ${friendlyName}">⬇</button>
+                    <span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>
+                </div>
+            `;
+            dom.libraryGamaList.appendChild(item);
+        });
+    }
+
+    function exportGamaToCSV(selectedSchema) {
+        if (!selectedSchema) return;
+        const products = masterDatabase.filter(p => p.schema_key === selectedSchema);
+        if (products.length === 0) {
+            alert("Esta gama no tiene productos para exportar.");
+            return;
+        }
+
+        const schemaDef = masterSchemaMap[selectedSchema];
+        let row1_groups = [selectedSchema, "Identificación"];
+        let row2_codes = ["", "model"];
+        let row3_descs = ["", "Modelo"];
+        let attrKeys = [];
+
+        if (schemaDef) {
+            schemaDef.forEach(group => {
+                group.attrs.forEach(attr => {
+                    row1_groups.push(group.group);
+                    row2_codes.push(attr.code);
+                    row3_descs.push(attr.desc);
+                    attrKeys.push(attr.code);
+                });
+            });
+        }
+
+        const sanitize = (val) => {
+            if (val === null || val === undefined) return "";
+            val = String(val);
+            val = val.replace(/"/g, '""');
+            if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`;
+            return val;
+        };
+
+        const dataRows = products.map(p => {
+            let row = ["", sanitize(p.model)];
+            attrKeys.forEach(key => {
+                let val = p.attributes[key] || "";
+                row.push(sanitize(val));
+            });
+            return row.join(";");
+        });
+
+        const header1 = row1_groups.map(g => sanitize(g)).join(";");
+        const header2 = row2_codes.map(c => sanitize(c)).join(";");
+        const header3 = row3_descs.map(d => sanitize(d)).join(";");
+
+        const csvContent = "\uFEFF" + header1 + "\n" + header2 + "\n" + header3 + "\n" + dataRows.join("\n");
+        const filename = `GAMA_${selectedSchema.toUpperCase()}.csv`;
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    function handleGamaToggle(e) { 
+        if (!e.target.matches('.gama-checkbox')) return; 
+        const key = e.target.dataset.key; 
+        const isChecked = e.target.checked; 
+        if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); 
+        
+        // Actualizar texto de estado visualmente sin redibujar toda la lista
+        const item = e.target.closest('.gama-toggle-item');
+        const statusSpan = item.querySelector('.gama-status');
+        statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; 
+        statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; 
+        
+        populateSchemaSelector(); 
+        populateSmartFilters(dom.schemaFilterSelect.value); 
+        applyFiltersAndSearch(); 
+    }
+
+    // ... (Resto de funciones sin cambios) ...
+    function handleSearchInputUI(input) { const hasText = input.value.length > 0; if (hasText) { input.classList.add('has-text'); dom.searchClearBtn.style.display = 'block'; } else { input.classList.remove('has-text'); dom.searchClearBtn.style.display = 'none'; } }
     function removeActiveFilter(attrCode) { const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select')); const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode); if (targetSelects.length > 0) { targetSelects.forEach(select => select.value = ""); applyFiltersAndSearch(); } else { applyFiltersAndSearch(); } }
     function renderActiveFilters(filters) { if (!dom.activeFiltersBar) return; const currentSchema = dom.schemaFilterSelect.value; const hasSchemaFilter = currentSchema !== 'all'; const hasAttrFilters = Object.keys(filters).length > 0; if (!hasSchemaFilter && !hasAttrFilters) { dom.activeFiltersBar.className = 'active-filters-bar-hidden'; dom.activeFiltersBar.innerHTML = ''; return; } dom.activeFiltersBar.className = 'active-filters-bar-visible'; dom.activeFiltersBar.innerHTML = ''; const fragment = document.createDocumentFragment(); if (hasSchemaFilter) { const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1); const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`; fragment.appendChild(schemaChip); } Object.entries(filters).forEach(([attrCode, attrValue]) => { const attrDesc = attrCodeToDescMap[attrCode] || attrCode; const safeCode = attrCode.replace(/"/g, '&quot;'); const chip = document.createElement('div'); chip.className = 'active-filter-chip'; chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`; fragment.appendChild(chip); }); dom.activeFiltersBar.appendChild(fragment); }
     function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
@@ -187,8 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkOverlay() { if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden' && dom.libraryModal.className === 'modal-hidden') { dom.filterOverlay.className = 'overlay-hidden'; } }
     function openLibraryModal() { closeSettingsMenu(); closeFilterPanel(); closeReadmeModal(); renderLibraryGamaList(); dom.libraryModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; dom.uploadStatusText.textContent = "Formato Admin (CSV)"; dom.csvUploadInput.value = ""; }
     function closeLibraryModal() { dom.libraryModal.className = 'modal-hidden'; checkOverlay(); }
-    function renderLibraryGamaList() { dom.libraryGamaList.innerHTML = ''; Object.keys(masterSchemaMap).forEach(schemaKey => { const isActive = activeSchemas.has(schemaKey); const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1); const item = document.createElement('div'); item.className = 'gama-toggle-item'; item.innerHTML = `<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}><span class="gama-name">${friendlyName}</span></label><span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>`; dom.libraryGamaList.appendChild(item); }); }
-    function handleGamaToggle(e) { if (!e.target.matches('.gama-checkbox')) return; const key = e.target.dataset.key; const isChecked = e.target.checked; if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); const statusSpan = e.target.closest('.gama-toggle-item').querySelector('.gama-status'); statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; populateSchemaSelector(); populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); }
     function handleCsvUpload(e) { const file = e.target.files[0]; if (!file) return; dom.uploadStatusText.textContent = `Procesando: ${file.name}...`; const reader = new FileReader(); reader.onload = (event) => { try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado con éxito!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8."); } }; reader.readAsText(file, 'UTF-8'); }
     function handleTextImport() { const text = dom.csvTextInput.value.trim(); if (!text) return; dom.uploadStatusText.textContent = "Procesando texto..."; try { parseAndImportCsv(text); dom.uploadStatusText.textContent = "¡Texto importado!"; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; dom.csvTextInput.value = ""; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = "Error: Texto inválido"; dom.uploadStatusText.style.color = '#ef4444'; } }
     function parseCSVLine(text) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < text.length; i++) { const char = text[i]; const nextChar = text[i + 1]; if (inQuotes) { if (char === '"' && nextChar === '"') { current += '"'; i++; } else if (char === '"') { inQuotes = false; } else { current += char; } } else { if (char === ';') { result.push(current); current = ''; } else if (char === '"') { inQuotes = true; } else { current += char; } } } result.push(current); return result; }
