@@ -1,14 +1,12 @@
 {
     "schemas": [
+        "db/schemas/moduloPCs.js",
         "db/schemas/moduloSoundbars.js",
-        "db/schemas/moduloTVs.js",
-        "db/schemas/moduloEjemplo.js",
-        "db/schemas/moduloPCs.js"
+        "db/schemas/moduloTVs.js"
     ],
     "bulk_gamas": [
+        "db/gamas/pcs.json",
         "db/gamas/soundbars.json",
-        "db/gamas/tvs.json",
-        "db/gamas/ejemplo.json",
-        "db/gamas/pcs.json"
+        "db/gamas/tvs.json"
     ]
 }
