@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const versionString = `v.${dd}.${mm}.${yy}`;
 
             // 4.2 Reemplazo GLOBAL de Título (Header + Title tag)
-            htmlContent = htmlContent.replace(/Pokedex LG/g, 'Pokedex Drive');
+            htmlContent = htmlContent.replace(/Pokedex 23, 'Pokedex Drive');
 
             // 4.3 Reemplazar Versión en Header
             htmlContent = htmlContent.replace(
