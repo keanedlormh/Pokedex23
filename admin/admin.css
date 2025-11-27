@@ -1,5 +1,5 @@
 /* ==============================================
-   Admin Panel Styles v3.5 (Pokedex Drive)
+   Admin Panel Styles v3.6
    ============================================== */
 
 :root {
@@ -16,13 +16,13 @@
     --color-green-accent: #10b981;
     --color-green-glow: rgba(16, 185, 129, 0.25);
     --color-purple-accent: #8b5cf6;
+    --color-red-accent: #f43f5e;
     
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'ui-monospace', monospace;
     --header-height: 60px;
 }
 
-/* Light mode support */
 html.light-mode {
     --color-bg-dark: #ffffff;
     --color-bg-medium: #f8f9fa;
@@ -48,14 +48,11 @@ body {
 .app-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
 .app-version { font-size: 0.75rem; padding: 0.1rem 0.4rem; color: var(--color-cyan-accent); background: var(--color-bg-medium); border: 1px solid var(--color-border); border-radius: 4px; margin-left: 0.5rem; font-family: var(--font-mono); }
 .header-right { display: flex; align-items: center; gap: 0.5rem; }
-
-/* HEADER BUTTONS */
 .header-icon-btn { background: var(--color-bg-medium); border: 1px solid var(--color-border); color: var(--color-text-secondary); border-radius: 4px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; transition: all 0.2s ease; }
 .header-icon-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); box-shadow: 0 0 10px var(--color-cyan-glow); }
 
 .action-btn-green { color: var(--color-green-accent); border-color: rgba(16, 185, 129, 0.3); }
 .action-btn-green:hover { background-color: rgba(16, 185, 129, 0.1); border-color: var(--color-green-accent); box-shadow: 0 0 10px var(--color-green-glow); }
-
 .action-btn-blue { color: var(--color-cyan-accent); border-color: rgba(6, 182, 212, 0.3); }
 .action-btn-blue:hover { background-color: rgba(6, 182, 212, 0.1); border-color: var(--color-cyan-accent); box-shadow: 0 0 10px var(--color-cyan-glow); }
 
@@ -65,29 +62,23 @@ body {
 .settings-dropdown-btn { display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.6rem 0.8rem; background: var(--color-bg-dark); border: 1px solid var(--color-border); border-radius: 4px; color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600; text-decoration: none; text-align: left; cursor: pointer; margin-bottom: 0.25rem; transition: all 0.2s; box-sizing: border-box; }
 .settings-dropdown-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
 
-/* LAYOUT & PANELS */
+/* PANELS & CARDS */
 .admin-content-area { padding: 2rem; max-width: 1400px; margin: 0 auto; }
 .content-panel { display: none; }
 .content-panel.active { display: block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* DEPLOYMENT ZONE (Top Panel) */
 .deployment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1rem; }
 .nav-card { background: var(--color-bg-medium); border: 1px solid var(--color-border); border-bottom: 3px solid var(--color-border); border-radius: 0.5rem; padding: 1.5rem; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 1rem; }
 .nav-card:hover { transform: translateY(-4px); border-color: var(--color-cyan-accent); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 .nav-card-icon { font-size: 2rem; }
 .nav-card-text h3 { margin: 0 0 0.2rem 0; color: var(--color-text-primary); font-size: 1rem; }
 .nav-card-text p { margin: 0; color: var(--color-text-secondary); font-size: 0.8rem; }
-
 .drive-card { border-color: var(--color-green-accent); background: linear-gradient(to bottom right, var(--color-bg-medium), rgba(16, 185, 129, 0.05)); }
-.drive-card:hover { box-shadow: 0 0 20px rgba(16, 185, 129, 0.15); transform: translateY(-4px); }
 .master-card { border-color: var(--color-purple-accent); background: linear-gradient(to bottom right, var(--color-bg-medium), rgba(139, 92, 246, 0.05)); }
-.master-card:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); transform: translateY(-4px); }
 .text-decoration-none { text-decoration: none; }
-
 .nav-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
 
-/* GENERIC UI */
 .futuristic-card { background: var(--color-bg-medium); border: 1px solid var(--color-border); border-left: 3px solid var(--color-cyan-accent); border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .center-limit { max-width: 800px; margin: 0 auto; }
 .futuristic-title { font-size: 1.1rem; font-weight: 700; color: var(--color-text-primary); margin: 0 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border); }
@@ -98,7 +89,7 @@ body {
 .futuristic-label { display: block; margin-bottom: 0.4rem; color: var(--color-text-secondary); font-size: 0.8rem; font-weight: 600; }
 .mb-4 { margin-bottom: 1rem; } .mt-2 { margin-top: 0.5rem; } .w-full { width: 100%; }
 
-/* EDITOR FULLSCREEN */
+/* FULLSCREEN EDITOR */
 body.fullscreen-editor-active .admin-content-area { padding: 0; max-width: none; }
 body.fullscreen-editor-active .content-panel.active { height: calc(100vh - var(--header-height)); }
 body.fullscreen-editor-active .editor-card { height: 100%; border: none; border-radius: 0; display: flex; flex-direction: column; padding: 1rem 2rem; box-sizing: border-box; }
@@ -109,27 +100,53 @@ body.fullscreen-editor-active .editor-card { height: 100%; border: none; border-
 .form-group-title { background: var(--color-border); color: var(--color-text-primary); padding: 0.5rem 1rem; border-radius: 4px; margin: 1.5rem 0 1rem 0; font-size: 0.9rem; font-family: var(--font-mono); }
 .form-row { margin-bottom: 1rem; }
 .futuristic-textarea { height: auto; min-height: 38px; resize: vertical; }
-
-/* SCHEMA EDITOR */
 .schema-group-box { background: var(--color-bg-dark); border: 1px solid var(--color-border); padding: 1rem; margin-bottom: 1rem; border-radius: 4px; }
 .schema-action-btn { background: none; border: 1px solid; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; margin-left: 0.5rem; }
 .schema-remove-btn { color: var(--color-red-accent); border-color: var(--color-red-accent); }
 .schema-attr-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
 
-/* LISTS & MODALS */
-.futuristic-list { background: var(--color-bg-dark); border: 1px solid var(--color-border); border-radius: 4px; }
-.list-item { padding: 0.75rem; border-bottom: 1px dashed var(--color-border); cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; }
-.list-item:hover { background: var(--color-border); color: var(--color-cyan-accent); }
+/* MODALS */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; }
 .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 201; width: 90%; max-width: 600px; }
 .info-modal-content { background: var(--color-bg-medium); border-radius: 0.5rem; overflow: hidden; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--color-border); }
-.modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+.modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; color: var(--color-text-secondary); font-family: var(--font-sans); }
+
+/* WRAP FIX FOR INFO MODAL */
+.text-wrap-enabled pre { white-space: pre-wrap !important; word-wrap: break-word !important; overflow-x: hidden; font-family: var(--font-mono); font-size: 0.85rem; }
+
+/* COMPACT LIBRARY MODAL STYLES (Restored) */
+.library-modal-content { max-width: 450px; }
+.compact-body { padding: 0.75rem 1rem; }
+.compact-header { padding: 0.5rem 1rem; }
+.library-section { margin: 0; }
+.lib-sec-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
 .library-list { display: flex; flex-direction: column; background-color: var(--color-bg-dark); border: 1px solid var(--color-border-light); border-radius: 4px; max-height: 250px; overflow-y: auto; }
-.gama-toggle-item { padding: 0.6rem; border-bottom: 1px dashed var(--color-border); font-size: 0.85rem; display: flex; justify-content: space-between; }
-.upload-area { display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem; }
-.futuristic-textarea-mini { height: 38px; resize: none; background: var(--color-bg-medium); border: 1px solid var(--color-border); color: white; border-radius: 4px; flex-grow: 1; }
-.upload-btn-label { background: var(--color-bg-medium); border: 1px solid var(--color-border); color: var(--color-text-primary); padding: 0 1rem; height: 38px; border-radius: 4px; cursor: pointer; }
+
+.gama-toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.6rem; border-bottom: 1px dashed var(--color-border); transition: background-color 0.2s; }
+.gama-toggle-item:hover { background-color: var(--color-border); }
+.gama-toggle-item:last-child { border-bottom: none; }
+
+.gama-toggle-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1; overflow: hidden; }
+.gama-checkbox { accent-color: var(--color-cyan-accent); width: 14px; height: 14px; cursor: pointer; }
+.gama-name { font-weight: 600; font-family: var(--font-mono); color: var(--color-text-primary); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Library Right Actions (Download + Status) */
+.gama-actions-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); min-width: 40px; text-align: right; }
+.gama-download-btn { background: none; border: 1px solid var(--color-border); color: var(--color-text-secondary); border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; line-height: 1.2; }
+.gama-download-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); background-color: rgba(6, 182, 212, 0.1); }
+
+/* Import Area in Library */
+.upload-area { display: flex; align-items: center; gap: 0.5rem; background-color: var(--color-bg-dark); border: 1px solid var(--color-border); border-radius: 4px; padding: 0.5rem; }
+.futuristic-textarea-mini { height: 32px; resize: none; background: var(--color-bg-medium); border: 1px solid var(--color-border); color: white; border-radius: 4px; flex-grow: 1; padding: 0.4rem; font-family: var(--font-mono); }
+.upload-btn-label { background: var(--color-bg-medium); border: 1px solid var(--color-border); color: var(--color-text-primary); padding: 0 1rem; height: 32px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+.upload-status-text { font-size: 0.7rem; color: var(--color-text-dim); font-family: var(--font-mono); display: block; margin-top: 0.25rem; text-align: right; }
+
+/* LISTS (Generic) */
+.futuristic-list { background: var(--color-bg-dark); border: 1px solid var(--color-border); border-radius: 4px; }
+.list-item { padding: 0.75rem; border-bottom: 1px dashed var(--color-border); cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; }
+.list-item:hover { background: var(--color-border); color: var(--color-cyan-accent); }
 
 /* DRIVE BUILDER */
 .drive-progress-container { display: flex; align-items: center; gap: 1rem; }
@@ -137,4 +154,3 @@ body.fullscreen-editor-active .editor-card { height: 100%; border: none; border-
 .drive-progress-fill { height: 100%; background-color: var(--color-green-accent); width: 0%; transition: width 0.3s ease-out; }
 .drive-console { background-color: #000; border: 1px solid var(--color-border); border-radius: 4px; padding: 0.8rem; height: 150px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-dim); margin-top: 1rem; }
 .log-line { margin-bottom: 2px; }
-.log-line.active { color: var(--color-text-primary); border-left: 2px solid var(--color-cyan-accent); padding-left: 5px; }
