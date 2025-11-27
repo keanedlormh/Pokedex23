@@ -32,8 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
         closeInfoModalBtn: document.getElementById('close-info-modal-btn'),
         libraryCloseBtn: document.getElementById('library-close-btn'), 
         libraryGamaList: document.getElementById('library-gama-list'),
+        
+        // CSV Upload Elements
+        csvUploadInput: document.getElementById('csv-upload-input'),
         csvTextBtn: document.getElementById('csv-text-btn'),
         csvTextInput: document.getElementById('csv-text-input'),
+        uploadStatusText: document.getElementById('upload-status-text'),
+
         allContentPanels: document.querySelectorAll('.content-panel'),
         navCardButtons: document.querySelectorAll('.nav-card[data-panel]'),
         modelSearchInput: document.getElementById('search-model'),
@@ -100,7 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.libraryCloseBtn.addEventListener('click', hideAllModals);
         dom.modalOverlay.addEventListener('click', hideAllModals);
         dom.driveCloseBtn.addEventListener('click', hideAllModals);
-        dom.csvTextBtn.addEventListener('click', handleCsvImport);
+
+        // CSV Listeners
+        dom.csvTextBtn.addEventListener('click', handleCsvTextImport);
+        dom.csvUploadInput.addEventListener('change', handleCsvFileUpload);
 
         dom.modelSearchInput.addEventListener('input', updateSearchResults);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
@@ -117,13 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.driveTriggerBtn.addEventListener('click', startDriveBuild);
         dom.driveDownloadBtn.addEventListener('click', downloadCompiledDrive);
 
-        // EVENTOS BIBLIOTECA (Delegación para checkboxes y botones descarga)
         if(dom.libraryGamaList) {
             dom.libraryGamaList.addEventListener('change', (e) => {
                 if(e.target.matches('.gama-checkbox')) {
                     const key = e.target.dataset.key;
                     if(e.target.checked) activeSchemas.add(key); else activeSchemas.delete(key);
-                    refreshUI(); // Re-renderizar para actualizar estados
+                    refreshUI();
                 }
             });
             dom.libraryGamaList.addEventListener('click', (e) => {
@@ -190,7 +197,137 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.modalOverlay.style.display = 'none';
     }
 
-    // --- LOGICA DE MEMORIA ---
+    // --- LOGICA IMPORTACION CSV ROBUSTA (Restaurada de v4.8) ---
+    
+    // Parseador real que respeta comillas y punto y coma
+    function parseCSVLine(text) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+            if (inQuotes) {
+                if (char === '"' && nextChar === '"') { current += '"'; i++; }
+                else if (char === '"') { inQuotes = false; }
+                else { current += char; }
+            } else {
+                if (char === ';') { result.push(current); current = ''; }
+                else if (char === '"') { inQuotes = true; }
+                else { current += char; }
+            }
+        }
+        result.push(current);
+        return result;
+    }
+
+    function parseAndImportCsv(csvText) {
+        let cleanText = csvText;
+        if (cleanText.charCodeAt(0) === 0xFEFF) cleanText = cleanText.slice(1);
+        
+        const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== '');
+        if (lines.length < 4) throw new Error("Formato inválido: Menos de 4 líneas.");
+        
+        // Línea 1: Schema Key y Grupos
+        const rowGroups = parseCSVLine(lines[0]);
+        const schemaKey = rowGroups[0].toLowerCase().trim();
+        if (!schemaKey) throw new Error("Falta la clave de gama (celda A1).");
+
+        // Línea 2: Códigos (ids)
+        const rowCodes = parseCSVLine(lines[1]);
+        
+        // Línea 3: Descripciones
+        const rowDescs = parseCSVLine(lines[2]);
+
+        const startIndex = 2; // Columna C empieza datos
+        const tempSchema = {};
+        const groupOrder = [];
+
+        // Construir Esquema
+        for (let i = startIndex; i < rowCodes.length; i++) {
+            const groupName = rowGroups[i] || "Otros";
+            const code = rowCodes[i];
+            const desc = rowDescs[i] || code;
+
+            if (code) {
+                if (!tempSchema[groupName]) {
+                    tempSchema[groupName] = [];
+                    groupOrder.push(groupName);
+                }
+                tempSchema[groupName].push({ code, desc });
+            }
+        }
+        const newSchemaGroup = groupOrder.map(gName => ({ group: gName, attrs: tempSchema[gName] }));
+        
+        // Registrar Esquema
+        masterSchemaMap[schemaKey] = newSchemaGroup;
+        activeSchemas.add(schemaKey);
+
+        // Procesar Productos
+        let count = 0;
+        for (let i = 3; i < lines.length; i++) {
+            const cols = parseCSVLine(lines[i]);
+            const modelId = cols[1]; // Columna B es modelo
+            if (!modelId) continue;
+
+            const attributes = {};
+            for (let j = startIndex; j < rowCodes.length; j++) {
+                const code = rowCodes[j];
+                if (code && cols[j]) {
+                    attributes[code] = cols[j];
+                }
+            }
+            // Upsert producto
+            const existingIdx = masterDatabase.findIndex(p => p.model === modelId);
+            const newProd = { model: modelId, schema_key: schemaKey, attributes: attributes };
+            
+            if (existingIdx >= 0) masterDatabase[existingIdx] = newProd;
+            else masterDatabase.push(newProd);
+            
+            count++;
+        }
+        
+        return { count, schemaKey };
+    }
+
+    // Manejadores de Eventos CSV
+    function handleCsvTextImport() {
+        const text = dom.csvTextInput.value.trim();
+        if(!text) return;
+        try {
+            const res = parseAndImportCsv(text);
+            alert(`Éxito: ${res.count} modelos importados a gama '${res.schemaKey}'.`);
+            dom.csvTextInput.value = '';
+            refreshUI();
+        } catch(e) {
+            alert("Error Importación: " + e.message);
+        }
+    }
+
+    function handleCsvFileUpload(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const res = parseAndImportCsv(event.target.result);
+                dom.uploadStatusText.textContent = `¡Importado: ${res.schemaKey} (${res.count})!`;
+                dom.uploadStatusText.style.color = 'var(--color-green-accent)';
+                refreshUI();
+            } catch(error) {
+                console.error(error);
+                dom.uploadStatusText.textContent = "Error de formato.";
+                dom.uploadStatusText.style.color = 'var(--color-red-accent)';
+                alert("Error al procesar archivo: " + error.message);
+            }
+        };
+        reader.readAsText(file, 'UTF-8'); // Forzar UTF-8
+        e.target.value = ''; // Reset input
+    }
+
+
+    // --- LOGICA MEMORIA Y EXPORTACION ---
     function handleMemorySave() {
         dom.btnSaveMemory.style.transform = "scale(0.9)";
         setTimeout(() => dom.btnSaveMemory.style.transform = "scale(1)", 150);
@@ -221,7 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = dom.editModelIdInput.value;
             const product = masterDatabase.find(p => p.model === id);
             if (product) downloadFile(`${id}.json`, JSON.stringify(product, null, 4), 'application/json');
-            else alert("Guarda en memoria primero.");
         } else if (currentActivePanel === 'edit-schema') {
             const key = dom.editSchemaKeyInput.value;
             const structure = masterSchemaMap[key];
@@ -329,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!valid) alert("Hay grupos sin nombre."); return valid ? groups : null;
     }
 
-    // --- LIBRARY COMPACT & EXPORT ---
+    // --- LIBRARY & EXPORT ---
     function openLibraryModal() { renderLibraryList(); dom.libraryModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; }
     
     function renderLibraryList() {
@@ -337,10 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.keys(masterSchemaMap).forEach(key => {
             const isActive = activeSchemas.has(key);
             const friendlyName = key.charAt(0).toUpperCase() + key.slice(1);
-            
             const div = document.createElement('div');
             div.className = 'gama-toggle-item';
-            // Estructura Compacta Exacta
             div.innerHTML = `
                 <label class="gama-toggle-label">
                     <input type="checkbox" class="gama-checkbox" data-key="${key}" ${isActive ? 'checked' : ''}>
@@ -358,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function exportGamaToCSV(selectedSchema) {
         if (!selectedSchema) return;
         const products = masterDatabase.filter(p => p.schema_key === selectedSchema);
-        if (products.length === 0) return alert("Gama vacía, no se puede exportar.");
+        if (products.length === 0) return alert("Gama vacía.");
 
         const schemaDef = masterSchemaMap[selectedSchema];
         let row1_groups = [selectedSchema, "Identificación"];
@@ -369,34 +503,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (schemaDef) {
             schemaDef.forEach(group => {
                 group.attrs.forEach(attr => {
-                    row1_groups.push(group.group);
-                    row2_codes.push(attr.code);
-                    row3_descs.push(attr.desc);
-                    attrKeys.push(attr.code);
+                    row1_groups.push(group.group); row2_codes.push(attr.code); row3_descs.push(attr.desc); attrKeys.push(attr.code);
                 });
             });
         }
-
         const sanitize = (val) => {
             if (val === null || val === undefined) return "";
             val = String(val).replace(/"/g, '""');
             if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`;
             return val;
         };
-
         const dataRows = products.map(p => {
             let row = ["", sanitize(p.model)];
-            attrKeys.forEach(key => {
-                let val = p.attributes[key] || "";
-                row.push(sanitize(val));
-            });
+            attrKeys.forEach(key => { let val = p.attributes[key] || ""; row.push(sanitize(val)); });
             return row.join(";");
         });
-
         const header1 = row1_groups.map(g => sanitize(g)).join(";");
         const header2 = row2_codes.map(c => sanitize(c)).join(";");
         const header3 = row3_descs.map(d => sanitize(d)).join(";");
-
         const csvContent = "\uFEFF" + header1 + "\n" + header2 + "\n" + header3 + "\n" + dataRows.join("\n");
         downloadFile(`GAMA_${selectedSchema.toUpperCase()}.csv`, csvContent, 'text/csv;charset=utf-8');
     }
@@ -404,32 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function exportFullGamaCsv() {
         const s = dom.gamaExportSelect.value;
         if (!s) return alert("Selecciona una gama primero.");
-        exportGamaToCSV(s); // Reutilizamos la lógica desbloqueada
-    }
-
-    function handleCsvImport() {
-        const text = dom.csvTextInput.value.trim();
-        if(!text) return;
-        try {
-            const lines = text.split('\n');
-            const header = lines[0].split(';');
-            const schemaKey = header[0].toLowerCase().trim();
-            if(!schemaKey) throw new Error("Cabecera inválida");
-            if(!masterSchemaMap[schemaKey]) masterSchemaMap[schemaKey] = [{ group: "Importado", attrs: header.slice(2).map(h => ({code: h, desc: h})) }];
-            let added = 0;
-            for(let i=3; i<lines.length; i++) {
-                const cols = lines[i].split(';');
-                if(cols.length < 2) continue;
-                const model = cols[1];
-                const attrs = {};
-                header.slice(2).forEach((h, idx) => { if(cols[idx+2]) attrs[h] = cols[idx+2].trim(); });
-                masterDatabase.push({ model: model, schema_key: schemaKey, attributes: attrs });
-                added++;
-            }
-            alert(`Importados ${added} modelos a ${schemaKey}`);
-            dom.csvTextInput.value = '';
-            refreshUI();
-        } catch(e) { alert("Error CSV: " + e.message); }
+        exportGamaToCSV(s);
     }
 
     // --- UTILS & DRIVE ---
@@ -449,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const blob = new Blob([content], {type: mime});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
-
+    
     // Drive Builder Logic
     let compiledBlob = null;
     function startDriveBuild() {
