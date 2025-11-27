@@ -3,36 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Pokedex Drive v3.5</title>
+    <title>Admin - Pokedex Drive</title>
 
     <link rel="stylesheet" href="admin.css">
 
-    <!-- Bootloader Simulado -->
+    <!-- Bootloader Admin (Adaptado del Main App) -->
     <script>
-        window.APP_DB = { products: [], schemas: {}, registerProduct: function(p) { this.products.push(p); }, registerSchema: function(k, s) { this.schemas[k] = s; } };
+        // Inicializar DB vacía
+        window.APP_DB = { 
+            products: [], 
+            schemas: {}, 
+            registerProduct: function(p) { this.products.push(p); }, 
+            registerSchema: function(k, s) { this.schemas[k] = s; } 
+        };
+
+        // Carga de Datos (Ajustando ruta relativa ../)
         const basePath = '../'; 
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', basePath + 'db/manifest.json', false);
         try {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', basePath + 'db/manifest.json', false); // Síncrono para asegurar carga
             xhr.send(null);
+            
             if (xhr.status === 200) {
                 const manifest = JSON.parse(xhr.responseText);
-                manifest.schemas.forEach(path => { document.write('<script src="' + basePath + path + '" defer><\/script>'); });
+                
+                // Cargar esquemas (JS scripts)
+                manifest.schemas.forEach(path => { 
+                    document.write('<script src="' + basePath + path + '"><\/script>'); 
+                });
+
+                // Cargar Gamas Bulk (JSON)
                 manifest.bulk_gamas.forEach(jsonPath => { 
-                    const x = new XMLHttpRequest(); x.open('GET', basePath + jsonPath, false); x.send(null); 
+                    const x = new XMLHttpRequest(); 
+                    x.open('GET', basePath + jsonPath, false); 
+                    x.send(null); 
                     if (x.status === 200) JSON.parse(x.responseText).forEach(pr => window.APP_DB.registerProduct(pr)); 
                 });
+
+                // Cargar Productos Individuales
                 Object.values(manifest.products).forEach(productList => { 
                     productList.forEach(jsonPath => { 
-                        const x = new XMLHttpRequest(); x.open('GET', basePath + jsonPath, false); x.send(null); 
+                        const x = new XMLHttpRequest(); 
+                        x.open('GET', basePath + jsonPath, false); 
+                        x.send(null); 
                         if (x.status === 200) window.APP_DB.registerProduct(JSON.parse(x.responseText)); 
                     });
                 });
+            } else {
+                console.warn("Manifest no encontrado. Iniciando en modo vacío.");
             }
-        } catch (e) { console.warn("Modo offline o error de carga DB:", e); }
+        } catch (e) {
+            console.error("Error en Bootloader Admin:", e);
+        }
     </script>
     <script src="admin.js" defer></script>
-    <script src="pokedexdrive.js" defer></script>
 </head>
 
 <body>
@@ -40,23 +64,24 @@
         <div class="header-content">
             <div class="header-left">
                 <button id="home-btn" class="app-title-btn">
-                    <h1 class="app-title">Admin <span class="app-version">Drive v3.5</span></h1>
+                    <h1 class="app-title">Pokedex Drive <span class="app-version">v3.5</span></h1>
                 </button>
             </div>
+            
             <div class="header-right">
-                <!-- NUEVOS CONTROLES DE EDICIÓN (Memoria vs Exportar) -->
-                <div id="editor-controls" style="display: none; gap: 0.5rem;">
+                <!-- NUEVOS CONTROLES DIVIDIDOS (Solo visibles en editores) -->
+                <div id="editor-controls" style="display: none; gap: 0.5rem; margin-right: 1rem; border-right: 1px solid var(--color-border); padding-right: 1rem;">
                     <button id="btn-save-memory" class="header-icon-btn action-btn-green" title="Guardar en Memoria (RAM)">💾</button>
-                    <button id="btn-export-file" class="header-icon-btn action-btn-blue" title="Exportar Archivo">⬇️</button>
+                    <button id="btn-export-file" class="header-icon-btn action-btn-blue" title="Descargar Archivo JSON">⬇️</button>
                 </div>
 
                 <div class="settings-wrapper">
-                    <button id="settings-btn" class="header-icon-btn" title="Ajustes">⚙️</button>
+                    <button id="settings-btn" class="header-icon-btn" title="Menú">⚙️</button>
                     <div id="settings-menu" class="settings-dropdown" style="display: none;">
                         <button id="library-menu-toggle" class="settings-dropdown-btn">📚 Biblioteca</button>
-                        <button id="theme-btn" class="settings-dropdown-btn">🎨 Tema</button>
-                        <button id="info-btn" class="settings-dropdown-btn">ℹ️ Info Admin</button>
-                        <a href="../index.html" class="settings-dropdown-btn">📖 Pokedex</a>
+                        <button id="theme-btn" class="settings-dropdown-btn">🎨 Tema Random</button>
+                        <button id="info-btn" class="settings-dropdown-btn">ℹ️ Info</button>
+                        <a href="../index.html" class="settings-dropdown-btn">📖 Ir a Pokedex</a>
                     </div>
                 </div>
             </div>
@@ -67,11 +92,11 @@
         <!-- PANEL GENERAL -->
         <div id="panel-general" class="content-panel active">
             
-            <!-- SECCIÓN SUPERIOR: DESPLIEGUE -->
-            <div class="deployment-zone mb-4">
+            <!-- ZONA SUPERIOR: DESPLIEGUE -->
+            <div class="deployment-zone">
                 <h2 class="futuristic-title">Zona de Despliegue</h2>
                 <div class="deployment-grid">
-                    <!-- Botón Pokedex Drive (Compilador) -->
+                    <!-- Botón Pokedex Drive (Metaconstructor) -->
                     <button id="drive-builder-trigger" class="nav-card special-card drive-card">
                         <span class="nav-card-icon">🚀</span>
                         <div class="nav-card-text">
@@ -80,7 +105,7 @@
                         </div>
                     </button>
 
-                    <!-- Botón Descarga Master -->
+                    <!-- Botón Descarga Master (Enlace directo) -->
                     <a href="pokedex23_master.html" download class="nav-card special-card master-card text-decoration-none">
                         <span class="nav-card-icon">💎</span>
                         <div class="nav-card-text">
@@ -91,31 +116,39 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN INFERIOR: HERRAMIENTAS -->
-            <h2 class="futuristic-title mt-4">Herramientas de Gestión</h2>
-            <div class="nav-card-grid">
-                <button class="nav-card" data-panel="model-hub">
-                    <span class="nav-card-icon">📝</span>
-                    <h3>Gestor de Modelos</h3>
-                    <p>Crear y editar en memoria.</p>
-                </button>
-                <button class="nav-card" data-panel="schema-hub">
-                    <span class="nav-card-icon">🏗️</span>
-                    <h3>Editor de Gamas</h3>
-                    <p>Estructura de datos .js</p>
-                </button>
-                <button class="nav-card" data-panel="export-gama">
-                    <span class="nav-card-icon">📦</span>
-                    <h3>Exportar Gama</h3>
-                    <p>JSON / CSV masivo</p>
-                </button>
+            <!-- ZONA INFERIOR: HERRAMIENTAS -->
+            <div class="tools-zone" style="margin-top: 2rem;">
+                <h2 class="futuristic-title">Herramientas de Edición</h2>
+                <div class="nav-card-grid">
+                    <button class="nav-card" data-panel="model-hub">
+                        <span class="nav-card-icon">📝</span>
+                        <div class="nav-card-text">
+                            <h3>Gestor de Modelos</h3>
+                            <p>Crear y editar en RAM.</p>
+                        </div>
+                    </button>
+                    <button class="nav-card" data-panel="schema-hub">
+                        <span class="nav-card-icon">🏗️</span>
+                        <div class="nav-card-text">
+                            <h3>Editor de Gamas</h3>
+                            <p>Estructura de datos .js</p>
+                        </div>
+                    </button>
+                    <button class="nav-card" data-panel="export-gama">
+                        <span class="nav-card-icon">📦</span>
+                        <div class="nav-card-text">
+                            <h3>Exportar Gama</h3>
+                            <p>JSON / CSV Masivo</p>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- HUBS & EDITORES -->
+        <!-- PANEL: MODEL HUB (Buscador) -->
         <div id="panel-model-hub" class="content-panel">
-            <div class="futuristic-card search-panel center-limit">
-                <h2 class="futuristic-title">1. Editar Modelo</h2>
+            <div class="futuristic-card center-limit">
+                <h2 class="futuristic-title">1. Editar Modelo Existente</h2>
                 <input type="text" id="search-model" placeholder="Buscar modelo..." class="futuristic-input w-full">
                 <div id="model-results-list" class="futuristic-list full-list-visible short-list"></div>
                 
@@ -126,27 +159,30 @@
                         <select id="create-model-schema-select" class="futuristic-select w-full"><option value="">--</option></select>
                     </div>
                     <div class="mb-4">
-                        <label class="futuristic-label">ID:</label>
+                        <label class="futuristic-label">ID Modelo:</label>
                         <input type="text" id="create-model-id" class="futuristic-input w-full">
                     </div>
-                    <button id="create-model-btn" class="futuristic-button w-full">Crear en Memoria</button>
+                    <button id="create-model-btn" class="futuristic-button w-full">Crear en RAM</button>
                 </div>
             </div>
         </div>
         
+        <!-- PANEL: SCHEMA HUB -->
         <div id="panel-schema-hub" class="content-panel">
-            <div class="futuristic-card search-panel center-limit">
-                <h2 class="futuristic-title">1. Cargar Esquema</h2>
+            <div class="futuristic-card center-limit">
+                <h2 class="futuristic-title">Gamas Disponibles</h2>
                 <div id="schema-results-list" class="futuristic-list full-list-visible short-list"></div>
-                <h2 class="futuristic-title" style="margin-top:2rem;">2. Nuevo Esquema</h2>
+                
+                <h2 class="futuristic-title" style="margin-top:2rem;">Nueva Gama</h2>
                 <div class="control-group-box">
-                    <label class="futuristic-label">Clave:</label>
+                    <label class="futuristic-label">Clave (ej: smartphone):</label>
                     <input type="text" id="new-schema-key" class="futuristic-input w-full">
-                    <button id="create-schema-btn" class="futuristic-button w-full mt-2">Crear</button>
+                    <button id="create-schema-btn" class="futuristic-button w-full mt-2">Crear Estructura</button>
                 </div>
             </div>
         </div>
         
+        <!-- EDITOR DE MODELO (Fullscreen) -->
         <div id="panel-edit-model" class="content-panel">
             <div class="editor-card">
                 <div class="editor-header">
@@ -155,8 +191,8 @@
                 <form id="editor-form" class="editor-form-fields">
                     <div class="editor-key-fields">
                         <div class="control-group">
-                            <label class="futuristic-label">Model ID:</label>
-                            <input type="text" id="edit-model-id" class="futuristic-input w-full" readonly> <!-- ID suele ser fijo al editar -->
+                            <label class="futuristic-label">Model ID (Solo lectura):</label>
+                            <input type="text" id="edit-model-id" class="futuristic-input w-full" readonly>
                         </div>
                         <div class="control-group">
                             <label class="futuristic-label">Gama:</label>
@@ -164,13 +200,15 @@
                         </div>
                     </div>
                     <p id="editor-placeholder" class="text-gray-400">Cargando campos...</p>
+                    <!-- Aquí se inyectan los inputs dinámicamente -->
                 </form>
             </div>
         </div>
         
+        <!-- EDITOR DE ESQUEMA (Fullscreen) -->
         <div id="panel-edit-schema" class="content-panel">
             <div class="editor-card">
-                <h2 id="schema-title" class="spec-title">Editor</h2>
+                <h2 id="schema-title" class="spec-title">Editor de Estructura</h2>
                 <div id="schema-editor-form" class="editor-form-fields">
                     <div class="editor-key-fields">
                         <div class="control-group">
@@ -178,23 +216,23 @@
                             <input type="text" id="edit-schema-key" class="futuristic-input w-full" readonly disabled>
                         </div>
                     </div>
-                    <p id="schema-editor-placeholder" class="text-gray-400">...</p>
                 </div>
-                <button id="add-group-btn" class="futuristic-button schema-add-group-btn">+ Grupo</button>
+                <button id="add-group-btn" class="futuristic-button schema-add-group-btn">+ Nuevo Grupo</button>
             </div>
         </div>
         
+        <!-- PANEL: EXPORTACIÓN -->
         <div id="panel-export-gama" class="content-panel">
             <div class="futuristic-card center-limit">
                 <h2 class="futuristic-title">Exportación Masiva</h2>
                 <div class="gama-export-controls">
                     <div class="control-group flex-grow" style="width:100%;margin-bottom:1rem;">
-                        <label class="futuristic-label">Gama:</label>
+                        <label class="futuristic-label">Seleccionar Gama:</label>
                         <select id="gama-export-select" class="futuristic-select w-full"><option value="">--</option></select>
                     </div>
                     <div class="export-buttons-container">
-                        <button id="export-gama-json-btn" class="futuristic-button">⬇ JSON</button>
-                        <button id="export-gama-csv-btn" class="futuristic-button csv-button">📊 CSV</button>
+                        <button id="export-gama-json-btn" class="futuristic-button">⬇ JSON Completo</button>
+                        <button id="export-gama-csv-btn" class="futuristic-button csv-button">📊 CSV Excel</button>
                     </div>
                 </div>
                 <div id="gama-export-list" class="gama-export-list"></div>
@@ -202,26 +240,26 @@
         </div>
     </main>
 
+    <!-- MODALES -->
+
     <!-- Modal Biblioteca -->
     <div id="library-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card library-modal-content">
             <div class="modal-header">
-                <h2 class="futuristic-title" style="margin:0;">Biblioteca Virtual</h2>
+                <h2 class="futuristic-title" style="margin:0;">Biblioteca Virtual (RAM)</h2>
                 <button id="library-close-btn" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body">
                 <div style="margin-bottom: 2rem;">
                     <h3 class="library-section-title">Gamas en Memoria</h3>
-                    <p class="library-desc">Gestiona las gamas activas en la sesión actual.</p>
+                    <p class="library-desc">Datos cargados actualmente. Útil para depurar.</p>
                     <div id="library-gama-list" class="library-list"></div>
                 </div>
                 <div>
-                    <h3 class="library-section-title">Importar Datos</h3>
+                    <h3 class="library-section-title">Importar CSV</h3>
                     <div class="upload-area">
-                        <label for="csv-upload-input" class="upload-btn-label">📂 Archivo</label>
-                        <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
-                        <button id="csv-text-btn" class="upload-btn-label">📥 TXT</button>
+                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar contenido CSV aquí..." rows="1"></textarea>
+                        <button id="csv-text-btn" class="upload-btn-label">Procesar Texto</button>
                     </div>
                     <span id="upload-status-text" class="upload-status-text">Formato Admin (;)</span>
                 </div>
@@ -234,27 +272,27 @@
     <div id="info-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
             <div class="modal-header">
-                <h2 class="futuristic-title" style="margin:0;">Info Admin</h2>
+                <h2 class="futuristic-title" style="margin:0;">Info</h2>
                 <button id="close-info-modal-btn" class="modal-close-btn">✕</button>
             </div>
             <div class="modal-body">
-                <h3>Pokedex Drive - Admin v3.5</h3>
                 <pre>
-Versión 3.5 (Pokedex Drive)
-- [NUEVO] Botón directo Pokedex Drive.
-- [NUEVO] Enlace directo Pokedex23 Master.
-- [CORE] Edición directa sobre memoria virtual.
-- [UI] Botones de Guardar/Exportar separados.
+Pokedex Drive Admin v3.5
+------------------------
+- Nuevo Motor "Drive" integrado.
+- Edición directa sobre RAM.
+- Generación de archivos JSON individuales.
+- Exportación masiva CSV/JSON.
                 </pre>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Pokedex Drive (Compilador) -->
+    <!-- Modal Pokedex Drive (Compilador) -->
     <div id="drive-modal" class="modal-container" style="display: none; z-index: 210;">
         <div class="info-modal-content futuristic-card drive-modal-content">
             <div class="modal-header">
-                <h2 class="futuristic-title" style="margin:0;">Pokedex Drive Compiler</h2>
+                <h2 class="futuristic-title" style="margin:0;">Compilador Pokedex Drive</h2>
                 <button id="drive-close-btn" class="modal-close-btn" style="display: none;">&times;</button>
             </div>
             <div class="modal-body drive-body">
@@ -264,12 +302,10 @@ Versión 3.5 (Pokedex Drive)
                     </div>
                     <span id="drive-percent-text" class="drive-percent">0%</span>
                 </div>
-                <div id="drive-log-console" class="drive-console">
-                    <div class="log-line">> Iniciando Pokedex Drive...</div>
-                </div>
+                <div id="drive-log-console" class="drive-console"></div>
                 <div id="drive-action-area" class="drive-actions" style="display: none;">
-                    <p class="success-message">¡Pokedex Drive Generado!</p>
-                    <button id="drive-download-again-btn" class="futuristic-button w-full">Descargar HTML</button>
+                    <p class="success-message">¡Compilación completada!</p>
+                    <button id="drive-download-final-btn" class="futuristic-button w-full">Descargar HTML Offline</button>
                 </div>
             </div>
         </div>
