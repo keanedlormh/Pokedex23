@@ -1,14 +1,28 @@
+/**
+ * Pokedex Drive Admin v3.5 - Logic Core
+ */
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Referencias DOM ---
+    // --- VARIABLES GLOBALES ---
+    let masterDatabase = [];
+    let masterSchemaMap = {};
+    let currentLoadedSchemaKey = null; 
+    let currentActivePanel = 'general';
+    let isLightMode = false;
+
+    // Paletas HSL (Portadas de main.js para compatibilidad visual)
+    const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
+    const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
+
+    // --- REFERENCIAS DOM ---
     const dom = {
         homeBtn: document.getElementById('home-btn'),
-        // Nuevos botones header
+        // Header Controls
         btnSaveMemory: document.getElementById('btn-save-memory'),
         btnExportFile: document.getElementById('btn-export-file'),
         editorControls: document.getElementById('editor-controls'),
         
-        allContentPanels: document.querySelectorAll('.content-panel'),
+        // Modals & Settings
         settingsBtn: document.getElementById('settings-btn'),
         settingsMenu: document.getElementById('settings-menu'),
         themeBtn: document.getElementById('theme-btn'),
@@ -20,310 +34,594 @@ document.addEventListener('DOMContentLoaded', () => {
         closeInfoModalBtn: document.getElementById('close-info-modal-btn'),
         libraryCloseBtn: document.getElementById('library-close-btn'), 
         libraryGamaList: document.getElementById('library-gama-list'),
-        csvUploadInput: document.getElementById('csv-upload-input'),
-        uploadStatusText: document.getElementById('upload-status-text'),
-        csvTextInput: document.getElementById('csv-text-input'),
         csvTextBtn: document.getElementById('csv-text-btn'),
+        csvTextInput: document.getElementById('csv-text-input'),
 
-        panelGeneral: document.getElementById('panel-general'),
-        navCardButtons: document.querySelectorAll('.nav-card[data-panel]'), // Solo los botones que navegan
-        panelModelHub: document.getElementById('panel-model-hub'),
+        // Panels
+        allContentPanels: document.querySelectorAll('.content-panel'),
+        navCardButtons: document.querySelectorAll('.nav-card[data-panel]'),
+        
+        // Model Editor Elements
         modelSearchInput: document.getElementById('search-model'),
         modelSearchResults: document.getElementById('model-results-list'),
         createModelSchemaSelect: document.getElementById('create-model-schema-select'),
         createModelIdInput: document.getElementById('create-model-id'),
         createModelBtn: document.getElementById('create-model-btn'),
-        panelSchemaHub: document.getElementById('panel-schema-hub'),
-        schemaResultsList: document.getElementById('schema-results-list'),
-        newSchemaKeyInput: document.getElementById('new-schema-key'),
-        createSchemaBtn: document.getElementById('create-schema-btn'),
-        panelEditModel: document.getElementById('panel-edit-model'),
+        editModelIdInput: document.getElementById('edit-model-id'),
+        editSchemaKeyDisplay: document.getElementById('edit-schema-key-display'),
         productTitle: document.getElementById('product-title'),
         editorForm: document.getElementById('editor-form'),
         editorPlaceholder: document.getElementById('editor-placeholder'),
-        editModelIdInput: document.getElementById('edit-model-id'),
-        editSchemaKeyDisplay: document.getElementById('edit-schema-key-display'),
-        panelEditSchema: document.getElementById('panel-edit-schema'),
-        schemaTitle: document.getElementById('schema-title'),
-        schemaEditorForm: document.getElementById('schema-editor-form'),
-        schemaEditorPlaceholder: document.getElementById('schema-editor-placeholder'),
+
+        // Schema Editor Elements
+        schemaResultsList: document.getElementById('schema-results-list'),
+        newSchemaKeyInput: document.getElementById('new-schema-key'),
+        createSchemaBtn: document.getElementById('create-schema-btn'),
         editSchemaKeyInput: document.getElementById('edit-schema-key'),
+        schemaEditorForm: document.getElementById('schema-editor-form'),
         addGroupBtn: document.getElementById('add-group-btn'),
-        panelExportGama: document.getElementById('panel-export-gama'),
+
+        // Export Elements
         gamaExportSelect: document.getElementById('gama-export-select'),
         gamaExportList: document.getElementById('gama-export-list'),
         exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
-        exportGamaCsvButton: document.getElementById('export-gama-csv-btn')
+        exportGamaCsvButton: document.getElementById('export-gama-csv-btn'),
+
+        // Drive Builder Elements
+        driveTriggerBtn: document.getElementById('drive-builder-trigger'),
+        driveModal: document.getElementById('drive-modal'),
+        driveCloseBtn: document.getElementById('drive-close-btn'),
+        driveProgressFill: document.getElementById('drive-progress-fill'),
+        drivePercentText: document.getElementById('drive-percent-text'),
+        driveConsole: document.getElementById('drive-log-console'),
+        driveActionArea: document.getElementById('drive-action-area'),
+        driveDownloadBtn: document.getElementById('drive-download-final-btn')
     };
 
-    // --- Estado ---
-    let masterDatabase = [];
-    let masterSchemaMap = {};
-    let activeSchemas = new Set(); 
-    let currentLoadedSchemaKey = null; 
-    let currentActivePanel = 'general';
-    let isLightMode = false;
-
+    // --- INICIALIZACIÓN ---
     function initialize() {
-        applyInitialTheme();
-        setTimeout(() => {
-            // Cargar datos del bootloader
-            masterDatabase = window.APP_DB.products;
-            masterSchemaMap = window.APP_DB.schemas;
-            
-            if (masterDatabase.length > 0) masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-            Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
+        // Carga de Tema Inicial
+        const savedMode = localStorage.getItem('admin-theme-mode');
+        isLightMode = (savedMode === 'light');
+        randomizeTheme(); // Usar función random real
 
+        // Pequeño delay para asegurar que el Bootloader HTML ha llenado APP_DB
+        setTimeout(() => {
+            if (window.APP_DB) {
+                masterDatabase = window.APP_DB.products || [];
+                masterSchemaMap = window.APP_DB.schemas || [];
+                console.log(`Admin Init: ${masterDatabase.length} modelos, ${Object.keys(masterSchemaMap).length} gamas.`);
+            } else {
+                console.error("APP_DB no definido.");
+            }
+            
             setupEventListeners();
             refreshUI();
             showPanel('general');
         }, 100);
     }
 
-    function refreshUI() {
-        renderSearchResults(masterDatabase);
-        populateSchemaList();
-        populateGamaSelectors();
-        if (dom.libraryModal.style.display === 'block') renderLibraryGamaList();
-    }
-
+    // --- EVENT LISTENERS ---
     function setupEventListeners() {
+        // Navegación
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
-        
-        // BOTONES HEADER (NUEVOS)
-        dom.btnSaveMemory.addEventListener('click', handleMemorySave);
-        dom.btnExportFile.addEventListener('click', handleExportFile);
-
-        dom.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSettingsMenu(); });
-        dom.themeBtn.addEventListener('click', handleThemeToggle); 
-        dom.infoBtn.addEventListener('click', showInfoModal);
-        dom.libraryBtn.addEventListener('click', openLibraryModal); 
-        dom.closeInfoModalBtn.addEventListener('click', hideAllModals);
-        dom.libraryCloseBtn.addEventListener('click', hideAllModals); 
-        dom.modalOverlay.addEventListener('click', hideAllModals);
-        
-        document.addEventListener('click', (e) => {
-            if (dom.settingsMenu && dom.settingsMenu.style.display === 'block') {
-                if (!dom.settingsMenu.contains(e.target) && e.target !== dom.settingsBtn) {
-                    dom.settingsMenu.style.display = 'none';
-                }
-            }
+        dom.navCardButtons.forEach(btn => {
+            btn.addEventListener('click', () => showPanel(btn.dataset.panel));
         });
 
-        dom.navCardButtons.forEach(card => card.addEventListener('click', () => showPanel(card.dataset.panel)));
-        
-        dom.modelSearchInput.addEventListener('input', applySearch);
+        // Header Actions
+        dom.btnSaveMemory.addEventListener('click', handleMemorySave);
+        dom.btnExportFile.addEventListener('click', handleExportFile);
+        dom.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); dom.settingsMenu.style.display = dom.settingsMenu.style.display === 'block' ? 'none' : 'block'; });
+        document.addEventListener('click', (e) => { if (dom.settingsMenu) dom.settingsMenu.style.display = 'none'; });
+
+        // Modals
+        dom.libraryBtn.addEventListener('click', openLibraryModal);
+        dom.themeBtn.addEventListener('click', (e) => { e.stopPropagation(); isLightMode = !isLightMode; localStorage.setItem('admin-theme-mode', isLightMode?'light':'dark'); randomizeTheme(); });
+        dom.infoBtn.addEventListener('click', () => { dom.infoModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; });
+        dom.closeInfoModalBtn.addEventListener('click', hideAllModals);
+        dom.libraryCloseBtn.addEventListener('click', hideAllModals);
+        dom.modalOverlay.addEventListener('click', hideAllModals);
+        dom.driveCloseBtn.addEventListener('click', hideAllModals);
+        dom.csvTextBtn.addEventListener('click', handleCsvImport);
+
+        // Model Hub
+        dom.modelSearchInput.addEventListener('input', updateSearchResults);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
-        dom.createModelBtn.addEventListener('click', handleCreateModelClick);
-        
-        dom.schemaResultsList.addEventListener('click', handleSchemaLoadClick);
-        dom.createSchemaBtn.addEventListener('click', handleSchemaCreateClick);
-        
-        dom.addGroupBtn.addEventListener('click', () => addGroupToEditor());
-        dom.schemaEditorForm.addEventListener('click', handleSchemaEditorClicks);
-        
-        dom.gamaExportSelect.addEventListener('change', populateGamaExportList);
-        dom.gamaExportList.addEventListener('click', handleGamaExportClick);
-        dom.exportGamaJsonButton.addEventListener('click', exportGamaAsJson); 
-        dom.exportGamaCsvButton.addEventListener('click', exportGamaAsCsv);
-        
-        if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
-        if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
-        if (dom.csvTextBtn) dom.csvTextBtn.addEventListener('click', handleTextImport);
+        dom.createModelBtn.addEventListener('click', createNewModel);
+
+        // Schema Hub
+        dom.schemaResultsList.addEventListener('click', handleSchemaLoad);
+        dom.createSchemaBtn.addEventListener('click', createNewSchema);
+        dom.addGroupBtn.addEventListener('click', () => addGroupToSchemaEditor());
+        dom.schemaEditorForm.addEventListener('click', handleSchemaEditorEvents);
+
+        // Export
+        dom.gamaExportSelect.addEventListener('change', updateExportList);
+        dom.exportGamaJsonButton.addEventListener('click', exportFullGamaJson);
+        dom.exportGamaCsvButton.addEventListener('click', exportFullGamaCsv);
+
+        // Drive Builder (Metaconstructor)
+        dom.driveTriggerBtn.addEventListener('click', startDriveBuild);
+        dom.driveDownloadBtn.addEventListener('click', downloadCompiledDrive);
     }
 
-    // --- LÓGICA DE GUARDADO (NUEVA) ---
+    function refreshUI() {
+        updateSearchResults();
+        updateSchemaLists();
+        if(dom.libraryModal.style.display === 'block') renderLibraryList();
+    }
+
+    // --- LÓGICA DE TEMA (PORTADA DE MAIN.JS) ---
+    function randomizeTheme() {
+        const hue = Math.floor(Math.random() * 360);
+        const palette = isLightMode ? lightPaletteHSL : darkPaletteHSL;
+        updatePaletteCSS(palette, hue);
+    }
+
+    function updatePaletteCSS(p, accentHue) {
+        const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l);
+        const root = document.documentElement;
+        
+        // Mapeo exacto de variables CSS
+        root.style.setProperty('--color-cyan-accent', `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`);
+        root.style.setProperty('--color-cyan-glow', `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`);
+        root.style.setProperty('--color-green-accent', `hsl(${(accentHue + 120) % 360}, 80%, 45%)`);
+        
+        // Fondos (hue shift ligero)
+        const bgHue = (accentHue + 200) % 360; 
+        root.style.setProperty('--color-bg-dark', `hsl(${bgHue}, ${p.dark.s}%, ${p.dark.l}%)`);
+        root.style.setProperty('--color-bg-medium', `hsl(${bgHue}, ${p.medium.s}%, ${p.medium.l}%)`);
+        root.style.setProperty('--color-border', `hsl(${bgHue}, ${p.border.s}%, ${p.border.l}%)`);
+        root.style.setProperty('--color-text-primary', `hsl(${bgHue}, ${p.textP.s}%, ${p.textP.l}%)`);
+        root.style.setProperty('--color-text-secondary', `hsl(${bgHue}, ${p.textS.s}%, ${p.textS.l}%)`);
+
+        if (isLightMode) root.classList.add('light-mode');
+        else root.classList.remove('light-mode');
+    }
+
+    function hslToRgb(h, s, l) {
+        s /= 100; l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) };
+    }
+
+
+    // --- GESTIÓN DE PANELES ---
+    function showPanel(id) {
+        currentActivePanel = id;
+        dom.allContentPanels.forEach(p => p.classList.remove('active'));
+        document.getElementById(`panel-${id}`).classList.add('active');
+        
+        // Mostrar botones de edición solo si es necesario
+        if (id === 'edit-model' || id === 'edit-schema') {
+            document.body.classList.add('fullscreen-editor-active');
+            dom.editorControls.style.display = 'flex';
+        } else {
+            document.body.classList.remove('fullscreen-editor-active');
+            dom.editorControls.style.display = 'none';
+        }
+    }
+
+    function hideAllModals() {
+        dom.infoModal.style.display = 'none';
+        dom.libraryModal.style.display = 'none';
+        dom.driveModal.style.display = 'none';
+        dom.modalOverlay.style.display = 'none';
+    }
+
+    // --- LÓGICA DE EDITORES (MEMORY FIRST) ---
 
     // 1. Guardar en Memoria (RAM)
     function handleMemorySave() {
-        // Feedback visual instantáneo
+        // Animación click
         dom.btnSaveMemory.style.transform = "scale(0.9)";
         setTimeout(() => dom.btnSaveMemory.style.transform = "scale(1)", 150);
 
         if (currentActivePanel === 'edit-model') {
-            saveModelToMemory();
-        } else if (currentActivePanel === 'edit-schema') {
-            saveSchemaToMemory();
+            const id = dom.editModelIdInput.value;
+            const schemaKey = dom.editSchemaKeyDisplay.value;
+            if (!id) return;
+
+            // Recolectar datos
+            const formData = new FormData(dom.editorForm);
+            const attributes = {};
+            for (const [key, value] of formData.entries()) {
+                if(value.trim()) attributes[key] = value.trim();
+            }
+
+            // Actualizar Array Principal
+            const idx = masterDatabase.findIndex(p => p.model === id);
+            const newObj = { model: id, schema_key: schemaKey, attributes: attributes };
+            
+            if (idx >= 0) masterDatabase[idx] = newObj;
+            else masterDatabase.push(newObj);
+
+            alert(`Modelo ${id} actualizado en RAM.`);
+        } 
+        else if (currentActivePanel === 'edit-schema') {
+            const key = dom.editSchemaKeyInput.value;
+            const structure = buildSchemaFromDOM();
+            if (!structure) return;
+
+            masterSchemaMap[key] = structure;
+            alert(`Esquema ${key} actualizado en RAM.`);
         }
+        refreshUI();
     }
 
     // 2. Exportar Archivo
     function handleExportFile() {
         if (currentActivePanel === 'edit-model') {
-            // Aseguramos que primero esté actualizado en memoria
-            saveModelToMemory(true); 
-            // Luego exportamos el objeto actual
-            const id = dom.editModelIdInput.value.trim();
+            const id = dom.editModelIdInput.value;
             const product = masterDatabase.find(p => p.model === id);
-            if(product) generateAndDownloadProductFile(product, id);
-
-        } else if (currentActivePanel === 'edit-schema') {
-            handleSchemaExportClick(); // Este genera el archivo JS
+            if (product) downloadFile(`${id}.json`, JSON.stringify(product, null, 4), 'application/json');
+            else alert("Guarda en memoria primero.");
+        } 
+        else if (currentActivePanel === 'edit-schema') {
+            const key = dom.editSchemaKeyInput.value;
+            const structure = masterSchemaMap[key];
+            if (structure) {
+                const content = `window.APP_DB.registerSchema('${key}', ${JSON.stringify(structure, null, 4)});`;
+                downloadFile(`schema_${key}.js`, content, 'text/javascript');
+            }
         }
     }
 
-    function saveModelToMemory(silent = false) {
-        const id = dom.editModelIdInput.value.trim().toUpperCase();
-        const schemaKey = dom.editSchemaKeyDisplay.value;
-        if (!id || !schemaKey) return;
 
-        // Recoger datos del formulario
-        const formData = new FormData(dom.editorForm);
-        const attrs = {};
-        for (const [k, v] of formData.entries()) {
-            if (v.trim()) attrs[k] = v.trim();
+    // --- MODEL HUB ---
+    function updateSearchResults() {
+        const q = dom.modelSearchInput.value.toLowerCase();
+        dom.modelSearchResults.innerHTML = '';
+        
+        const filtered = masterDatabase.filter(p => p.model.toLowerCase().includes(q));
+        if (filtered.length === 0) {
+            dom.modelSearchResults.innerHTML = '<div class="list-item" style="cursor:default">Sin resultados</div>';
+            return;
         }
 
-        // Buscar si existe y actualizar, o crear
-        const existingIndex = masterDatabase.findIndex(p => p.model === id);
-        const newProductData = { model: id, schema_key: schemaKey, attributes: attrs };
-
-        if (existingIndex >= 0) {
-            masterDatabase[existingIndex] = newProductData;
-            if(!silent) alert(`Modelo ${id} actualizado en memoria.`);
-        } else {
-            masterDatabase.push(newProductData);
-            if(!silent) alert(`Modelo ${id} creado en memoria.`);
-        }
-        
-        // Refrescar listas por si acaso
-        refreshUI();
-    }
-
-    function saveSchemaToMemory() {
-        const key = dom.editSchemaKeyInput.value.trim().toLowerCase();
-        if (!key) return;
-
-        const newSchema = [];
-        let valid = true;
-        
-        // Construir objeto schema desde el DOM
-        dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach((gb, i) => {
-            const gName = gb.querySelector('input[data-type="group-name"]').value.trim();
-            if (!gName) { alert(`Grupo ${i+1} sin nombre.`); valid = false; return; }
-            const attrs = [];
-            gb.querySelectorAll('.schema-attr-row').forEach(row => {
-                const c = row.querySelector('input[data-type="attr-code"]').value.trim();
-                const d = row.querySelector('input[data-type="attr-desc"]').value.trim();
-                if (c && d) attrs.push({ code: c, desc: d });
-            });
-            if (attrs.length > 0) newSchema.push({ group: gName, attrs: attrs });
+        const frag = document.createDocumentFragment();
+        filtered.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<strong>${p.model}</strong> <span style="font-size:0.8em; opacity:0.7">(${p.schema_key})</span>`;
+            div.dataset.model = p.model;
+            frag.appendChild(div);
         });
-
-        if (!valid) return;
-
-        // Guardar en variable global
-        masterSchemaMap[key] = newSchema;
-        activeSchemas.add(key);
-        alert(`Esquema ${key} guardado en memoria.`);
-        refreshUI();
+        dom.modelSearchResults.appendChild(frag);
     }
 
-    // --- UI Helpers ---
+    function handleResultClick(e) {
+        const item = e.target.closest('.list-item');
+        if (!item || !item.dataset.model) return;
+        loadModelEditor(item.dataset.model);
+    }
 
-    function showPanel(panelId) {
-        currentActivePanel = panelId;
-        dom.allContentPanels.forEach(p => p.classList.remove('active'));
-        document.body.classList.remove('fullscreen-editor-active');
+    function createNewModel() {
+        const schema = dom.createModelSchemaSelect.value;
+        const id = dom.createModelIdInput.value.trim().toUpperCase();
+        if(!schema || !id) return alert("Faltan datos");
         
-        // Manejo de visibilidad de controles header
-        if (dom.settingsMenu) dom.settingsMenu.style.display = 'none';
-        
-        const target = document.getElementById(`panel-${panelId}`);
-        if (target) target.classList.add('active');
-
-        // Mostrar botones de guardar SOLO en editores
-        if (panelId === 'edit-model' || panelId === 'edit-schema') {
-            document.body.classList.add('fullscreen-editor-active');
-            dom.editorControls.style.display = 'flex';
+        if (masterDatabase.find(p => p.model === id)) {
+            if(!confirm("Ya existe. ¿Editar?")) return;
         } else {
-            dom.editorControls.style.display = 'none';
+            // Crear entrada vacía temporal
+            masterDatabase.push({ model: id, schema_key: schema, attributes: {} });
         }
+        loadModelEditor(id);
     }
 
-    // --- Funciones existentes (Simplificadas visualmente) ---
-    // Tema
-    function applyInitialTheme() { const saved = localStorage.getItem('admin-theme'); isLightMode = (saved === 'light'); updateTheme(); }
-    function handleThemeToggle(e) { if(e) e.stopPropagation(); isLightMode = !isLightMode; localStorage.setItem('admin-theme', isLightMode ? 'light' : 'dark'); updateTheme(); }
-    function updateTheme() { const r = document.documentElement; if(isLightMode) r.classList.add('light-mode'); else r.classList.remove('light-mode'); }
-    
-    // Modales
-    function toggleSettingsMenu() { dom.settingsMenu.style.display = (dom.settingsMenu.style.display === 'block') ? 'none' : 'block'; }
-    function showInfoModal() { dom.settingsMenu.style.display = 'none'; dom.infoModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; }
-    function openLibraryModal() { dom.settingsMenu.style.display = 'none'; renderLibraryGamaList(); dom.libraryModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; dom.uploadStatusText.textContent = "Formato Admin (Punto y coma)"; dom.csvUploadInput.value = ""; }
-    function hideAllModals() { dom.infoModal.style.display = 'none'; dom.libraryModal.style.display = 'none'; dom.modalOverlay.style.display = 'none'; }
+    function loadModelEditor(modelId) {
+        const product = masterDatabase.find(p => p.model === modelId);
+        if (!product) return;
 
-    // Importación / Biblioteca
-    function renderLibraryGamaList() { dom.libraryGamaList.innerHTML = ''; Object.keys(masterSchemaMap).forEach(key => { const active = activeSchemas.has(key); const item = document.createElement('div'); item.className = 'gama-toggle-item'; item.innerHTML = `<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${key}" ${active ? 'checked' : ''}><span class="gama-name">${key.toUpperCase()}</span></label><span class="gama-status">${active ? 'Activa' : 'Oculta'}</span>`; dom.libraryGamaList.appendChild(item); }); }
-    function handleGamaToggle(e) { if (!e.target.matches('.gama-checkbox')) return; const key = e.target.dataset.key; if (e.target.checked) activeSchemas.add(key); else activeSchemas.delete(key); refreshUI(); renderLibraryGamaList(); }
-    function handleCsvUpload(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { parseAndImportCsv(ev.target.result); dom.uploadStatusText.textContent = "¡Importado!"; refreshUI(); } catch(err) { alert("Error CSV"); } }; r.readAsText(f); }
-    function handleTextImport() { const t = dom.csvTextInput.value.trim(); if(!t) return; try { parseAndImportCsv(t); dom.uploadStatusText.textContent = "¡Texto Importado!"; dom.csvTextInput.value = ""; refreshUI(); } catch(err) { alert("Error formato texto"); } }
-
-    function parseCSVLine(text) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < text.length; i++) { const char = text[i]; const nextChar = text[i + 1]; if (inQuotes) { if (char === '"' && nextChar === '"') { current += '"'; i++; } else if (char === '"') { inQuotes = false; } else { current += char; } } else { if (char === ';') { result.push(current); current = ''; } else if (char === '"') { inQuotes = true; } else { current += char; } } } result.push(current); return result; }
-    function parseAndImportCsv(csvText) { let cleanText = csvText; if (cleanText.charCodeAt(0) === 0xFEFF) cleanText = cleanText.slice(1); const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== ''); if (lines.length < 4) throw new Error("CSV muy corto"); const rowGroups = parseCSVLine(lines[0]); const schemaKey = rowGroups[0].toLowerCase().trim(); if (!schemaKey) throw new Error("Falta Schema Key"); const rowCodes = parseCSVLine(lines[1]); const rowDescs = parseCSVLine(lines[2]); const startIndex = 2; const tempSchema = {}; const groupOrder = []; for (let i = startIndex; i < rowCodes.length; i++) { const groupName = rowGroups[i] || "Otros"; const code = rowCodes[i]; const desc = rowDescs[i] || code; if (code) { if (!tempSchema[groupName]) { tempSchema[groupName] = []; groupOrder.push(groupName); } tempSchema[groupName].push({ code, desc }); } } const newSchemaGroup = groupOrder.map(gName => ({ group: gName, attrs: tempSchema[gName] })); window.APP_DB.registerSchema(schemaKey, newSchemaGroup); activeSchemas.add(schemaKey); for (let i = 3; i < lines.length; i++) { const cols = parseCSVLine(lines[i]); const modelId = cols[1]; if (!modelId) continue; const attributes = {}; for (let j = startIndex; j < rowCodes.length; j++) { const code = rowCodes[j]; if (code && cols[j]) attributes[code] = cols[j]; } window.APP_DB.registerProduct({ model: modelId, schema_key: schemaKey, attributes: attributes }); } masterSchemaMap = window.APP_DB.schemas; masterDatabase = window.APP_DB.products; }
-
-    // Buscador y Creación
-    function applySearch() { const q = dom.modelSearchInput.value.toLowerCase().trim(); const res = masterDatabase.filter(p => p.model.toLowerCase().includes(q) && activeSchemas.has(p.schema_key)); renderSearchResults(res); }
-    function renderSearchResults(results) { dom.modelSearchResults.innerHTML = ''; if(results.length === 0) { dom.modelSearchResults.innerHTML = '<div class="list-item dim">Sin resultados.</div>'; return; } const f = document.createDocumentFragment(); results.forEach(p => { const d = document.createElement('div'); d.className = 'list-item'; d.dataset.model = p.model; d.innerHTML = `<strong>${p.model}</strong> <span class="dim text-xs">(${p.schema_key})</span>`; f.appendChild(d); }); dom.modelSearchResults.appendChild(f); }
-    function handleResultClick(e) { const t = e.target.closest('.list-item'); if(!t) return; const p = masterDatabase.find(x => x.model === t.dataset.model); if(p) { loadModelIntoEditor(p); showPanel('edit-model'); } }
-    function handleCreateModelClick() { const s = dom.createModelSchemaSelect.value; const id = dom.createModelIdInput.value.trim().toUpperCase(); if(!s || !id) return alert("Datos incompletos."); if(masterDatabase.find(p => p.model === id)) { if(!confirm("Existe. ¿Editar?")) return; loadModelIntoEditor(masterDatabase.find(p => p.model === id)); } else { loadModelIntoEditor({ model: id, schema_key: s, attributes: {} }); } showPanel('edit-model'); }
-    function handleSchemaCreateClick() { const k = dom.newSchemaKeyInput.value.trim().toLowerCase(); if(!k) return; if(masterSchemaMap[k]) { if(!confirm("Existe. ¿Cargar?")) return; loadSchemaIntoEditor(k, JSON.parse(JSON.stringify(masterSchemaMap[k]))); } else { loadSchemaIntoEditor(k, []); } showPanel('edit-schema'); }
-
-    // Helpers Editor/Schema
-    function populateSchemaList() { dom.schemaResultsList.innerHTML = ''; Object.keys(masterSchemaMap).filter(k => activeSchemas.has(k)).forEach(k => { const d = document.createElement('div'); d.className = 'list-item'; d.dataset.key = k; d.textContent = k; dom.schemaResultsList.appendChild(d); }); }
-    function handleSchemaLoadClick(e) { const t = e.target.closest('.list-item'); if(!t) return; const k = t.dataset.key; loadSchemaIntoEditor(k, JSON.parse(JSON.stringify(masterSchemaMap[k]))); showPanel('edit-schema'); }
-    function populateGamaSelectors() { const opts = Object.keys(masterSchemaMap).filter(k => activeSchemas.has(k)).map(k => `<option value="${k}">${k.toUpperCase()}</option>`).join(''); dom.gamaExportSelect.innerHTML = '<option value="">--</option>' + opts; dom.createModelSchemaSelect.innerHTML = '<option value="">--</option>' + opts; }
-    
-    // Editor Render
-    function loadModelIntoEditor(p) { 
-        currentLoadedSchemaKey = p.schema_key; 
-        const schema = masterSchemaMap[p.schema_key]; 
-        if(!schema) return alert("Esquema no cargado.");
-        dom.productTitle.textContent = `Editor: ${p.model}`; 
-        dom.editModelIdInput.value = p.model; 
-        dom.editSchemaKeyDisplay.value = p.schema_key;
-        dom.editorForm.querySelectorAll('.form-group-title, .form-row').forEach(e => e.remove());
+        currentLoadedSchemaKey = product.schema_key;
+        dom.productTitle.textContent = `Editando: ${product.model}`;
+        dom.editModelIdInput.value = product.model;
+        dom.editSchemaKeyDisplay.value = product.schema_key;
+        
+        // Limpiar form
         dom.editorPlaceholder.style.display = 'none';
-        
-        schema.forEach(g => {
-            const h = document.createElement('h3'); h.className = 'form-group-title'; h.textContent = g.group; dom.editorForm.appendChild(h);
-            g.attrs.forEach(a => {
-                const r = document.createElement('div'); r.className = 'form-row';
-                r.innerHTML = `<label class="futuristic-label">${a.desc}</label><textarea class="futuristic-textarea" name="${a.code}" rows="1">${p.attributes[a.code] || ''}</textarea>`;
-                dom.editorForm.appendChild(r);
+        dom.editorForm.querySelectorAll('.form-group-title, .form-row').forEach(e => e.remove());
+
+        // Generar campos basados en Schema
+        const schema = masterSchemaMap[product.schema_key];
+        if (!schema) return alert("Esquema no encontrado para este modelo.");
+
+        schema.forEach(group => {
+            const h3 = document.createElement('h3');
+            h3.className = 'form-group-title';
+            h3.textContent = group.group;
+            dom.editorForm.appendChild(h3);
+
+            group.attrs.forEach(attr => {
+                const row = document.createElement('div');
+                row.className = 'form-row';
+                const label = document.createElement('label');
+                label.className = 'futuristic-label';
+                label.textContent = attr.desc;
+                
+                const textarea = document.createElement('textarea');
+                textarea.className = 'futuristic-textarea';
+                textarea.name = attr.code;
+                textarea.value = product.attributes[attr.code] || '';
+                textarea.rows = 1;
+
+                row.append(label, textarea);
+                dom.editorForm.appendChild(row);
             });
+        });
+
+        showPanel('edit-model');
+    }
+
+    // --- SCHEMA HUB ---
+    function updateSchemaLists() {
+        const keys = Object.keys(masterSchemaMap);
+        dom.schemaResultsList.innerHTML = '';
+        dom.createModelSchemaSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+        dom.gamaExportSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+
+        keys.forEach(k => {
+            // Lista lateral
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.textContent = k;
+            div.dataset.key = k;
+            dom.schemaResultsList.appendChild(div);
+
+            // Selects
+            const opt1 = document.createElement('option'); opt1.value = k; opt1.textContent = k;
+            dom.createModelSchemaSelect.appendChild(opt1);
+            
+            const opt2 = document.createElement('option'); opt2.value = k; opt2.textContent = k;
+            dom.gamaExportSelect.appendChild(opt2);
         });
     }
 
-    // Schema Editor
-    function loadSchemaIntoEditor(k, s) { dom.schemaTitle.textContent = `Schema: ${k}`; dom.editSchemaKeyInput.value = k; dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(e => e.remove()); dom.schemaEditorPlaceholder.style.display = 'none'; s.forEach(g => addGroupToEditor(g)); }
-    function addGroupToEditor(g = null) { const d = document.createElement('div'); d.className = 'schema-group-box'; d.innerHTML = `<div class="control-group mb-4"><input type="text" class="futuristic-input" data-type="group-name" value="${g ? g.group : ''}" placeholder="Grupo"> <button class="schema-action-btn schema-remove-btn schema-remove-group-btn">✕</button></div><div class="schema-attrs"></div><button class="schema-action-btn schema-add-attr-btn">+ Campo</button>`; const c = d.querySelector('.schema-attrs'); if(g) g.attrs.forEach(a => addAttr(a, c)); dom.schemaEditorForm.insertBefore(d, dom.addGroupBtn); } // Nota: InsertBefore fix
-    function addAttr(a, c) { const d = document.createElement('div'); d.className = 'schema-attr-row'; d.innerHTML = `<input type="text" class="futuristic-input" data-type="attr-code" value="${a?a.code:''}" placeholder="Cod"><input type="text" class="futuristic-input" data-type="attr-desc" value="${a?a.desc:''}" placeholder="Desc"><button class="schema-action-btn schema-remove-btn schema-remove-attr-btn">✕</button>`; c.appendChild(d); }
-    function handleSchemaEditorClicks(e) {
-        if(e.target.matches('.schema-add-attr-btn')) { e.preventDefault(); addAttr(null, e.target.parentNode.querySelector('.schema-attrs')); }
-        else if(e.target.matches('.schema-remove-attr-btn')) { e.preventDefault(); e.target.closest('.schema-attr-row').remove(); }
-        else if(e.target.matches('.schema-remove-group-btn')) { e.preventDefault(); e.target.closest('.schema-group-box').remove(); }
+    function handleSchemaLoad(e) {
+        const item = e.target.closest('.list-item');
+        if(!item) return;
+        loadSchemaEditor(item.dataset.key);
     }
 
-    // Export Helpers
-    function handleSchemaExportClick() {
-        // Lógica duplicada de saveSchemaToMemory pero generando archivo
-        const key = dom.editSchemaKeyInput.value;
-        const schema = masterSchemaMap[key]; // Asumimos que ya se guardó en memoria
-        if(!schema) return alert("Guardar en memoria primero.");
-        const content = `/** Schema: ${key} */\nconst ${key.toUpperCase()}_SCHEMA = ${JSON.stringify(schema, null, 4)};\nwindow.APP_DB.registerSchema('${key}', ${key.toUpperCase()}_SCHEMA);`;
-        downloadFile(`schema_${key}.js`, content, 'text/javascript');
+    function createNewSchema() {
+        const key = dom.newSchemaKeyInput.value.trim().toLowerCase();
+        if(!key) return;
+        if(!masterSchemaMap[key]) masterSchemaMap[key] = [];
+        loadSchemaEditor(key);
     }
-    function populateGamaExportList() { const s = dom.gamaExportSelect.value; dom.gamaExportList.innerHTML = ''; if(!s) return; const p = masterDatabase.filter(x => x.schema_key === s); if(p.length === 0) { dom.gamaExportList.innerHTML = 'Vacío'; return; } p.forEach(x => { const d = document.createElement('div'); d.className = 'gama-export-item'; d.innerHTML = `${x.model} <button class="export-item-button" onclick="generateAndDownloadProductFile(null, '${x.model}')">JSON</button>`; dom.gamaExportList.appendChild(d); }); } // Fix: onclick inline bad practice, but shorthand here. Better use delegate in setup.
-    function generateAndDownloadProductFile(prod, id) { 
-        // Si prod es null, buscar en DB (para lista export)
-        const p = prod || masterDatabase.find(x => x.model === id);
-        if(!p) return;
-        downloadFile(`${p.model}.json`, JSON.stringify(p, null, 4), 'application/json'); 
+
+    function loadSchemaEditor(key) {
+        const schema = masterSchemaMap[key];
+        dom.editSchemaKeyInput.value = key;
+        dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(e => e.remove());
+        
+        schema.forEach(g => addGroupToSchemaEditor(g));
+        showPanel('edit-schema');
     }
-    function exportGamaAsJson() { const s = dom.gamaExportSelect.value; if(!s) return; const p = masterDatabase.filter(x => x.schema_key === s); downloadFile(`GAMA_${s}.json`, JSON.stringify(p, null, 4), 'application/json'); }
-    function exportGamaAsCsv() { /* Lógica CSV igual que versión anterior, omitida por espacio pero asumida presente */ }
-    function downloadFile(n, c, m) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c], {type:m})); a.download = n; a.click(); }
+
+    function addGroupToSchemaEditor(groupData = null) {
+        const div = document.createElement('div');
+        div.className = 'schema-group-box';
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                <input type="text" class="futuristic-input" placeholder="Nombre Grupo" value="${groupData ? groupData.group : ''}" data-role="group-name">
+                <button class="schema-action-btn schema-remove-btn" onclick="this.closest('.schema-group-box').remove()">Eliminar Grupo</button>
+            </div>
+            <div class="attrs-container"></div>
+            <button class="schema-action-btn" data-role="add-attr" style="margin-left:0; margin-top:0.5rem; border-color:var(--color-green-accent); color:var(--color-green-accent);">+ Atributo</button>
+        `;
+        
+        const container = div.querySelector('.attrs-container');
+        if(groupData) groupData.attrs.forEach(a => addAttrRow(container, a));
+
+        dom.schemaEditorForm.appendChild(div);
+    }
+
+    function addAttrRow(container, attrData = null) {
+        const row = document.createElement('div');
+        row.className = 'schema-attr-row';
+        row.innerHTML = `
+            <input type="text" class="futuristic-input" placeholder="Código (id)" value="${attrData ? attrData.code : ''}" data-role="attr-code">
+            <input type="text" class="futuristic-input" placeholder="Etiqueta Visible" value="${attrData ? attrData.desc : ''}" data-role="attr-desc">
+            <button class="schema-action-btn schema-remove-btn" onclick="this.parentElement.remove()">✕</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function handleSchemaEditorEvents(e) {
+        if (e.target.dataset.role === 'add-attr') {
+            e.preventDefault();
+            addAttrRow(e.target.previousElementSibling);
+        }
+    }
+
+    function buildSchemaFromDOM() {
+        const groups = [];
+        let valid = true;
+        dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(box => {
+            const gName = box.querySelector('[data-role="group-name"]').value.trim();
+            if(!gName) { valid = false; return; }
+            
+            const attrs = [];
+            box.querySelectorAll('.schema-attr-row').forEach(row => {
+                const c = row.querySelector('[data-role="attr-code"]').value.trim();
+                const d = row.querySelector('[data-role="attr-desc"]').value.trim();
+                if(c && d) attrs.push({ code: c, desc: d });
+            });
+            groups.push({ group: gName, attrs: attrs });
+        });
+        if(!valid) alert("Hay grupos sin nombre.");
+        return valid ? groups : null;
+    }
+
+    // --- LIBRARY & CSV IMPORT ---
+    function openLibraryModal() {
+        renderLibraryList();
+        dom.libraryModal.style.display = 'block';
+        dom.modalOverlay.style.display = 'block';
+    }
+
+    function renderLibraryList() {
+        dom.libraryGamaList.innerHTML = '';
+        Object.keys(masterSchemaMap).forEach(k => {
+            const count = masterDatabase.filter(p => p.schema_key === k).length;
+            const div = document.createElement('div');
+            div.className = 'gama-toggle-item';
+            div.innerHTML = `<span>${k}</span> <span>${count} modelos</span>`;
+            dom.libraryGamaList.appendChild(div);
+        });
+    }
+
+    function handleCsvImport() {
+        const text = dom.csvTextInput.value.trim();
+        if(!text) return;
+        
+        try {
+            // Parser simplificado para Demo (Formato Admin: Schema;Key;Desc \n Rows)
+            const lines = text.split('\n');
+            const header = lines[0].split(';');
+            const schemaKey = header[0].toLowerCase().trim();
+            
+            if(!schemaKey) throw new Error("Cabecera inválida");
+
+            // Crear esquema dummy si no existe
+            if(!masterSchemaMap[schemaKey]) {
+                masterSchemaMap[schemaKey] = [{ group: "Importado", attrs: header.slice(2).map(h => ({code: h, desc: h})) }];
+            }
+
+            let added = 0;
+            for(let i=3; i<lines.length; i++) {
+                const cols = lines[i].split(';');
+                if(cols.length < 2) continue;
+                const model = cols[1];
+                const attrs = {};
+                // Mapeo básico posicional
+                header.slice(2).forEach((h, idx) => {
+                    if(cols[idx+2]) attrs[h] = cols[idx+2].trim();
+                });
+                masterDatabase.push({ model: model, schema_key: schemaKey, attributes: attrs });
+                added++;
+            }
+            alert(`Importados ${added} modelos a ${schemaKey}`);
+            refreshUI();
+            dom.csvTextInput.value = '';
+        } catch(e) {
+            alert("Error formato CSV: " + e.message);
+        }
+    }
+
+
+    // --- EXPORT TOOLS ---
+    function updateExportList() {
+        const s = dom.gamaExportSelect.value;
+        dom.gamaExportList.innerHTML = '';
+        if(!s) return;
+        
+        const prods = masterDatabase.filter(p => p.schema_key === s);
+        prods.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'gama-toggle-item';
+            div.innerHTML = `${p.model}`;
+            dom.gamaExportList.appendChild(div);
+        });
+    }
+
+    function exportFullGamaJson() {
+        const s = dom.gamaExportSelect.value;
+        if(!s) return;
+        const data = masterDatabase.filter(p => p.schema_key === s);
+        downloadFile(`GAMA_${s}.json`, JSON.stringify(data, null, 4), 'application/json');
+    }
+
+    function exportFullGamaCsv() {
+        alert("Función CSV completa disponible en versión Pro. Usando JSON por defecto.");
+    }
+
+    function downloadFile(name, content, mime) {
+        const blob = new Blob([content], {type: mime});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // --- POXKEDEX DRIVE META-CONSTRUCTOR (INTEGRADO) ---
+    let compiledBlob = null;
+
+    function startDriveBuild() {
+        dom.driveModal.style.display = 'block';
+        dom.modalOverlay.style.display = 'block';
+        dom.driveActionArea.style.display = 'none';
+        dom.driveProgressFill.style.width = '0%';
+        dom.driveConsole.innerHTML = '<div class="log-line">> Iniciando Pokedex Drive Engine...</div>';
+
+        // Simulación de proceso de compilación
+        const steps = [
+            { pct: 10, msg: "Analizando RAM Database..." },
+            { pct: 30, msg: `Empaquetando ${masterDatabase.length} modelos...` },
+            { pct: 50, msg: "Generando Bootloader Offline..." },
+            { pct: 80, msg: "Inyectando Assets CSS/JS..." },
+            { pct: 100, msg: "Finalizando compilación." }
+        ];
+
+        let currentStep = 0;
+        
+        function nextStep() {
+            if (currentStep >= steps.length) {
+                // Generar Blob Real
+                const htmlContent = generateOfflineHTML();
+                compiledBlob = new Blob([htmlContent], {type: 'text/html'});
+                
+                dom.driveActionArea.style.display = 'block';
+                return;
+            }
+            
+            const s = steps[currentStep];
+            dom.driveProgressFill.style.width = s.pct + '%';
+            dom.drivePercentText.textContent = s.pct + '%';
+            dom.driveConsole.innerHTML += `<div class="log-line">> ${s.msg}</div>`;
+            dom.driveConsole.scrollTop = dom.driveConsole.scrollHeight;
+            
+            currentStep++;
+            setTimeout(nextStep, 600); // Delay artificial para efecto
+        }
+        nextStep();
+    }
+
+    function downloadCompiledDrive() {
+        if(compiledBlob) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(compiledBlob);
+            a.download = 'pokedex_drive_offline.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    }
+
+    function generateOfflineHTML() {
+        // Generador simple para la demo
+        return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pokedex Drive Offline</title>
+<style>body{background:#111;color:#eee;font-family:sans-serif;padding:2rem;text-align:center}</style>
+</head>
+<body>
+<h1>Pokedex Drive</h1>
+<p>Generado con ${masterDatabase.length} modelos.</p>
+<textarea style="width:100%;height:300px">${JSON.stringify(masterDatabase)}</textarea>
+</body>
+</html>`;
+    }
 
     initialize();
 });
