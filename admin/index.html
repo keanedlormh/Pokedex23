@@ -44,7 +44,7 @@
         <div class="header-content">
             <div class="header-left">
                 <button id="home-btn" class="app-title-btn">
-                    <h1 class="app-title">Pokedex Drive <span class="app-version">v3.7</span></h1>
+                    <h1 class="app-title">Pokedex Drive <span class="app-version">v3.8</span></h1>
                 </button>
             </div>
             
@@ -72,7 +72,13 @@
         <div id="panel-general" class="content-panel active">
             <!-- ZONA DE DESPLIEGUE -->
             <div class="deployment-zone">
-                <h2 class="futuristic-title">Zona de Despliegue</h2>
+                <div class="zone-header">
+                    <h2 class="futuristic-title no-border mb-0">Zona de Despliegue</h2>
+                    <!-- NUEVO BOTÓN DE CONFIGURACIÓN -->
+                    <button id="drive-config-btn" class="futuristic-button small-btn">Configurar Info 🛠️</button>
+                </div>
+                <hr class="separator-line">
+                
                 <div class="deployment-grid">
                     <button id="drive-builder-trigger" class="nav-card special-card drive-card">
                         <span class="nav-card-icon">🚀</span>
@@ -126,7 +132,6 @@
                 <h2 class="futuristic-title">1. Editar Modelo</h2>
                 <input type="text" id="search-model" placeholder="Buscar modelo..." class="futuristic-input w-full">
                 <div id="model-results-list" class="futuristic-list full-list-visible short-list"></div>
-                
                 <h2 class="futuristic-title" style="margin-top:2rem;">2. Crear Nuevo</h2>
                 <div class="control-group-box">
                     <div class="mb-4"><label class="futuristic-label">Gama:</label><select id="create-model-schema-select" class="futuristic-select w-full"><option value="">--</option></select></div>
@@ -196,7 +201,32 @@
         </div>
     </main>
 
-    <!-- Modal Biblioteca Restaurado con "Subir Archivo" -->
+    <!-- Modal Configuración Drive (NUEVO) -->
+    <div id="drive-config-modal" class="modal-container" style="display: none;">
+        <div class="info-modal-content futuristic-card">
+            <div class="modal-header">
+                <h2 class="futuristic-title" style="margin:0;">Configurar Pokedex Drive</h2>
+                <button id="drive-config-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="control-group mb-4">
+                    <label class="futuristic-label">Título de la App:</label>
+                    <input type="text" id="conf-drive-title" class="futuristic-input w-full" placeholder="Ej: Catálogo Técnico">
+                </div>
+                <div class="control-group mb-4">
+                    <label class="futuristic-label">Versión:</label>
+                    <input type="text" id="conf-drive-version" class="futuristic-input w-full" placeholder="Ej: v1.0">
+                </div>
+                <div class="control-group mb-4">
+                    <label class="futuristic-label">Texto de Bienvenida / Info:</label>
+                    <textarea id="conf-drive-text" class="futuristic-textarea" rows="4" placeholder="Mensaje que aparecerá al abrir el archivo offline..."></textarea>
+                </div>
+                <button id="conf-drive-save-btn" class="futuristic-button w-full action-btn-green">Guardar Configuración</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Biblioteca -->
     <div id="library-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card library-modal-content">
             <div class="modal-header compact-header">
@@ -210,15 +240,11 @@
                     </div>
                     <div id="library-gama-list" class="library-list"></div>
                 </div>
-                
                 <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem; margin-top: 1rem;">
                     <h3 class="futuristic-label" style="margin-bottom: 0.5rem;">Importar Datos</h3>
                     <div class="upload-area">
-                        <!-- Input File Recuperado -->
                         <label for="csv-upload-input" class="upload-btn-label upload-file-btn">📂 Archivo</label>
                         <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        
-                        <!-- Input Texto -->
                         <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
                         <button id="csv-text-btn" class="upload-btn-label">Procesar</button>
                     </div>
@@ -238,14 +264,13 @@
             </div>
             <div class="modal-body text-wrap-enabled">
 <pre style="white-space: pre-wrap; word-break: break-word;">
-Pokedex Drive Admin v3.7
+Pokedex Drive Admin v3.8
 ------------------------
-Sistema de gestión de inventario. Las modificaciones afectan a la RAM. Use exportación para guardar.
+Gestor de inventario.
 
-[Novedades]
-- Parser CSV robusto (v4.8) integrado.
-- Recuperada carga por archivo.
-- Ajuste de texto vertical.
+[Novedades v3.8]
+- Botón "Configurar Info": Permite editar el Título, Versión y Texto del archivo HTML exportado.
+- Metaconstructor actualizado para usar estos parámetros.
 </pre>
             </div>
         </div>
