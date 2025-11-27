@@ -44,7 +44,7 @@
         <div class="header-content">
             <div class="header-left">
                 <button id="home-btn" class="app-title-btn">
-                    <h1 class="app-title">Pokedex Drive <span class="app-version">v3.6</span></h1>
+                    <h1 class="app-title">Pokedex Drive <span class="app-version">v3.7</span></h1>
                 </button>
             </div>
             
@@ -196,7 +196,7 @@
         </div>
     </main>
 
-    <!-- Modal Biblioteca "Compacta" (Restaurada) -->
+    <!-- Modal Biblioteca Restaurado con "Subir Archivo" -->
     <div id="library-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card library-modal-content">
             <div class="modal-header compact-header">
@@ -208,12 +208,17 @@
                     <div class="lib-sec-header">
                         <h3 class="futuristic-label" style="margin:0; font-size: 0.9rem;">Gamas Cargadas</h3>
                     </div>
-                    <!-- Lista con Checkboxes y botones de descarga -->
                     <div id="library-gama-list" class="library-list"></div>
                 </div>
+                
                 <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem; margin-top: 1rem;">
                     <h3 class="futuristic-label" style="margin-bottom: 0.5rem;">Importar Datos</h3>
                     <div class="upload-area">
+                        <!-- Input File Recuperado -->
+                        <label for="csv-upload-input" class="upload-btn-label upload-file-btn">📂 Archivo</label>
+                        <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
+                        
+                        <!-- Input Texto -->
                         <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
                         <button id="csv-text-btn" class="upload-btn-label">Procesar</button>
                     </div>
@@ -223,7 +228,7 @@
         </div>
     </div>
 
-    <!-- Modal Info (Texto ajustado) -->
+    <!-- Modal Info -->
     <div id="modal-overlay" class="modal-overlay" style="display: none;"></div>
     <div id="info-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
@@ -231,18 +236,16 @@
                 <h2 class="futuristic-title" style="margin:0;">Info</h2>
                 <button id="close-info-modal-btn" class="modal-close-btn">✕</button>
             </div>
-            <!-- Aplicado estilo de wrap en CSS -->
             <div class="modal-body text-wrap-enabled">
 <pre style="white-space: pre-wrap; word-break: break-word;">
-Pokedex Drive Admin v3.6
+Pokedex Drive Admin v3.7
 ------------------------
-Sistema de gestión de inventario técnico.
-Las modificaciones realizadas aquí afectan a la memoria RAM del navegador. Para persistir los cambios, utilice los botones de exportación o el compilador Pokedex Drive.
+Sistema de gestión de inventario. Las modificaciones afectan a la RAM. Use exportación para guardar.
 
 [Novedades]
-- Exportación CSV desbloqueada.
-- Biblioteca compacta restaurada.
-- Ajuste de texto en modales.
+- Parser CSV robusto (v4.8) integrado.
+- Recuperada carga por archivo.
+- Ajuste de texto vertical.
 </pre>
             </div>
         </div>
@@ -268,6 +271,5 @@ Las modificaciones realizadas aquí afectan a la memoria RAM del navegador. Para
             </div>
         </div>
     </div>
-
 </body>
 </html>
