@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Configuración del Metaconstructor (Drive)
     let driveConfig = {
-        title: "Pokedex Drive Offline",
-        version: "v1.0",
-        introText: "Archivo generado automáticamente. Contiene base de datos completa."
+        title: "Catálogo Técnico Pokedex",
+        version: "v2.3 Offline",
+        introText: "Bienvenido al visor offline.\nEste archivo contiene la base de datos completa exportada desde el Administrador.\n\nNo requiere conexión a internet."
     };
 
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
         gamaExportList: document.getElementById('gama-export-list'),
         exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
         exportGamaCsvButton: document.getElementById('export-gama-csv-btn'),
+        
+        // Drive Elements
         driveTriggerBtn: document.getElementById('drive-builder-trigger'),
         driveModal: document.getElementById('drive-modal'),
         driveCloseBtn: document.getElementById('drive-close-btn'),
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         driveActionArea: document.getElementById('drive-action-area'),
         driveDownloadBtn: document.getElementById('drive-download-final-btn'),
         
-        // Drive Config Elements
+        // Drive Config
         driveConfigBtn: document.getElementById('drive-config-btn'),
         driveConfigModal: document.getElementById('drive-config-modal'),
         driveConfigCloseBtn: document.getElementById('drive-config-close-btn'),
@@ -118,9 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.libraryCloseBtn.addEventListener('click', hideAllModals);
         dom.modalOverlay.addEventListener('click', hideAllModals);
         dom.driveCloseBtn.addEventListener('click', hideAllModals);
-        dom.driveConfigCloseBtn.addEventListener('click', hideAllModals); // Cerrar config modal
+        dom.driveConfigCloseBtn.addEventListener('click', hideAllModals);
 
-        // Drive Config Events
         dom.driveConfigBtn.addEventListener('click', openDriveConfigModal);
         dom.driveConfigSaveBtn.addEventListener('click', saveDriveConfig);
 
@@ -139,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.gamaExportSelect.addEventListener('change', updateExportList);
         dom.exportGamaJsonButton.addEventListener('click', exportFullGamaJson);
         dom.exportGamaCsvButton.addEventListener('click', exportFullGamaCsv);
+        
         dom.driveTriggerBtn.addEventListener('click', startDriveBuild);
         dom.driveDownloadBtn.addEventListener('click', downloadCompiledDrive);
 
@@ -215,13 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.modalOverlay.style.display = 'none';
     }
 
-    // --- DRIVE CONFIG LOGIC (NUEVO) ---
+    // --- DRIVE CONFIG LOGIC ---
     function openDriveConfigModal() {
-        // Cargar valores actuales
         dom.confDriveTitle.value = driveConfig.title;
         dom.confDriveVersion.value = driveConfig.version;
         dom.confDriveText.value = driveConfig.introText;
-        
         dom.driveConfigModal.style.display = 'block';
         dom.modalOverlay.style.display = 'block';
     }
@@ -230,68 +230,41 @@ document.addEventListener('DOMContentLoaded', () => {
         driveConfig.title = dom.confDriveTitle.value.trim() || "Pokedex Drive";
         driveConfig.version = dom.confDriveVersion.value.trim() || "v1.0";
         driveConfig.introText = dom.confDriveText.value.trim();
-        
         hideAllModals();
-        alert("Configuración Drive guardada en memoria.\nSe aplicará al compilar.");
+        alert("Configuración Drive guardada en RAM.");
     }
 
     // --- CSV LOGIC ---
     function parseCSVLine(text) {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
+        const result = []; let current = ''; let inQuotes = false;
         for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-            const nextChar = text[i + 1];
-            if (inQuotes) {
-                if (char === '"' && nextChar === '"') { current += '"'; i++; }
-                else if (char === '"') { inQuotes = false; }
-                else { current += char; }
-            } else {
-                if (char === ';') { result.push(current); current = ''; }
-                else if (char === '"') { inQuotes = true; }
-                else { current += char; }
-            }
+            const char = text[i]; const nextChar = text[i + 1];
+            if (inQuotes) { if (char === '"' && nextChar === '"') { current += '"'; i++; } else if (char === '"') { inQuotes = false; } else { current += char; } } 
+            else { if (char === ';') { result.push(current); current = ''; } else if (char === '"') { inQuotes = true; } else { current += char; } }
         }
-        result.push(current);
-        return result;
+        result.push(current); return result;
     }
 
     function parseAndImportCsv(csvText) {
-        let cleanText = csvText;
-        if (cleanText.charCodeAt(0) === 0xFEFF) cleanText = cleanText.slice(1);
+        let cleanText = csvText; if (cleanText.charCodeAt(0) === 0xFEFF) cleanText = cleanText.slice(1);
         const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== '');
         if (lines.length < 4) throw new Error("Formato inválido: Menos de 4 líneas.");
-        const rowGroups = parseCSVLine(lines[0]);
-        const schemaKey = rowGroups[0].toLowerCase().trim();
-        if (!schemaKey) throw new Error("Falta la clave de gama (celda A1).");
-        const rowCodes = parseCSVLine(lines[1]);
-        const rowDescs = parseCSVLine(lines[2]);
-        const startIndex = 2;
-        const tempSchema = {};
-        const groupOrder = [];
+        const rowGroups = parseCSVLine(lines[0]); const schemaKey = rowGroups[0].toLowerCase().trim();
+        if (!schemaKey) throw new Error("Falta la clave de gama (A1).");
+        const rowCodes = parseCSVLine(lines[1]); const rowDescs = parseCSVLine(lines[2]);
+        const startIndex = 2; const tempSchema = {}; const groupOrder = [];
         for (let i = startIndex; i < rowCodes.length; i++) {
-            const groupName = rowGroups[i] || "Otros";
-            const code = rowCodes[i];
-            const desc = rowDescs[i] || code;
-            if (code) {
-                if (!tempSchema[groupName]) { tempSchema[groupName] = []; groupOrder.push(groupName); }
-                tempSchema[groupName].push({ code, desc });
-            }
+            const groupName = rowGroups[i] || "Otros"; const code = rowCodes[i]; const desc = rowDescs[i] || code;
+            if (code) { if (!tempSchema[groupName]) { tempSchema[groupName] = []; groupOrder.push(groupName); } tempSchema[groupName].push({ code, desc }); }
         }
         const newSchemaGroup = groupOrder.map(gName => ({ group: gName, attrs: tempSchema[gName] }));
-        masterSchemaMap[schemaKey] = newSchemaGroup;
-        activeSchemas.add(schemaKey);
+        masterSchemaMap[schemaKey] = newSchemaGroup; activeSchemas.add(schemaKey);
         let count = 0;
         for (let i = 3; i < lines.length; i++) {
-            const cols = parseCSVLine(lines[i]);
-            const modelId = cols[1];
+            const cols = parseCSVLine(lines[i]); const modelId = cols[1];
             if (!modelId) continue;
             const attributes = {};
-            for (let j = startIndex; j < rowCodes.length; j++) {
-                const code = rowCodes[j];
-                if (code && cols[j]) attributes[code] = cols[j];
-            }
+            for (let j = startIndex; j < rowCodes.length; j++) { const code = rowCodes[j]; if (code && cols[j]) attributes[code] = cols[j]; }
             const existingIdx = masterDatabase.findIndex(p => p.model === modelId);
             const newProd = { model: modelId, schema_key: schemaKey, attributes: attributes };
             if (existingIdx >= 0) masterDatabase[existingIdx] = newProd; else masterDatabase.push(newProd);
@@ -301,77 +274,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCsvTextImport() {
-        const text = dom.csvTextInput.value.trim();
-        if(!text) return;
-        try { const res = parseAndImportCsv(text); alert(`Éxito: ${res.count} modelos importados a '${res.schemaKey}'.`); dom.csvTextInput.value = ''; refreshUI(); } 
-        catch(e) { alert("Error Importación: " + e.message); }
+        const text = dom.csvTextInput.value.trim(); if(!text) return;
+        try { const res = parseAndImportCsv(text); alert(`Importados ${res.count} modelos a '${res.schemaKey}'.`); dom.csvTextInput.value = ''; refreshUI(); } 
+        catch(e) { alert("Error: " + e.message); }
     }
 
     function handleCsvFileUpload(e) {
-        const file = e.target.files[0];
-        if(!file) return;
+        const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
             try { const res = parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado: ${res.schemaKey} (${res.count})!`; dom.uploadStatusText.style.color = 'var(--color-green-accent)'; refreshUI(); } 
-            catch(error) { dom.uploadStatusText.textContent = "Error formato."; dom.uploadStatusText.style.color = 'var(--color-red-accent)'; alert("Error: " + error.message); }
+            catch(error) { dom.uploadStatusText.textContent = "Error."; dom.uploadStatusText.style.color = 'var(--color-red-accent)'; alert(error.message); }
         };
-        reader.readAsText(file, 'UTF-8');
-        e.target.value = '';
+        reader.readAsText(file, 'UTF-8'); e.target.value = '';
     }
 
     // --- MEMORY & EXPORT ---
     function handleMemorySave() {
-        dom.btnSaveMemory.style.transform = "scale(0.9)";
-        setTimeout(() => dom.btnSaveMemory.style.transform = "scale(1)", 150);
+        dom.btnSaveMemory.style.transform = "scale(0.9)"; setTimeout(() => dom.btnSaveMemory.style.transform = "scale(1)", 150);
         if (currentActivePanel === 'edit-model') {
-            const id = dom.editModelIdInput.value;
-            const schemaKey = dom.editSchemaKeyDisplay.value;
-            if (!id) return;
-            const formData = new FormData(dom.editorForm);
-            const attributes = {};
+            const id = dom.editModelIdInput.value; const schemaKey = dom.editSchemaKeyDisplay.value; if (!id) return;
+            const formData = new FormData(dom.editorForm); const attributes = {};
             for (const [key, value] of formData.entries()) if(value.trim()) attributes[key] = value.trim();
-            const idx = masterDatabase.findIndex(p => p.model === id);
-            const newObj = { model: id, schema_key: schemaKey, attributes: attributes };
+            const idx = masterDatabase.findIndex(p => p.model === id); const newObj = { model: id, schema_key: schemaKey, attributes: attributes };
             if (idx >= 0) masterDatabase[idx] = newObj; else masterDatabase.push(newObj);
             alert(`Modelo ${id} actualizado en RAM.`);
         } else if (currentActivePanel === 'edit-schema') {
-            const key = dom.editSchemaKeyInput.value;
-            const structure = buildSchemaFromDOM();
+            const key = dom.editSchemaKeyInput.value; const structure = buildSchemaFromDOM();
             if (structure) { masterSchemaMap[key] = structure; alert(`Esquema ${key} actualizado en RAM.`); }
         }
         refreshUI();
     }
-
     function handleExportFile() {
         if (currentActivePanel === 'edit-model') {
-            const id = dom.editModelIdInput.value;
-            const product = masterDatabase.find(p => p.model === id);
+            const id = dom.editModelIdInput.value; const product = masterDatabase.find(p => p.model === id);
             if (product) downloadFile(`${id}.json`, JSON.stringify(product, null, 4), 'application/json');
         } else if (currentActivePanel === 'edit-schema') {
-            const key = dom.editSchemaKeyInput.value;
-            const structure = masterSchemaMap[key];
+            const key = dom.editSchemaKeyInput.value; const structure = masterSchemaMap[key];
             if (structure) downloadFile(`schema_${key}.js`, `window.APP_DB.registerSchema('${key}', ${JSON.stringify(structure, null, 4)});`, 'text/javascript');
         }
     }
 
-    // --- HUBS ---
+    // --- UTILS ---
     function updateSearchResults() {
-        const q = dom.modelSearchInput.value.toLowerCase();
-        dom.modelSearchResults.innerHTML = '';
+        const q = dom.modelSearchInput.value.toLowerCase(); dom.modelSearchResults.innerHTML = '';
         const filtered = masterDatabase.filter(p => p.model.toLowerCase().includes(q) && activeSchemas.has(p.schema_key));
-        if (filtered.length === 0) { dom.modelSearchResults.innerHTML = '<div class="list-item" style="cursor:default">Sin resultados</div>'; return; }
         const frag = document.createDocumentFragment();
         filtered.forEach(p => { const div = document.createElement('div'); div.className = 'list-item'; div.innerHTML = `<strong>${p.model}</strong> <span style="font-size:0.8em; opacity:0.7">(${p.schema_key})</span>`; div.dataset.model = p.model; frag.appendChild(div); });
         dom.modelSearchResults.appendChild(frag);
     }
     function handleResultClick(e) { const item = e.target.closest('.list-item'); if (item && item.dataset.model) loadModelEditor(item.dataset.model); }
-    function createNewModel() { const schema = dom.createModelSchemaSelect.value; const id = dom.createModelIdInput.value.trim().toUpperCase(); if(!schema || !id) return alert("Faltan datos"); if (masterDatabase.find(p => p.model === id)) { if(!confirm("Ya existe. ¿Editar?")) return; } else { masterDatabase.push({ model: id, schema_key: schema, attributes: {} }); } loadModelEditor(id); }
+    function createNewModel() { const schema = dom.createModelSchemaSelect.value; const id = dom.createModelIdInput.value.trim().toUpperCase(); if(!schema || !id) return; masterDatabase.push({ model: id, schema_key: schema, attributes: {} }); loadModelEditor(id); }
     function loadModelEditor(modelId) {
         const product = masterDatabase.find(p => p.model === modelId); if (!product) return;
-        currentLoadedSchemaKey = product.schema_key;
-        dom.productTitle.textContent = `Editando: ${product.model}`; dom.editModelIdInput.value = product.model; dom.editSchemaKeyDisplay.value = product.schema_key;
-        dom.editorPlaceholder.style.display = 'none'; dom.editorForm.querySelectorAll('.form-group-title, .form-row').forEach(e => e.remove());
-        const schema = masterSchemaMap[product.schema_key]; if (!schema) return alert("Esquema no encontrado.");
+        currentLoadedSchemaKey = product.schema_key; dom.productTitle.textContent = `Editando: ${product.model}`; dom.editModelIdInput.value = product.model; dom.editSchemaKeyDisplay.value = product.schema_key; dom.editorPlaceholder.style.display = 'none'; dom.editorForm.querySelectorAll('.form-group-title, .form-row').forEach(e => e.remove());
+        const schema = masterSchemaMap[product.schema_key];
         schema.forEach(group => {
             const h3 = document.createElement('h3'); h3.className = 'form-group-title'; h3.textContent = group.group; dom.editorForm.appendChild(h3);
             group.attrs.forEach(attr => {
@@ -383,7 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         showPanel('edit-model');
     }
-
     function updateSchemaLists() {
         const keys = Object.keys(masterSchemaMap).filter(k => activeSchemas.has(k));
         dom.schemaResultsList.innerHTML = ''; dom.createModelSchemaSelect.innerHTML = '<option value="">-- Seleccionar --</option>'; dom.gamaExportSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
@@ -391,48 +347,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function handleSchemaLoad(e) { const item = e.target.closest('.list-item'); if(item) loadSchemaEditor(item.dataset.key); }
     function createNewSchema() { const key = dom.newSchemaKeyInput.value.trim().toLowerCase(); if(!key) return; if(!masterSchemaMap[key]) masterSchemaMap[key] = []; loadSchemaEditor(key); }
-    function loadSchemaEditor(key) {
-        const schema = masterSchemaMap[key]; dom.editSchemaKeyInput.value = key; dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(e => e.remove());
-        schema.forEach(g => addGroupToSchemaEditor(g)); showPanel('edit-schema');
-    }
-    function addGroupToSchemaEditor(groupData = null) {
-        const div = document.createElement('div'); div.className = 'schema-group-box';
-        div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;"><input type="text" class="futuristic-input" placeholder="Nombre Grupo" value="${groupData ? groupData.group : ''}" data-role="group-name"><button class="schema-action-btn schema-remove-btn" onclick="this.closest('.schema-group-box').remove()">Eliminar Grupo</button></div><div class="attrs-container"></div><button class="schema-action-btn" data-role="add-attr" style="margin-left:0; margin-top:0.5rem; border-color:var(--color-green-accent); color:var(--color-green-accent);">+ Atributo</button>`;
-        const container = div.querySelector('.attrs-container'); if(groupData) groupData.attrs.forEach(a => addAttrRow(container, a)); dom.schemaEditorForm.appendChild(div);
-    }
-    function addAttrRow(container, attrData = null) {
-        const row = document.createElement('div'); row.className = 'schema-attr-row';
-        row.innerHTML = `<input type="text" class="futuristic-input" placeholder="Código (id)" value="${attrData ? attrData.code : ''}" data-role="attr-code"><input type="text" class="futuristic-input" placeholder="Etiqueta Visible" value="${attrData ? attrData.desc : ''}" data-role="attr-desc"><button class="schema-action-btn schema-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
-        container.appendChild(row);
-    }
+    function loadSchemaEditor(key) { const schema = masterSchemaMap[key]; dom.editSchemaKeyInput.value = key; dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(e => e.remove()); schema.forEach(g => addGroupToSchemaEditor(g)); showPanel('edit-schema'); }
+    function addGroupToSchemaEditor(groupData = null) { const div = document.createElement('div'); div.className = 'schema-group-box'; div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;"><input type="text" class="futuristic-input" placeholder="Nombre Grupo" value="${groupData ? groupData.group : ''}" data-role="group-name"><button class="schema-action-btn schema-remove-btn" onclick="this.closest('.schema-group-box').remove()">Eliminar Grupo</button></div><div class="attrs-container"></div><button class="schema-action-btn" data-role="add-attr" style="margin-left:0; margin-top:0.5rem; border-color:var(--color-green-accent); color:var(--color-green-accent);">+ Atributo</button>`; const container = div.querySelector('.attrs-container'); if(groupData) groupData.attrs.forEach(a => addAttrRow(container, a)); dom.schemaEditorForm.appendChild(div); }
+    function addAttrRow(container, attrData = null) { const row = document.createElement('div'); row.className = 'schema-attr-row'; row.innerHTML = `<input type="text" class="futuristic-input" placeholder="Código (id)" value="${attrData ? attrData.code : ''}" data-role="attr-code"><input type="text" class="futuristic-input" placeholder="Etiqueta Visible" value="${attrData ? attrData.desc : ''}" data-role="attr-desc"><button class="schema-action-btn schema-remove-btn" onclick="this.parentElement.remove()">✕</button>`; container.appendChild(row); }
     function handleSchemaEditorEvents(e) { if (e.target.dataset.role === 'add-attr') { e.preventDefault(); addAttrRow(e.target.previousElementSibling); } }
-    function buildSchemaFromDOM() {
-        const groups = []; let valid = true;
-        dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(box => {
-            const gName = box.querySelector('[data-role="group-name"]').value.trim(); if(!gName) { valid = false; return; }
-            const attrs = [];
-            box.querySelectorAll('.schema-attr-row').forEach(row => { const c = row.querySelector('[data-role="attr-code"]').value.trim(); const d = row.querySelector('[data-role="attr-desc"]').value.trim(); if(c && d) attrs.push({ code: c, desc: d }); });
-            groups.push({ group: gName, attrs: attrs });
-        });
-        if(!valid) alert("Hay grupos sin nombre."); return valid ? groups : null;
-    }
-
-    // --- LIBRARY & EXPORT ---
+    function buildSchemaFromDOM() { const groups = []; let valid = true; dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(box => { const gName = box.querySelector('[data-role="group-name"]').value.trim(); if(!gName) { valid = false; return; } const attrs = []; box.querySelectorAll('.schema-attr-row').forEach(row => { const c = row.querySelector('[data-role="attr-code"]').value.trim(); const d = row.querySelector('[data-role="attr-desc"]').value.trim(); if(c && d) attrs.push({ code: c, desc: d }); }); groups.push({ group: gName, attrs: attrs }); }); return valid ? groups : null; }
     function openLibraryModal() { renderLibraryList(); dom.libraryModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; }
-    function renderLibraryList() {
-        dom.libraryGamaList.innerHTML = '';
-        Object.keys(masterSchemaMap).forEach(key => {
-            const isActive = activeSchemas.has(key);
-            const div = document.createElement('div'); div.className = 'gama-toggle-item';
-            div.innerHTML = `<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${key}" ${isActive ? 'checked' : ''}><span class="gama-name">${key.toUpperCase()}</span></label><div class="gama-actions-right"><button class="gama-download-btn" data-key="${key}" title="Descargar CSV">⬇</button><span class="gama-status" style="color: ${isActive ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'}">${isActive ? 'ACTIVA' : 'OCULTA'}</span></div>`;
-            dom.libraryGamaList.appendChild(div);
-        });
-    }
+    function renderLibraryList() { dom.libraryGamaList.innerHTML = ''; Object.keys(masterSchemaMap).forEach(key => { const isActive = activeSchemas.has(key); const div = document.createElement('div'); div.className = 'gama-toggle-item'; div.innerHTML = `<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${key}" ${isActive ? 'checked' : ''}><span class="gama-name">${key.toUpperCase()}</span></label><div class="gama-actions-right"><button class="gama-download-btn" data-key="${key}" title="Descargar CSV">⬇</button><span class="gama-status" style="color: ${isActive ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'}">${isActive ? 'ACTIVA' : 'OCULTA'}</span></div>`; dom.libraryGamaList.appendChild(div); }); }
     function exportGamaToCSV(selectedSchema) {
-        if (!selectedSchema) return;
-        const products = masterDatabase.filter(p => p.schema_key === selectedSchema); if (products.length === 0) return alert("Gama vacía.");
-        const schemaDef = masterSchemaMap[selectedSchema];
-        let row1_groups = [selectedSchema, "Identificación"]; let row2_codes = ["", "model"]; let row3_descs = ["", "Modelo"]; let attrKeys = [];
+        if (!selectedSchema) return; const products = masterDatabase.filter(p => p.schema_key === selectedSchema); if (products.length === 0) return alert("Gama vacía.");
+        const schemaDef = masterSchemaMap[selectedSchema]; let row1_groups = [selectedSchema, "Identificación"]; let row2_codes = ["", "model"]; let row3_descs = ["", "Modelo"]; let attrKeys = [];
         if (schemaDef) schemaDef.forEach(group => { group.attrs.forEach(attr => { row1_groups.push(group.group); row2_codes.push(attr.code); row3_descs.push(attr.desc); attrKeys.push(attr.code); }); });
         const sanitize = (val) => { if (val === null || val === undefined) return ""; val = String(val).replace(/"/g, '""'); if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`; return val; };
         const dataRows = products.map(p => { let row = ["", sanitize(p.model)]; attrKeys.forEach(key => { let val = p.attributes[key] || ""; row.push(sanitize(val)); }); return row.join(";"); });
@@ -444,27 +368,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function exportFullGamaJson() { const s = dom.gamaExportSelect.value; if(!s) return; downloadFile(`GAMA_${s}.json`, JSON.stringify(masterDatabase.filter(p => p.schema_key === s), null, 4), 'application/json'); }
     function downloadFile(name, content, mime) { const blob = new Blob([content], {type: mime}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
-    // --- DRIVE BUILDER ---
+    // --- DRIVE BUILDER LOGIC ---
     let compiledBlob = null;
     function startDriveBuild() {
         dom.driveModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; dom.driveActionArea.style.display = 'none'; dom.driveProgressFill.style.width = '0%'; dom.driveConsole.innerHTML = '<div class="log-line">> Init...</div>';
-        const steps = [{ pct: 10, msg: "Analizando RAM..." }, { pct: 50, msg: `Empaquetando ${masterDatabase.length} modelos...` }, { pct: 100, msg: "Aplicando Config..." }];
+        
+        // 1. Filtrar solo gamas activas
+        const activeData = masterDatabase.filter(p => activeSchemas.has(p.schema_key));
+        const activeSchemasObj = {};
+        activeSchemas.forEach(k => activeSchemasObj[k] = masterSchemaMap[k]);
+
+        const steps = [
+            { pct: 10, msg: "Analizando datos activos..." },
+            { pct: 50, msg: `Empaquetando ${activeData.length} modelos de ${activeSchemas.size} gamas...` },
+            { pct: 90, msg: "Aplicando configuración..." }
+        ];
+
         let currentStep = 0;
         function nextStep() {
             if (currentStep >= steps.length) {
-                // Generar HTML usando las variables de configuración
-                const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${driveConfig.title}</title><style>body{background:#111;color:#eee;font-family:sans-serif;padding:2rem;text-align:center} h1{color:#06b6d4} .badge{background:#333;padding:2px 6px;border-radius:4px;font-size:0.5em;vertical-align:middle}</style></head><body>
-                    <h1>${driveConfig.title} <span class="badge">${driveConfig.version}</span></h1>
-                    <p>${driveConfig.introText}</p>
-                    <hr style="border-color:#333; margin: 2rem 0">
-                    <p>Base de datos: ${masterDatabase.length} modelos.</p>
-                    <textarea style="width:100%;height:300px;background:#222;color:#0f0;border:1px solid #444;padding:1rem">${JSON.stringify(masterDatabase)}</textarea>
-                </body></html>`;
+                // LLAMADA AL MOTOR DE COMPILACIÓN (pokedexdrive.js)
+                compiledBlob = PokedexDrive.compile(activeData, activeSchemasObj, driveConfig);
                 
-                compiledBlob = new Blob([htmlContent], {type: 'text/html'});
-                dom.driveActionArea.style.display = 'block'; return;
+                dom.driveConsole.innerHTML += `<div class="log-line success">> ¡Éxito! HTML generado.</div>`;
+                dom.driveConsole.scrollTop = dom.driveConsole.scrollHeight;
+                dom.driveActionArea.style.display = 'block'; 
+                return;
             }
-            const s = steps[currentStep]; dom.driveProgressFill.style.width = s.pct + '%'; dom.drivePercentText.textContent = s.pct + '%'; dom.driveConsole.innerHTML += `<div class="log-line">> ${s.msg}</div>`;
+            const s = steps[currentStep]; dom.driveProgressFill.style.width = s.pct + '%'; dom.drivePercentText.textContent = s.pct + '%'; dom.driveConsole.innerHTML += `<div class="log-line">> ${s.msg}</div>`; dom.driveConsole.scrollTop = dom.driveConsole.scrollHeight;
             currentStep++; setTimeout(nextStep, 500);
         }
         nextStep();
