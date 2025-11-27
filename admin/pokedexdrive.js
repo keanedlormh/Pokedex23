@@ -1,29 +1,28 @@
 /**
- * Pokedex Drive Compiler Engine v4.0
- * Genera una aplicación Single-File (HTML) con el diseño "v4.9 Consolidated"
+ * Pokedex Drive Compiler Engine v5.0 (Stable)
+ * Genera una aplicación Single-File (HTML) con funcionalidad completa y depurada.
  */
 
 const PokedexDrive = {
 
     compile: function(products, schemas, config) {
         
-        // 1. SERIALIZACIÓN SEGURA DE DATOS
-        // Evitamos que cadenas dentro de los datos rompan el script </script>
+        // 1. SERIALIZACIÓN SEGURA
         const safeProducts = JSON.stringify(products).replace(/<\/script>/g, '<\\/script>');
         const safeSchemas = JSON.stringify(schemas).replace(/<\/script>/g, '<\\/script>');
         const safeConfig = JSON.stringify(config).replace(/<\/script>/g, '<\\/script>');
 
-        // 2. CSS DEL VISOR (Tu estilo v4.9 completo)
+        // 2. CSS (Estilos v4.9 Consolidados)
         const cssContent = `
 :root {
     --color-bg-dark: #0D1117; --color-bg-medium: #161B22;
     --color-border: #21262D; --color-border-light: #2a3038;
     --color-text-primary: #e2e8f0; --color-text-secondary: #9ca3af; --color-text-dim: #6b7280;
     --color-cyan-accent: #06b6d4; --color-cyan-glow: rgba(6, 182, 212, 0.25);
-    --font-primary: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    --font-secondary: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-secondary: 'ui-monospace', 'SFMono-Regular', monospace;
 }
-body { background-color: var(--color-bg-dark); color: var(--color-text-secondary); font-family: var(--font-primary); line-height: 1.5; margin: 0; transition: background-color 0.3s, color 0.3s; }
+body { background-color: var(--color-bg-dark); color: var(--color-text-secondary); font-family: var(--font-primary); line-height: 1.5; margin: 0; transition: background-color 0.3s; }
 button, input, select, textarea { font-family: var(--font-primary); }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-bg-medium); border-radius: 3px; }
@@ -42,13 +41,12 @@ body.model-is-selected #selected-model-display { display: block; }
 .max-h-64 { max-height: 16rem; }
 
 /* HEADER */
-.app-header { position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding-bottom: 0.75rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); gap: 0.75rem; min-height: 40px; }
+.app-header { position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding-bottom: 0.75rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); min-height: 40px; }
 .header-left { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding-right: 50px; }
 .app-title { font-family: var(--font-secondary); font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; letter-spacing: -0.5px; }
-.app-version { font-size: 0.75rem; padding: 0 0.3rem; font-family: var(--font-secondary); color: var(--color-cyan-accent); background-color: var(--color-bg-medium); border-radius: 4px; border: 1px solid var(--color-border); position: relative; top: -2px; white-space: nowrap; }
+.app-version { font-size: 0.75rem; padding: 0 0.3rem; font-family: var(--font-secondary); color: var(--color-cyan-accent); background-color: var(--color-bg-medium); border-radius: 4px; border: 1px solid var(--color-border); position: relative; top: -2px; }
 #selected-model-display.model-chip-hidden { display: none; }
 .model-chip-button { font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; color: var(--color-cyan-accent); background-color: var(--color-cyan-glow); border: 1px solid var(--color-cyan-accent); border-radius: 1rem; padding: 0.35rem 0.6rem 0.35rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
-.model-chip-button span { font-family: var(--font-primary); font-weight: 900; font-size: 1rem; color: var(--color-text-primary); }
 .header-right-controls { display: flex; width: 100%; }
 
 /* SETTINGS */
@@ -56,9 +54,9 @@ body.model-is-selected #selected-model-display { display: block; }
 .settings-menu-wrapper.absolute-top-right { position: absolute; top: 0; right: 0; z-index: 60; }
 .settings-button { background-color: var(--color-bg-medium); border: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 1.2rem; line-height: 1; border-radius: 4px; cursor: pointer; padding: 0.4rem 0.6rem; height: 38px; width: 38px; }
 .settings-menu-panel-hidden { display: none; }
-.settings-menu-panel-open { display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); right: 0; width: 200px; background: var(--color-bg-medium); border: 1px solid var(--color-border-light); border-radius: 0.5rem; padding: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.settings-menu-item { background-color: var(--color-bg-dark); border: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600; border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-sizing: border-box; margin-top: 0.25rem; font-family: var(--font-primary); }
-.settings-menu-item:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
+.settings-menu-panel-open { display: block; position: absolute; top: 100%; right: 0; background: var(--color-bg-medium); border: 1px solid var(--color-border-light); z-index: 50; border-radius: 0.5rem; padding: 0.5rem; min-width: 160px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.settings-menu-item { display: block; width: 100%; text-align: left; padding: 0.6rem; background: transparent; border: none; color: var(--color-text-secondary); cursor: pointer; font-family: var(--font-primary); font-size: 0.85rem; font-weight: 600; border-radius: 4px; }
+.settings-menu-item:hover { color: var(--color-cyan-accent); background: var(--color-bg-dark); }
 
 /* FILTROS */
 .smart-filter-wrapper-v2 { position: relative; width: 100%; flex-grow: 1; }
@@ -114,11 +112,12 @@ body.model-is-selected #selected-model-display { display: block; }
 .spec-controls-hidden { display: none; }
 body.model-is-selected .spec-controls-visible { display: flex; gap: 0.5rem; }
 .spec-button { background-color: var(--color-bg-medium); border: 1px solid var(--color-border-light); color: var(--color-text-secondary); font-family: var(--font-secondary); font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; padding: 0.2rem 0.4rem; }
-details.spec-group { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
-details.spec-group summary { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); font-family: var(--font-secondary); padding: 0.5rem 0.75rem; background: var(--color-border); display: flex; align-items: center; cursor: pointer; list-style: none; }
-details.spec-group summary::before { content: ''; width: 12px; height: 12px; border-radius: 3px; margin-right: 0.5rem; background-color: var(--color-text-dim); }
-details[open].spec-group summary::before { background-color: var(--color-cyan-accent); }
-.spec-group-content { padding: 0.75rem 1.25rem; border-top: 1px solid var(--color-border-light); background-color: var(--color-bg-dark); }
+details.spec-group { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+details.spec-group summary { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); font-family: var(--font-secondary); padding: 0.5rem 0.75rem; background: var(--color-border); display: flex; align-items: center; cursor: pointer; list-style: none; justify-content: space-between; }
+details.spec-group summary::after { content: '+'; color: var(--color-text-dim); }
+details[open].spec-group summary::after { content: '-'; color: var(--color-cyan-accent); }
+details[open].spec-group summary { border-bottom: 1px solid var(--color-border); }
+.spec-group-content { padding: 0.75rem 1.25rem; background-color: var(--color-bg-dark); }
 .spec-row { display: flex; flex-direction: column; justify-content: space-between; padding: 0.45rem 0; font-size: 0.85rem; border-bottom: 1px dotted var(--color-border-light); }
 @media (min-width: 768px) { .spec-row { flex-direction: row; } }
 .spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; font-family: var(--font-primary); }
@@ -144,17 +143,15 @@ details[open].spec-group summary::before { background-color: var(--color-cyan-ac
 }
         `;
 
-        // 3. JS LÓGICO DEL VISOR (Inyectando datos de APP_DB)
-        // La lógica JS será una cadena que se ejecutará en el cliente.
+        // 3. LOGICA JS (Depurada)
         const jsContent = `
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- ESTADO INICIAL ---
-    // Recuperamos los datos inyectados en window.APP_DB por el compilador
-    let masterDatabase = window.APP_DB.products;
-    let masterSchemaMap = window.APP_DB.schemas;
+    let masterDatabase = window.APP_DB.products || [];
+    let masterSchemaMap = window.APP_DB.schemas || {};
     let config = window.APP_DB.config || {};
-    let activeSchemas = new Set(Object.keys(masterSchemaMap)); // En modo Drive, todo lo incluido es activo
+    let activeSchemas = new Set(Object.keys(masterSchemaMap));
     let attrCodeToDescMap = {};
 
     // --- DOM CACHE ---
@@ -182,71 +179,70 @@ document.addEventListener('DOMContentLoaded', () => {
         readmeCloseButton: document.getElementById('readme-close-btn'),
         infoToggleButton: document.getElementById('info-toggle-btn'),
         paletteToggleButton: document.getElementById('palette-toggle-btn'),
-        libraryMenuToggle: document.getElementById('library-menu-toggle')
+        libraryMenuToggle: document.getElementById('library-menu-toggle'),
+        expandAllButton: document.getElementById('expand-all-btn'),
+        collapseAllButton: document.getElementById('collapse-all-btn')
     };
 
-    // Variables de estado UI
+    // Paletas
     let isLightMode = false;
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
 
     // --- INICIALIZACIÓN ---
     function initialize() {
-        // Ordenar DB
         masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
-        
         buildAttributeCache();
         populateSchemaSelector();
         populateSmartFilters('all');
-        renderSearchResults(masterDatabase, dom.modelSearchResults);
+        renderSearchResults(masterDatabase);
         
-        setupEventListeners();
-        
-        // Aplicar Tema Random al inicio
-        updatePaletteCSS(darkPaletteHSL, Math.floor(Math.random() * 360));
-    }
-
-    function setupEventListeners() {
+        // Listener Búsqueda
         dom.modelSearchInput.addEventListener('input', (e) => { handleSearchInputUI(e.target); applyFiltersAndSearch(); });
         dom.searchClearBtn.addEventListener('click', () => { dom.modelSearchInput.value = ''; handleSearchInputUI(dom.modelSearchInput); applyFiltersAndSearch(); dom.modelSearchInput.focus(); });
+        dom.modelSearchResults.addEventListener('click', handleResultClick);
         
+        // Listener Filtros (Importante: 'change' para selectores)
         dom.schemaFilterSelect.addEventListener('change', () => { populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); });
         dom.smartFilterContainer.addEventListener('change', applyFiltersAndSearch);
         
-        // Delegación de eventos para filtros
-        dom.smartFilterContainer.addEventListener('click', (e) => { 
-            const title = e.target.closest('.filter-group-title');
-            if(title) toggleFilterGroup(title);
+        // Listener Expansión Grupos Filtros
+        dom.smartFilterContainer.addEventListener('click', (e) => {
+            const titleEl = e.target.closest('.filter-group-title');
+            if (titleEl) toggleFilterGroup(titleEl);
         });
-        
-        if(dom.activeFiltersBar) {
+
+        // Listener Chips activos
+        if (dom.activeFiltersBar) {
             dom.activeFiltersBar.addEventListener('click', (e) => {
                 const btn = e.target.closest('.chip-remove-btn');
-                if(btn) {
+                if (btn) {
                     const action = btn.dataset.action;
                     action === 'remove-schema' ? removeSchemaFilter() : removeActiveFilter(btn.dataset.attrCode);
                 }
             });
         }
 
-        dom.modelSearchResults.addEventListener('click', handleResultClick);
-        dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
-        dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
-        dom.filterOverlay.addEventListener('click', closeAllOverlays);
+        // UI Toggles
+        dom.smartFilterToggle.addEventListener('click', () => togglePanel(dom.smartFilterPanel, dom.smartFilterToggle));
+        dom.settingsMenuToggle.addEventListener('click', () => togglePanel(dom.settingsMenuPanel, dom.settingsMenuToggle));
+        dom.filterOverlay.addEventListener('click', closeAllPanels);
         
-        dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
-        document.getElementById('expand-all-btn').addEventListener('click', expandAllSpecs);
-        document.getElementById('collapse-all-btn').addEventListener('click', collapseAllSpecs);
+        // Botones Max/Min
+        dom.expandAllButton.addEventListener('click', expandAllSpecs);
+        dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
         
-        dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
-        dom.infoToggleButton.addEventListener('click', showReadmeInfo);
-        
-        if(dom.libraryMenuToggle) {
-            dom.libraryMenuToggle.addEventListener('click', () => alert("Modo Lectura: La biblioteca es estática en esta versión."));
-        }
+        // Modales
+        dom.infoToggleButton.addEventListener('click', showInfo);
+        dom.readmeCloseButton.addEventListener('click', closeAllPanels);
+        dom.paletteToggleButton.addEventListener('click', toggleTheme);
+        if(dom.libraryMenuToggle) dom.libraryMenuToggle.addEventListener('click', () => alert("Biblioteca de sólo lectura en modo offline."));
+
+        // Tema inicial aleatorio
+        updatePaletteCSS(darkPaletteHSL, Math.floor(Math.random() * 360));
     }
 
-    // --- LOGICA DE NEGOCIO ---
+    // --- CORE LOGIC ---
     function buildAttributeCache() {
         Object.values(masterSchemaMap).forEach(schema => schema.forEach(g => g.attrs.forEach(a => attrCodeToDescMap[a.code] = a.desc)));
     }
@@ -254,9 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateSchemaSelector() {
         dom.schemaFilterSelect.innerHTML = '<option value="all">Todas</option>';
         Object.keys(masterSchemaMap).forEach(k => {
-            const opt = document.createElement('option');
-            opt.value = k;
-            opt.textContent = k.charAt(0).toUpperCase() + k.slice(1);
+            const opt = document.createElement('option'); opt.value = k; opt.textContent = k.charAt(0).toUpperCase() + k.slice(1);
             dom.schemaFilterSelect.appendChild(opt);
         });
     }
@@ -264,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateSmartFilters(schemaKey) {
         dom.smartFilterContainer.innerHTML = '';
         if(schemaKey === 'all') {
-            dom.smartFilterContainer.innerHTML = '<p style="padding:1rem; color:var(--color-text-dim); text-align:center; font-size:0.8rem;">Selecciona una gama para ver filtros.</p>';
+            dom.smartFilterContainer.innerHTML = '<p style="padding:1rem;color:var(--color-text-dim);font-size:0.8rem;text-align:center">Selecciona una gama para ver filtros.</p>';
             return;
         }
         
@@ -273,34 +267,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         schema.forEach(group => {
             let hasFilters = false;
-            const wrapper = document.createElement('div');
-            wrapper.className = 'filter-group-wrapper';
-            wrapper.innerHTML = '<div class="filter-group-title"><button class="filter-toggle-btn gray"></button>'+group.group+'</div>';
+            const groupWrapper = document.createElement('div'); groupWrapper.className = 'filter-group-wrapper';
+            groupWrapper.innerHTML = '<div class="filter-group-title"><button class="filter-toggle-btn gray"></button>'+group.group+'</div>';
             
-            const rows = document.createElement('div');
-            rows.className = 'filter-rows-container collapsed';
+            const rowsContainer = document.createElement('div'); rowsContainer.className = 'filter-rows-container collapsed';
             
             group.attrs.forEach(attr => {
                 const values = [...new Set(products.map(p => p.attributes[attr.code]).filter(v => v))].sort();
                 if(values.length > 0) {
                     hasFilters = true;
-                    const row = document.createElement('div');
-                    row.className = 'filter-row';
+                    const row = document.createElement('div'); row.className = 'filter-row';
                     row.innerHTML = '<label>'+attr.desc+'</label>';
-                    
-                    const select = document.createElement('select');
-                    select.className = 'futuristic-select';
+                    const select = document.createElement('select'); select.className = 'futuristic-select';
                     select.dataset.attribute = attr.code;
-                    select.innerHTML = '<option value="">---</option>' + values.map(v => '<option value="'+v+'">'+v+'</option>').join('');
-                    
+                    select.innerHTML = '<option value="">--</option>' + values.map(v => '<option value="'+v+'">'+v+'</option>').join('');
                     row.appendChild(select);
-                    rows.appendChild(row);
+                    rowsContainer.appendChild(row);
                 }
             });
             
             if(hasFilters) {
-                wrapper.appendChild(rows);
-                dom.smartFilterContainer.appendChild(wrapper);
+                groupWrapper.appendChild(rowsContainer);
+                dom.smartFilterContainer.appendChild(groupWrapper);
             }
         });
     }
@@ -308,34 +296,33 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyFiltersAndSearch() {
         const q = dom.modelSearchInput.value.toLowerCase().trim();
         const schema = dom.schemaFilterSelect.value;
-        const filters = {};
+        const activeFilters = {};
         
         dom.smartFilterContainer.querySelectorAll('select').forEach(s => {
-            if(s.value) filters[s.dataset.attribute] = s.value;
+            if(s.value) activeFilters[s.dataset.attribute] = s.value;
         });
 
         const filtered = masterDatabase.filter(p => {
             if(schema !== 'all' && p.schema_key !== schema) return false;
             if(q && !p.model.toLowerCase().includes(q)) return false;
-            for(let key in filters) {
-                if(p.attributes[key] !== filters[key]) return false;
+            for(let key in activeFilters) {
+                if(p.attributes[key] !== activeFilters[key]) return false;
             }
             return true;
         });
 
         renderSearchResults(filtered);
-        renderActiveFilters(filters, schema);
+        renderActiveFilters(activeFilters, schema);
+        dom.searchClearBtn.style.display = q ? 'block' : 'none';
     }
 
     function renderSearchResults(list) {
         dom.modelSearchResults.innerHTML = '';
         dom.modelListHeader.textContent = 'Modelos ('+list.length+')';
-        
         if(list.length === 0) {
             dom.modelSearchResults.innerHTML = '<div class="list-item" style="cursor:default">Sin resultados</div>';
             return;
         }
-        
         const frag = document.createDocumentFragment();
         list.forEach(p => {
             const div = document.createElement('div');
@@ -349,40 +336,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderActiveFilters(filters, schema) {
         dom.activeFiltersBar.innerHTML = '';
-        dom.activeFiltersBar.className = (schema === 'all' && Object.keys(filters).length === 0) ? 'active-filters-bar-hidden' : 'active-filters-bar-visible';
+        if(schema === 'all' && Object.keys(filters).length === 0) {
+            dom.activeFiltersBar.className = 'active-filters-bar-hidden'; return;
+        }
+        dom.activeFiltersBar.className = 'active-filters-bar-visible';
         
         if(schema !== 'all') {
-            const div = document.createElement('div');
-            div.className = 'active-filter-chip schema-chip';
+            const div = document.createElement('div'); div.className = 'active-filter-chip schema-chip';
             div.innerHTML = '<span class="chip-label">Gama: <b>'+schema.toUpperCase()+'</b></span><button class="chip-remove-btn" data-action="remove-schema">×</button>';
             dom.activeFiltersBar.appendChild(div);
         }
         
         Object.entries(filters).forEach(([code, val]) => {
-            const div = document.createElement('div');
-            div.className = 'active-filter-chip';
+            const div = document.createElement('div'); div.className = 'active-filter-chip';
             div.innerHTML = '<span class="chip-label">'+(attrCodeToDescMap[code]||code)+': <b>'+val+'</b></span><button class="chip-remove-btn" data-attr-code="'+code+'">×</button>';
             dom.activeFiltersBar.appendChild(div);
         });
     }
 
+    // --- UI HELPERS ---
     function handleResultClick(e) {
-        const item = e.target.closest('.list-item');
-        if(!item) return;
-        
+        const item = e.target.closest('.list-item'); if(!item) return;
         document.querySelectorAll('.list-item.active').forEach(i => i.classList.remove('active'));
         item.classList.add('active');
-        
         const product = masterDatabase.find(p => p.model === item.dataset.model);
         if(product) {
             displayProduct(product);
             expandAllSpecs();
-            if(window.innerWidth < 768) {
-                dom.body.classList.add('model-is-selected');
-                showSelectedModelChip(product.model);
-            }
+            if(window.innerWidth < 768) { dom.body.classList.add('model-is-selected'); showSelectedModelChip(product.model); }
         }
-        closeAllOverlays();
+        closeAllPanels();
     }
 
     function displayProduct(p) {
@@ -390,48 +373,30 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.specControls.className = 'spec-controls-visible';
         dom.productTitle.textContent = p.model;
         dom.productSpecsContainer.innerHTML = '';
+        dom.selectedModelDisplay.innerHTML = '<button class="model-chip-button">Modelo: '+p.model+' <span onclick="clearSelection()">×</span></button>';
         
         const schema = masterSchemaMap[p.schema_key];
         if(!schema) return;
         
         schema.forEach(group => {
-            const details = document.createElement('details');
-            details.className = 'spec-group';
-            const summary = document.createElement('summary');
-            summary.textContent = group.group;
-            details.appendChild(summary);
-            
-            const content = document.createElement('div');
-            content.className = 'spec-group-content';
+            const details = document.createElement('details'); details.className = 'spec-group'; details.open = true;
+            const summary = document.createElement('summary'); summary.textContent = group.group; details.appendChild(summary);
+            const content = document.createElement('div'); content.className = 'spec-group-content';
             let hasData = false;
             
             group.attrs.forEach(attr => {
                 const val = p.attributes[attr.code];
                 if(val && val !== 'unknown') {
                     hasData = true;
-                    const row = document.createElement('div');
-                    row.className = 'spec-row';
+                    const row = document.createElement('div'); row.className = 'spec-row';
                     row.innerHTML = '<span class="attr-desc">'+attr.desc+'</span><span class="attr-value">'+val+'</span>';
                     content.appendChild(row);
                 }
             });
-            
-            if(hasData) {
-                details.appendChild(content);
-                dom.productSpecsContainer.appendChild(details);
-            }
+            if(hasData) { details.appendChild(content); dom.productSpecsContainer.appendChild(details); }
         });
     }
 
-    // --- UI HELPERS ---
-    function handleSearchInputUI(input) {
-        dom.searchClearBtn.style.display = input.value.length > 0 ? 'block' : 'none';
-    }
-    
-    function showSelectedModelChip(name) {
-        dom.selectedModelDisplay.innerHTML = '<button class="model-chip-button">Modelo: '+name+' <span onclick="clearSelection()">×</span></button>';
-    }
-    
     window.clearSelection = function() {
         dom.body.classList.remove('model-is-selected');
         dom.selectedModelDisplay.innerHTML = '';
@@ -440,6 +405,26 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.productPlaceholder.style.display = 'block';
         dom.specControls.className = 'spec-controls-hidden';
     };
+
+    // --- TOGGLES & PANELS ---
+    function togglePanel(panel, btn) {
+        const isOpen = panel.className.includes('open');
+        closeAllPanels();
+        if(!isOpen) {
+            panel.className = panel.className.replace('hidden', 'open');
+            dom.filterOverlay.className = 'overlay-visible';
+            if(btn) btn.classList.add('active');
+        }
+    }
+
+    function closeAllPanels() {
+        dom.smartFilterPanel.className = 'smart-filter-content-hidden';
+        dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
+        dom.filterOverlay.className = 'overlay-hidden';
+        dom.readmeModal.className = 'modal-hidden';
+        if(dom.smartFilterToggle) dom.smartFilterToggle.classList.remove('active');
+        if(dom.settingsMenuToggle) dom.settingsMenuToggle.classList.remove('active');
+    }
 
     function toggleFilterGroup(title) {
         const rows = title.nextElementSibling;
@@ -453,42 +438,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function togglePanel(panel) {
-        const isOpen = panel.className.includes('open');
-        closeAllOverlays();
-        if(!isOpen) {
-            panel.className = panel.className.replace('hidden', 'open');
-            dom.filterOverlay.className = 'overlay-visible';
-        }
-    }
-
-    function closeAllOverlays() {
-        dom.smartFilterPanel.className = 'smart-filter-content-hidden';
-        dom.settingsMenuPanel.className = 'settings-menu-panel-hidden';
-        dom.filterOverlay.className = 'overlay-hidden';
-        dom.readmeModal.className = 'modal-hidden';
-    }
-
-    function showReadmeInfo() {
-        closeAllOverlays();
-        dom.readmeContent.textContent = config.introText || "Pokedex Drive Offline";
-        dom.readmeModal.className = 'modal-visible';
-        dom.filterOverlay.className = 'overlay-visible';
-    }
-    
-    function closeReadmeModal() { dom.readmeModal.className = 'modal-hidden'; dom.filterOverlay.className = 'overlay-hidden'; }
     function expandAllSpecs() { dom.productSpecsContainer.querySelectorAll('details').forEach(d => d.open = true); }
     function collapseAllSpecs() { dom.productSpecsContainer.querySelectorAll('details').forEach(d => d.open = false); }
     
     function removeSchemaFilter() { dom.schemaFilterSelect.value = 'all'; populateSmartFilters('all'); applyFiltersAndSearch(); }
     function removeActiveFilter(code) { 
         const sel = dom.smartFilterContainer.querySelector('select[data-attribute="'+code+'"]'); 
-        if(sel) sel.value = ""; 
-        applyFiltersAndSearch(); 
+        if(sel) sel.value = ""; applyFiltersAndSearch(); 
+    }
+    
+    function showInfo() {
+        closeAllPanels();
+        dom.readmeContent.textContent = config.introText || "Pokedex Drive Offline";
+        dom.readmeModal.className = 'modal-visible';
+        dom.filterOverlay.className = 'overlay-visible';
     }
 
-    function handleThemeToggle(e) {
-        e.stopPropagation();
+    function handleSearchInputUI(input) { dom.searchClearBtn.style.display = input.value.length > 0 ? 'block' : 'none'; }
+
+    function toggleTheme() {
         isLightMode = !isLightMode;
         const palette = isLightMode ? lightPaletteHSL : darkPaletteHSL;
         updatePaletteCSS(palette, Math.floor(Math.random()*360));
@@ -518,32 +486,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 `;
 
-        // 4. CONSTRUCCIÓN HTML FINAL
-        const html = `
+        // 4. GENERACIÓN HTML FINAL
+        const finalHTML = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${config.title || 'Pokedex Drive'}</title>
-    <!-- Bootloader -->
+    <!-- DATOS OFFLINE -->
     <script>
         window.APP_DB = {
             products: ${safeProducts},
             schemas: ${safeSchemas},
             config: ${safeConfig}
         };
+        window.IS_POKEDEX_DRIVE = true;
     <\/script>
     <style>${cssContent}</style>
 </head>
 <body>
-    <!-- HEADER -->
     <div class="container">
+        <!-- HEADER -->
         <header class="app-header">
             <div class="header-left">
-                <h1 class="app-title">${config.title} 📟 <span class="app-version">${config.version}</span></h1>
+                <h1 class="app-title">${config.title || 'Pokedex Drive'} 📟 <span class="app-version">${config.version || 'v2.0'}</span></h1>
                 <div id="selected-model-display" class="model-chip-hidden"></div>
             </div>
+
             <div class="settings-menu-wrapper absolute-top-right">
                 <button id="settings-menu-toggle" class="settings-button" title="Ajustes">⚙️</button>
                 <div id="settings-menu-panel" class="settings-menu-panel-hidden">
@@ -552,6 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button id="info-toggle-btn" class="settings-menu-item">ℹ️ Info</button>
                 </div>
             </div>
+
             <div class="header-right-controls">
                 <div id="smart-filter-system" class="smart-filter-wrapper-v2">
                     <button id="smart-filter-toggle" class="smart-filter-summary">Filtros</button>
@@ -596,17 +567,16 @@ document.addEventListener('DOMContentLoaded', () => {
     <div id="filter-overlay" class="overlay-hidden"></div>
     <div id="readme-modal" class="modal-hidden">
         <div class="modal-content">
-            <div class="modal-header"><h2>Info</h2><button id="readme-close-btn" class="modal-close-btn modal-close-btn">&times;</button></div>
+            <div class="modal-header"><h2>Info</h2><button id="readme-close-btn" class="modal-close-btn">&times;</button></div>
             <pre id="readme-content" class="modal-body"></pre>
         </div>
     </div>
 
-    <!-- JS OFFLINE ENGINE -->
+    <!-- JS ENGINE -->
     <script>${jsContent}<\/script>
 </body>
 </html>`;
 
-        // GENERAR BLOB FINAL
-        return new Blob([html], { type: 'text/html' });
+        return new Blob([finalHTML], { type: 'text/html' });
     }
 };
