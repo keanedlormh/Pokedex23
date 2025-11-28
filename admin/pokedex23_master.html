@@ -202,7 +202,8 @@
         .config-label:first-child { margin-top: 0; }
     </style>
 
-    <script>
+    <!-- BOOTLOADER CON ID (CLAVE PARA INYECCIÓN) -->
+    <script id="db-bootloader">
         /** * Pokedex Master - Empty Core */
         window.APP_DB = {
             products: [],
@@ -675,9 +676,25 @@
                 if(!confirm("¿Generar archivo Release? (Se eliminará el constructor y se inyectará la configuración actual).")) return;
 
                 // 1. CLONAR DOM para Manipulación Segura
+                // Al clonar, perdemos los event listeners, pero eso está BIEN porque 
+                // el archivo generado volverá a ejecutar el script de inicialización al abrirse.
                 const virtualDoc = document.documentElement.cloneNode(true);
 
-                // 2. Limpieza de Estado de UI en el Clon (Cerrar menús)
+                // 2. Limpieza Quirúrgica (DOM Manipulation)
+                // Usamos remove() en lugar de Replace por Regex para evitar romper el HTML
+                
+                // Limpiar botones del constructor
+                const btnConfig = virtualDoc.querySelector('#config-release-btn');
+                if(btnConfig) btnConfig.remove();
+                
+                const btnBuild = virtualDoc.querySelector('#master-builder-btn');
+                if(btnBuild) btnBuild.remove();
+
+                // Limpiar Modal de Configuración (Completo)
+                const modalConfig = virtualDoc.querySelector('#config-modal');
+                if(modalConfig) modalConfig.remove();
+
+                // Resetear estado visual de paneles
                 const settingsPanel = virtualDoc.querySelector('#settings-menu-panel');
                 if (settingsPanel) settingsPanel.className = 'settings-menu-panel-hidden'; 
 
@@ -687,57 +704,57 @@
                 const settingsBtn = virtualDoc.querySelector('#settings-menu-toggle');
                 if (settingsBtn) settingsBtn.classList.remove('active');
 
-                // 3. Capturar datos actuales (Memoria) y Configuración
+                // 3. Capturar datos actuales
                 const currentProducts = window.APP_DB.products;
                 const currentSchemas = window.APP_DB.schemas;
-                const config = window.masterConfig; // Usamos la configuración del usuario
+                const config = window.masterConfig;
 
-                // 4. Convertir Clon a String HTML
+                // 4. INYECCIÓN DE DATOS (Usando DOM Text Content)
+                // Buscamos el script bootloader por ID en el clon
+                const bootloaderScript = virtualDoc.querySelector('#db-bootloader');
+                if (bootloaderScript) {
+                    bootloaderScript.textContent = `
+                        /** Pokedex Drive Release (${config.version}) */
+                        window.APP_DB = {
+                            products: ${JSON.stringify(currentProducts)},
+                            schemas: ${JSON.stringify(currentSchemas)},
+                            registerProduct: function(p) { this.products.push(p); },
+                            registerSchema: function(k, s) { this.schemas[k] = s; }
+                        };
+                        window.IS_POKEDEX_DRIVE = true;
+                    `;
+                }
+
+                // 5. INYECCIÓN DE CONFIGURACIÓN (DOM)
+                // Título
+                const titleTag = virtualDoc.querySelector('title');
+                if(titleTag) titleTag.textContent = `${config.title} (${config.version})`;
+
+                // H1 Header
+                const appTitle = virtualDoc.querySelector('.app-title');
+                if(appTitle) {
+                    appTitle.innerHTML = `${config.title} <span class="app-version">${config.version}</span>`;
+                }
+
+                // Info Text (Readme)
+                const readmePre = virtualDoc.querySelector('#readme-content');
+                if(readmePre) {
+                    readmePre.textContent = config.text; // TextContent escapa HTML automáticamente
+                }
+
+                // 6. SERIALIZACIÓN FINAL
                 let html = virtualDoc.outerHTML;
-                
-                // 5. INYECCIÓN DE DATOS DE PRODUCTOS (Reemplazar bloque de script inicial)
-                const dbPattern = /window\.APP_DB\s*=\s*\{[\s\S]*?\};/;
-                const newData = `window.APP_DB = {
-                    products: ${JSON.stringify(currentProducts)},
-                    schemas: ${JSON.stringify(currentSchemas)},
-                    registerProduct: function(p) { this.products.push(p); },
-                    registerSchema: function(k, s) { this.schemas[k] = s; }
-                };`;
-                html = html.replace(dbPattern, newData);
 
-                // 6. ACTUALIZACIÓN DINÁMICA DE CABECERAS Y TÍTULOS
-                // Reemplazar <title> del head
-                html = html.replace(/<title>.*?<\/title>/, `<title>${config.title} (${config.version})</title>`);
-                
-                // Reemplazar H1 Visual
-                const newHeader = `<h1 class="app-title">${config.title} <span class="app-version">${config.version}</span></h1>`;
-                html = html.replace(/<h1 class="app-title">[\s\S]*?<\/h1>/, newHeader);
-
-                // 7. INYECCIÓN DIRECTA DEL TEXTO INFO (Parche Offline)
-                // Inyectamos el texto en el <pre> para que no dependa de fetch()
-                const safeText = config.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                const infoInjection = `<pre id="readme-content" class="modal-body">${safeText}</pre>`;
-                // Reemplazamos el <pre> vacío original
-                html = html.replace(/<pre id="readme-content" class="modal-body"><\/pre>/, infoInjection);
-
-                // 8. ELIMINACIÓN DE HERRAMIENTAS DE CONSTRUCCIÓN
-                // Borrar botón Configurar
-                html = html.replace(/<button id="config-release-btn".*?<\/button>/, '');
-                // Borrar botón Construir
-                html = html.replace(/<button id="master-builder-btn".*?<\/button>/, '');
-                // Borrar Modal de Configuración HTML
-                const modalPattern = /<div id="config-modal"[\s\S]*?<\/div>\s*<\/div>/; // Regex simple para borrar el bloque del modal
-                html = html.replace(modalPattern, '');
-                // Borrar script builder
+                // 7. Borrar el script del constructor (Este script)
+                // Esto lo hacemos por Regex porque es seguro (es un bloque único y final)
                 const scriptPattern = /<script id="master-builder-logic">[\s\S]*?<\/script>/;
                 html = html.replace(scriptPattern, '');
 
-                // 9. Descarga
+                // 8. Descarga
                 const blob = new Blob(['<!DOCTYPE html>\n' + html], {type: 'text/html'});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                // Nombre de archivo seguro
                 const safeName = config.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
                 a.download = `${safeName}_${config.version}.html`;
                 document.body.appendChild(a);
