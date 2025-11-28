@@ -80,12 +80,11 @@
         .settings-menu-item { background-color: var(--color-bg-dark); border: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600; border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-sizing: border-box; margin-top: 0.25rem; font-family: var(--font-primary); }
         .settings-menu-item:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
         
-        /* BOTONES MASTER */
-        #config-release-btn { border-color: var(--color-text-dim); color: var(--color-text-secondary); }
-        #config-release-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
-
+        /* BOTÓN MASTER & CONFIG */
         #master-builder-btn { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); background: rgba(6, 182, 212, 0.1); }
         #master-builder-btn:hover { background: var(--color-cyan-accent); color: #fff; }
+        #config-release-btn { border-color: #8b5cf6; color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
+        #config-release-btn:hover { background: #8b5cf6; color: #fff; }
 
         /* Filtros */
         .smart-filter-wrapper-v2 { position: relative; width: 100%; flex-grow: 1; }
@@ -125,7 +124,8 @@
         .search-panel { display: flex; flex-direction: column; }
         .futuristic-title { font-family: var(--font-secondary); font-size: 1.15rem; font-weight: 600; color: var(--color-text-primary); margin: 0; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem; }
         .futuristic-subtitle { font-family: var(--font-secondary); font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin: 0 0 0.5rem 0; }
-        .futuristic-input, .futuristic-select, .futuristic-textarea { background-color: var(--color-bg-dark); border: 1px solid var(--color-border); color: var(--color-text-primary); border-radius: 4px; padding: 0.6rem 0.8rem; font-size: 0.85rem; width: 100%; box-sizing: border-box; font-family: var(--font-primary); transition: all 0.2s; }
+        .futuristic-input, .futuristic-select, .futuristic-textarea { background-color: var(--color-bg-dark); border: 1px solid var(--color-border); color: var(--color-text-primary); border-radius: 4px; padding: 0.6rem 0.8rem; font-size: 0.85rem; width: 100%; box-sizing: border-box; font-family: var(--font-primary); }
+        .futuristic-textarea { resize: vertical; min-height: 80px; }
         .futuristic-input:focus, .futuristic-select:focus, .futuristic-textarea:focus { outline: none; border-color: var(--color-cyan-accent); }
         .futuristic-select { -webkit-appearance: none; appearance: none; padding-right: 2.5rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
         .futuristic-list { background-color: var(--color-bg-dark); border: 1px solid var(--color-border-light); border-radius: 4px; }
@@ -133,6 +133,8 @@
         .futuristic-list .list-item { padding: 0.45rem 0.75rem; border-bottom: 1px dashed var(--color-border); cursor: pointer; font-size: 0.85rem; font-family: var(--font-secondary); }
         .futuristic-list .list-item:hover { background-color: var(--color-border); color: var(--color-cyan-accent); }
         .futuristic-list .list-item.active { background-color: var(--color-cyan-glow); color: var(--color-cyan-accent); font-weight: 600; border-left: 3px solid var(--color-cyan-accent); }
+        .futuristic-button { background: var(--color-cyan-accent); color: #fff; border: 1px solid var(--color-cyan-accent); border-radius: 4px; font-weight: 600; font-size: 0.85rem; padding: 0.6rem 1.2rem; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 0.5rem; }
+        .futuristic-button:hover { background: #0891b2; }
 
         /* BUSCADOR REACTIVO */
         .search-wrapper { position: relative; width: 100%; }
@@ -163,8 +165,6 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
         .modal-close-btn { background: none; border: none; font-size: 1.75rem; color: var(--color-text-secondary); cursor: pointer; }
         .modal-body { padding: 1rem; overflow-y: auto; font-family: var(--font-primary); font-size: 0.8rem; color: var(--color-text-secondary); white-space: pre-wrap; }
-        .futuristic-button { background: var(--color-cyan-accent); color: #fff; border: 1px solid var(--color-cyan-accent); border-radius: 4px; font-weight: 600; font-size: 0.85rem; padding: 0.6rem 1.2rem; cursor: pointer; transition: all 0.2s; width: 100%; }
-        .futuristic-button:hover { background: #0891b2; }
 
         /* Biblioteca & Export Styles */
         .library-modal-content { max-width: 450px; max-height: 70vh; }
@@ -196,6 +196,10 @@
         .upload-status { font-size: 0.7rem; color: var(--color-text-dim); font-family: var(--font-secondary); text-align: right; width: 100%; margin-top: 0.25rem;}
         .futuristic-textarea-mini { background-color: var(--color-bg-medium); border: 1px solid var(--color-border-light); color: var(--color-text-primary); border-radius: 4px; padding: 0.4rem; font-family: var(--font-mono); font-size: 0.7rem; resize: none; overflow: hidden; flex-grow: 1; height: 32px; box-sizing: border-box; white-space: pre; }
         .futuristic-textarea-mini:focus { outline: none; border-color: var(--color-cyan-accent); }
+        
+        /* Config Form Styles */
+        .config-label { display: block; margin-bottom: 0.4rem; color: var(--color-text-secondary); font-size: 0.8rem; font-weight: 600; margin-top: 1rem; }
+        .config-label:first-child { margin-top: 0; }
     </style>
 
     <script>
@@ -225,6 +229,7 @@
                     <button id="font-toggle-btn" class="settings-menu-item">📄 Texto</button>
                     <button id="info-toggle-btn" class="settings-menu-item">ℹ️ Info</button>
                     
+                    <!-- NUEVO: Botón de Configuración -->
                     <button id="config-release-btn" class="settings-menu-item">🛠️ Configurar Release</button>
                     <button id="master-builder-btn" class="settings-menu-item">💾 Construir Release</button>
                 </div>
@@ -281,31 +286,29 @@
     <div id="readme-modal" class="modal-hidden">
         <div class="modal-content">
             <div class="modal-header"><h2>Info</h2><button id="readme-close-btn" class="modal-close-btn">&times;</button></div>
+            <!-- El contenido se inyectará aquí -->
             <pre id="readme-content" class="modal-body"></pre>
         </div>
     </div>
 
-    <!-- MODAL CONFIG RELEASE (NUEVO) -->
-    <div id="config-release-modal" class="modal-hidden">
-        <div class="modal-content" style="max-width: 400px;">
+    <!-- NUEVO: Modal de Configuración Release -->
+    <div id="config-modal" class="modal-hidden">
+        <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <h2>Configurar Release</h2>
-                <button id="config-release-close-btn" class="modal-close-btn">&times;</button>
+                <h2 class="spec-title" style="margin:0;">Configurar Release</h2>
+                <button id="config-close-btn" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="margin-bottom: 1rem;">
-                    <label class="futuristic-subtitle">Título App</label>
-                    <input type="text" id="conf-title" class="futuristic-input" value="Pokedex Drive">
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label class="futuristic-subtitle">Versión (ej: v2.0)</label>
-                    <input type="text" id="conf-version" class="futuristic-input" placeholder="Automático si se deja vacío">
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label class="futuristic-subtitle">Texto Info (Readme)</label>
-                    <textarea id="conf-text" class="futuristic-textarea" rows="6" style="resize:vertical;">La aplicación Pokedex Drive es un visor web interactivo...</textarea>
-                </div>
-                <button id="conf-save-btn" class="futuristic-button">Guardar Configuración</button>
+                <label class="config-label">Título App:</label>
+                <input type="text" id="cfg-title" class="futuristic-input w-full">
+                
+                <label class="config-label">Versión:</label>
+                <input type="text" id="cfg-version" class="futuristic-input w-full">
+                
+                <label class="config-label">Texto Info (Readme):</label>
+                <textarea id="cfg-text" class="futuristic-textarea w-full" rows="6"></textarea>
+                
+                <button id="cfg-save-btn" class="futuristic-button">Guardar Configuración</button>
             </div>
         </div>
     </div>
@@ -340,13 +343,6 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Inicializar Config por defecto
-        window.driveConfig = {
-            title: "Pokedex Drive",
-            version: "",
-            introText: "La aplicación Pokedex Drive es un visor web interactivo..."
-        };
-
         const dom = {
             body: document.body,
             modelSearchInput: document.getElementById('search-model'),
@@ -383,14 +379,14 @@
             csvTextInput: document.getElementById('csv-text-input'),
             csvTextBtn: document.getElementById('csv-text-btn'),
             
-            // Config Modal DOM
-            configReleaseBtn: document.getElementById('config-release-btn'),
-            configModal: document.getElementById('config-release-modal'),
-            configCloseBtn: document.getElementById('config-release-close-btn'),
-            confSaveBtn: document.getElementById('conf-save-btn'),
-            confTitleInput: document.getElementById('conf-title'),
-            confVersionInput: document.getElementById('conf-version'),
-            confTextInput: document.getElementById('conf-text')
+            // DOM Configuración
+            configBtn: document.getElementById('config-release-btn'),
+            configModal: document.getElementById('config-modal'),
+            configCloseBtn: document.getElementById('config-close-btn'),
+            configSaveBtn: document.getElementById('cfg-save-btn'),
+            cfgTitle: document.getElementById('cfg-title'),
+            cfgVersion: document.getElementById('cfg-version'),
+            cfgText: document.getElementById('cfg-text')
         };
 
         const originalPlaceholder = dom.productDisplayPlaceholder;
@@ -398,6 +394,14 @@
         let masterSchemaMap = {};
         let attrCodeToDescMap = {};
         let activeSchemas = new Set(); 
+
+        // --- MASTER CONFIGURATION STORAGE ---
+        // Almacena la configuración definida por el usuario
+        window.masterConfig = {
+            title: "Pokedex Drive",
+            version: "v.Release",
+            text: "La aplicación Pokedex Drive es un visor web interactivo offline.\n\nGenerado con Pokedex Master Builder."
+        };
 
         const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
         const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
@@ -421,6 +425,11 @@
                 currentAccentHue = Math.floor(Math.random() * 360);
                 updatePaletteCSS(lightPaletteHSL, currentAccentHue);
                 dom.paletteToggleButton.innerHTML = '🎨 Tema';
+                
+                // Set default date version
+                const date = new Date();
+                const ver = `v.${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getFullYear()).slice(-2)}`;
+                window.masterConfig.version = ver;
             }, 100);
         }
 
@@ -464,29 +473,24 @@
             if (dom.libraryGamaList) {
                 dom.libraryGamaList.addEventListener('click', (e) => {
                     if (e.target.matches('.gama-download-btn')) {
-                        e.preventDefault(); 
-                        e.stopPropagation();
-                        exportGamaToCSV(e.target.dataset.key);
-                        return;
+                        e.preventDefault(); e.stopPropagation(); exportGamaToCSV(e.target.dataset.key); return;
                     }
                 });
                 dom.libraryGamaList.addEventListener('change', handleGamaToggle);
             }
-
-            // CONFIG LISTENERS
-            if (dom.configReleaseBtn) dom.configReleaseBtn.addEventListener('click', openConfigModal);
+            
+            // CONFIG EVENT LISTENERS
+            if (dom.configBtn) dom.configBtn.addEventListener('click', openConfigModal);
             if (dom.configCloseBtn) dom.configCloseBtn.addEventListener('click', closeConfigModal);
-            if (dom.confSaveBtn) dom.confSaveBtn.addEventListener('click', saveConfig);
+            if (dom.configSaveBtn) dom.configSaveBtn.addEventListener('click', saveConfig);
         }
 
-        // --- FUNCIONES CONFIGURACIÓN (NUEVAS) ---
+        // --- LOGICA DE CONFIGURACIÓN ---
         function openConfigModal() {
             closeSettingsMenu();
-            // Cargar valores actuales
-            dom.confTitleInput.value = window.driveConfig.title;
-            dom.confVersionInput.value = window.driveConfig.version;
-            dom.confTextInput.value = window.driveConfig.introText;
-            
+            dom.cfgTitle.value = window.masterConfig.title;
+            dom.cfgVersion.value = window.masterConfig.version;
+            dom.cfgText.value = window.masterConfig.text;
             dom.configModal.className = 'modal-visible';
             dom.filterOverlay.className = 'overlay-visible';
         }
@@ -497,16 +501,20 @@
         }
 
         function saveConfig() {
-            window.driveConfig.title = dom.confTitleInput.value.trim();
-            window.driveConfig.version = dom.confVersionInput.value.trim();
-            window.driveConfig.introText = dom.confTextInput.value;
-            alert("Configuración guardada en memoria.\nLista para aplicar al 'Construir Release'.");
-            closeConfigModal();
+            window.masterConfig.title = dom.cfgTitle.value.trim() || "Pokedex Drive";
+            window.masterConfig.version = dom.cfgVersion.value.trim() || "v.Release";
+            window.masterConfig.text = dom.cfgText.value;
+            
+            const btnOriginal = dom.configSaveBtn.textContent;
+            dom.configSaveBtn.textContent = "¡Guardado!";
+            dom.configSaveBtn.style.background = "var(--color-cyan-accent)";
+            setTimeout(() => {
+                dom.configSaveBtn.textContent = btnOriginal;
+                closeConfigModal();
+            }, 800);
         }
 
-
         // --- FUNCIONES BIBLIOTECA & EXPORTACIÓN ---
-
         function renderLibraryGamaList() {
             dom.libraryGamaList.innerHTML = '';
             Object.keys(masterSchemaMap).forEach(schemaKey => {
@@ -532,11 +540,7 @@
         function exportGamaToCSV(selectedSchema) {
             if (!selectedSchema) return;
             const products = masterDatabase.filter(p => p.schema_key === selectedSchema);
-            if (products.length === 0) {
-                alert("Esta gama no tiene productos para exportar.");
-                return;
-            }
-
+            if (products.length === 0) { alert("Esta gama no tiene productos para exportar."); return; }
             const schemaDef = masterSchemaMap[selectedSchema];
             let row1_groups = [selectedSchema, "Identificación"];
             let row2_codes = ["", "model"];
@@ -546,76 +550,42 @@
             if (schemaDef) {
                 schemaDef.forEach(group => {
                     group.attrs.forEach(attr => {
-                        row1_groups.push(group.group);
-                        row2_codes.push(attr.code);
-                        row3_descs.push(attr.desc);
-                        attrKeys.push(attr.code);
+                        row1_groups.push(group.group); row2_codes.push(attr.code); row3_descs.push(attr.desc); attrKeys.push(attr.code);
                     });
                 });
             }
-
             const sanitize = (val) => {
                 if (val === null || val === undefined) return "";
-                val = String(val);
-                val = val.replace(/"/g, '""');
+                val = String(val); val = val.replace(/"/g, '""');
                 if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`;
                 return val;
             };
-
             const dataRows = products.map(p => {
                 let row = ["", sanitize(p.model)];
-                attrKeys.forEach(key => {
-                    let val = p.attributes[key] || "";
-                    row.push(sanitize(val));
-                });
+                attrKeys.forEach(key => { let val = p.attributes[key] || ""; row.push(sanitize(val)); });
                 return row.join(";");
             });
-
             const header1 = row1_groups.map(g => sanitize(g)).join(";");
             const header2 = row2_codes.map(c => sanitize(c)).join(";");
             const header3 = row3_descs.map(d => sanitize(d)).join(";");
-
             const csvContent = "\uFEFF" + header1 + "\n" + header2 + "\n" + header3 + "\n" + dataRows.join("\n");
             const filename = `GAMA_${selectedSchema.toUpperCase()}.csv`;
-            
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", filename); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
         }
 
         function handleGamaToggle(e) { 
             if (!e.target.matches('.gama-checkbox')) return; 
-            const key = e.target.dataset.key; 
-            const isChecked = e.target.checked; 
+            const key = e.target.dataset.key; const isChecked = e.target.checked; 
             if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); 
-            
-            // Actualizar UI Status
-            const item = e.target.closest('.gama-toggle-item');
-            const statusSpan = item.querySelector('.gama-status');
-            statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; 
-            statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; 
-            
-            populateSchemaSelector(); 
-            populateSmartFilters(dom.schemaFilterSelect.value); 
-            applyFiltersAndSearch(); 
+            const item = e.target.closest('.gama-toggle-item'); const statusSpan = item.querySelector('.gama-status');
+            statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; 
+            populateSchemaSelector(); populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); 
         }
 
-        // --- REST OF THE APP LOGIC ---
-
-        function handleSearchInputUI(input) {
-            const hasText = input.value.length > 0;
-            if (hasText) { input.classList.add('has-text'); dom.searchClearBtn.style.display = 'block'; }
-            else { input.classList.remove('has-text'); dom.searchClearBtn.style.display = 'none'; }
-        }
-
+        // --- APP LOGIC ---
+        function handleSearchInputUI(input) { const hasText = input.value.length > 0; if (hasText) { input.classList.add('has-text'); dom.searchClearBtn.style.display = 'block'; } else { input.classList.remove('has-text'); dom.searchClearBtn.style.display = 'none'; } }
         function removeActiveFilter(attrCode) { const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select')); const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode); if (targetSelects.length > 0) { targetSelects.forEach(select => select.value = ""); applyFiltersAndSearch(); } else { applyFiltersAndSearch(); } }
         function renderActiveFilters(filters) { if (!dom.activeFiltersBar) return; const currentSchema = dom.schemaFilterSelect.value; const hasSchemaFilter = currentSchema !== 'all'; const hasAttrFilters = Object.keys(filters).length > 0; if (!hasSchemaFilter && !hasAttrFilters) { dom.activeFiltersBar.className = 'active-filters-bar-hidden'; dom.activeFiltersBar.innerHTML = ''; return; } dom.activeFiltersBar.className = 'active-filters-bar-visible'; dom.activeFiltersBar.innerHTML = ''; const fragment = document.createDocumentFragment(); if (hasSchemaFilter) { const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1); const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`; fragment.appendChild(schemaChip); } Object.entries(filters).forEach(([attrCode, attrValue]) => { const attrDesc = attrCodeToDescMap[attrCode] || attrCode; const safeCode = attrCode.replace(/"/g, '&quot;'); const chip = document.createElement('div'); chip.className = 'active-filter-chip'; chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`; fragment.appendChild(chip); }); dom.activeFiltersBar.appendChild(fragment); }
         function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
@@ -635,10 +605,10 @@
         function expandAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = true); }
         function collapseAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = false); }
         function toggleFilterGroup(titleElement) { const btn = titleElement.querySelector('.filter-toggle-btn'); const rowsContainer = titleElement.nextElementSibling; if (rowsContainer && btn) { if (rowsContainer.classList.contains('collapsed')) { rowsContainer.classList.remove('collapsed'); rowsContainer.classList.add('expanded'); btn.classList.remove('gray'); btn.classList.add('blue'); } else { rowsContainer.classList.remove('expanded'); rowsContainer.classList.add('collapsed'); btn.classList.remove('blue'); btn.classList.add('gray'); } } }
-        function openFilterPanel() { if (!dom.smartFilterPanel) return; closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); closeConfigModal(); dom.smartFilterPanel.className = 'smart-filter-content-open'; dom.filterOverlay.className = 'overlay-visible'; dom.smartFilterToggle.classList.add('active'); }
+        function openFilterPanel() { if (!dom.smartFilterPanel) return; closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); dom.smartFilterPanel.className = 'smart-filter-content-open'; dom.filterOverlay.className = 'overlay-visible'; dom.smartFilterToggle.classList.add('active'); }
         function closeFilterPanel() { if (!dom.smartFilterPanel) return; dom.smartFilterPanel.className = 'smart-filter-content-hidden'; checkOverlay(); dom.smartFilterToggle.classList.remove('active'); }
         function toggleFilterPanel() { dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel(); }
-        function openSettingsMenu() { if (!dom.settingsMenuPanel) return; closeFilterPanel(); closeReadmeModal(); closeLibraryModal(); closeConfigModal(); dom.settingsMenuPanel.className = 'settings-menu-panel-open'; dom.filterOverlay.className = 'overlay-visible'; dom.settingsMenuToggle.classList.add('active'); }
+        function openSettingsMenu() { if (!dom.settingsMenuPanel) return; closeFilterPanel(); closeReadmeModal(); closeLibraryModal(); dom.settingsMenuPanel.className = 'settings-menu-panel-open'; dom.filterOverlay.className = 'overlay-visible'; dom.settingsMenuToggle.classList.add('active'); }
         function closeSettingsMenu() { if (!dom.settingsMenuPanel) return; dom.settingsMenuPanel.className = 'settings-menu-panel-hidden'; checkOverlay(); dom.settingsMenuToggle.classList.remove('active'); }
         function toggleSettingsMenu() { dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu(); }
         function openReadmeModal() { closeFilterPanel(); closeSettingsMenu(); closeLibraryModal(); closeConfigModal(); dom.readmeModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; }
@@ -677,11 +647,18 @@
         function hslToRgb(h, s, l) { s /= 100; l /= 100; const k = n => (n + h / 30) % 12; const a = s * Math.min(l, 1 - l); const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) }; }
         
         async function showReadmeInfo() {
-            closeSettingsMenu(); closeLibraryModal(); openReadmeModal(); closeConfigModal();
-            // INYECCIÓN MANUAL PARA LA MASTER (ya que no lee el config al inicio)
-            // Cuando se exporte, esto será reemplazado por el valor estático
-            if (dom.readmeContent.textContent === "") {
-               dom.readmeContent.textContent = window.driveConfig.introText;
+            closeSettingsMenu(); closeLibraryModal(); closeConfigModal(); openReadmeModal();
+            // Comprobamos si hay texto "hardcoded" primero (inyectado por el Builder)
+            if (dom.readmeContent.textContent.trim() === "") {
+                dom.readmeContent.textContent = "Cargando...";
+                try {
+                    const response = await fetch('README.md');
+                    if (!response.ok) throw new Error('No se pudo encontrar README.md');
+                    const text = await response.text();
+                    dom.readmeContent.textContent = text;
+                } catch (error) {
+                    dom.readmeContent.textContent = "La aplicación Pokedex Drive es un visor web interactivo. (Modo offline sin texto inyectado).";
+                }
             }
         }
         
@@ -695,12 +672,12 @@
             if(builderBtn) builderBtn.addEventListener('click', buildRelease);
 
             function buildRelease() {
-                if(!confirm("¿Generar archivo Release? (Se creará una versión limpia sin herramientas de edición).")) return;
+                if(!confirm("¿Generar archivo Release? (Se eliminará el constructor y se inyectará la configuración actual).")) return;
 
-                // 1. CLONAR DOM (Serialización String)
+                // 1. CLONAR DOM para Manipulación Segura
                 const virtualDoc = document.documentElement.cloneNode(true);
 
-                // 2. Limpieza de UI en el Clon (Ocultar paneles abiertos)
+                // 2. Limpieza de Estado de UI en el Clon (Cerrar menús)
                 const settingsPanel = virtualDoc.querySelector('#settings-menu-panel');
                 if (settingsPanel) settingsPanel.className = 'settings-menu-panel-hidden'; 
 
@@ -709,20 +686,16 @@
 
                 const settingsBtn = virtualDoc.querySelector('#settings-menu-toggle');
                 if (settingsBtn) settingsBtn.classList.remove('active');
-                
-                // Ocultar modal config
-                const confModal = virtualDoc.querySelector('#config-release-modal');
-                if (confModal) confModal.className = 'modal-hidden';
 
-                // 3. Obtener Configuración
-                const config = window.driveConfig;
+                // 3. Capturar datos actuales (Memoria) y Configuración
                 const currentProducts = window.APP_DB.products;
                 const currentSchemas = window.APP_DB.schemas;
+                const config = window.masterConfig; // Usamos la configuración del usuario
 
-                // 4. Convertir a HTML String
+                // 4. Convertir Clon a String HTML
                 let html = virtualDoc.outerHTML;
                 
-                // 5. Inyectar Datos Estáticos (Base de datos actual)
+                // 5. INYECCIÓN DE DATOS DE PRODUCTOS (Reemplazar bloque de script inicial)
                 const dbPattern = /window\.APP_DB\s*=\s*\{[\s\S]*?\};/;
                 const newData = `window.APP_DB = {
                     products: ${JSON.stringify(currentProducts)},
@@ -732,34 +705,29 @@
                 };`;
                 html = html.replace(dbPattern, newData);
 
-                // 6. Aplicar Configuración (Título y Versión)
-                const date = new Date();
-                const dd = String(date.getDate()).padStart(2, '0');
-                const mm = String(date.getMonth() + 1).padStart(2, '0');
-                const yy = String(date.getFullYear()).slice(-2);
+                // 6. ACTUALIZACIÓN DINÁMICA DE CABECERAS Y TÍTULOS
+                // Reemplazar <title> del head
+                html = html.replace(/<title>.*?<\/title>/, `<title>${config.title} (${config.version})</title>`);
                 
-                // Usar versión del usuario o generar automática
-                const finalVer = config.version ? config.version : `v.${dd}.${mm}.${yy}`;
-                
-                // Reemplazo en Title Tag
-                html = html.replace(/<title>.*?<\/title>/, `<title>${config.title} (${finalVer})</title>`);
-                
-                // Reemplazo en H1 Header (Regex para capturar todo el h1)
-                const newHeader = `<h1 class="app-title">${config.title} <span class="app-version">${finalVer}</span></h1>`;
+                // Reemplazar H1 Visual
+                const newHeader = `<h1 class="app-title">${config.title} <span class="app-version">${config.version}</span></h1>`;
                 html = html.replace(/<h1 class="app-title">[\s\S]*?<\/h1>/, newHeader);
 
-                // 7. INYECTAR TEXTO INFO (README PATCH)
-                // Inyectamos el texto directamente en el <pre> para que sea estático
-                const safeText = config.introText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                html = html.replace(/<pre id="readme-content" class="modal-body"><\/pre>/, `<pre id="readme-content" class="modal-body">${safeText}</pre>`);
+                // 7. INYECCIÓN DIRECTA DEL TEXTO INFO (Parche Offline)
+                // Inyectamos el texto en el <pre> para que no dependa de fetch()
+                const safeText = config.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const infoInjection = `<pre id="readme-content" class="modal-body">${safeText}</pre>`;
+                // Reemplazamos el <pre> vacío original
+                html = html.replace(/<pre id="readme-content" class="modal-body"><\/pre>/, infoInjection);
 
-                // 8. AUTO-LIMPIEZA (Eliminar herramientas de construcción)
+                // 8. ELIMINACIÓN DE HERRAMIENTAS DE CONSTRUCCIÓN
                 // Borrar botón Configurar
                 html = html.replace(/<button id="config-release-btn".*?<\/button>/, '');
                 // Borrar botón Construir
                 html = html.replace(/<button id="master-builder-btn".*?<\/button>/, '');
-                // Borrar el Modal de Configuración entero del HTML final
-                html = html.replace(/<div id="config-release-modal"[\s\S]*?<\/div>\s*<div id="library-modal"/, '<div id="library-modal"');
+                // Borrar Modal de Configuración HTML
+                const modalPattern = /<div id="config-modal"[\s\S]*?<\/div>\s*<\/div>/; // Regex simple para borrar el bloque del modal
+                html = html.replace(modalPattern, '');
                 // Borrar script builder
                 const scriptPattern = /<script id="master-builder-logic">[\s\S]*?<\/script>/;
                 html = html.replace(scriptPattern, '');
@@ -769,9 +737,9 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                // Nombre de archivo limpio
-                const safeTitle = config.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                a.download = `${safeTitle}_${finalVer.replace(/\./g, '-')}.html`;
+                // Nombre de archivo seguro
+                const safeName = config.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                a.download = `${safeName}_${config.version}.html`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
