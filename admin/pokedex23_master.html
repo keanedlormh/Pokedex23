@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex Drive (Master)</title>
+    
+    <style>
+        /* ==============================================
+           Estilos Principales (Pokedex LG v13.14 - Master Edition)
+           ============================================== */
+        :root {
+            --color-bg-dark: #0D1117;
+            --color-bg-medium: #161B22;
+            --color-border: #21262D;
+            --color-border-light: #2a3038;
+            --color-text-primary: #e2e8f0;
+            --color-text-secondary: #9ca3af;
+            --color-text-dim: #6b7280;
+            --color-cyan-accent: #06b6d4;
+            --color-cyan-glow: rgba(6, 182, 212, 0.25);
+            
+            --font-primary: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --font-secondary: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+        }
+
+        body {
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-secondary);
+            font-family: var(--font-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s, font-family 0.2s ease;
+        }
+
+        /* FIX: Herencia de fuentes */
+        button, input, select, textarea { font-family: var(--font-primary); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--color-bg-medium); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--color-cyan-accent); border-radius: 3px; }
+
+        .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0.75rem; box-sizing: border-box; position: relative; }
+
+        /* LAYOUT VERTICAL UNIFICADO */
+        .main-layout { display: flex; flex-direction: column; gap: 1rem; transition: all 0.3s ease-in-out; }
+
+        /* Estados UI */
+        body.model-is-selected .sidebar-column { display: none; }
+        body.model-is-selected .main-column { width: 100%; }
+        body.model-is-selected #smart-filter-system { display: none; }
+        body.model-is-selected #active-filters-bar { display: none; }
+        body.model-is-selected #selected-model-display { display: block; }
+
+        .sticky-panel { position: sticky; top: 1rem; }
+        .w-full { width: 100%; }
+        .text-gray-400 { color: var(--color-text-secondary); }
+        .overflow-y-auto { overflow-y: auto; }
+        .max-h-64 { max-height: 16rem; }
+
+        /* Header */
+        .app-header { position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding-bottom: 0.75rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); gap: 0.75rem; min-height: 40px; }
+        .header-left { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding-right: 50px; }
+        .app-title { font-family: var(--font-secondary); font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; letter-spacing: -0.5px; }
+        .app-version { font-size: 0.75rem; padding: 0 0.3rem; font-family: var(--font-secondary); color: var(--color-cyan-accent); background-color: var(--color-bg-medium); border: 1px solid var(--color-border); position: relative; top: -2px; white-space: nowrap; }
+
+        #selected-model-display.model-chip-hidden { display: none; }
+        .model-chip-button { font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; color: var(--color-cyan-accent); background-color: var(--color-cyan-glow); border: 1px solid var(--color-cyan-accent); border-radius: 1rem; padding: 0.35rem 0.6rem 0.35rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+        .model-chip-button span { font-family: var(--font-primary); font-weight: 900; font-size: 1rem; color: var(--color-text-primary); }
+
+        .header-right-controls { display: flex; width: 100%; }
+
+        /* Ajustes Menu */
+        .settings-menu-wrapper { position: relative; }
+        .settings-menu-wrapper.absolute-top-right { position: absolute; top: 0; right: 0; z-index: 60; }
+        .settings-button { background-color: var(--color-bg-medium); border: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 1.2rem; line-height: 1; border-radius: 4px; cursor: pointer; padding: 0.4rem 0.6rem; height: 38px; width: 38px; }
+        .settings-menu-panel-hidden { display: none; }
+        .settings-menu-panel-open { display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); right: 0; width: 200px; background: var(--color-bg-medium); border: 1px solid var(--color-border-light); border-radius: 0.5rem; padding: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .settings-menu-item { background-color: var(--color-bg-dark); border: 1px solid var(--color-border); color: var(--color-text-secondary); font-size: 0.85rem; font-weight: 600; border-radius: 4px; padding: 0.6rem 0.8rem; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-sizing: border-box; margin-top: 0.25rem; font-family: var(--font-primary); }
+        .settings-menu-item:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
+        
+        /* BOTONES MASTER */
+        #config-release-btn { border-color: var(--color-text-dim); color: var(--color-text-secondary); }
+        #config-release-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
+
+        #master-builder-btn { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); background: rgba(6, 182, 212, 0.1); }
+        #master-builder-btn:hover { background: var(--color-cyan-accent); color: #fff; }
+
+        /* Filtros */
+        .smart-filter-wrapper-v2 { position: relative; width: 100%; flex-grow: 1; }
+        .smart-filter-summary { font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); background-color: var(--color-bg-medium); border: 1px solid var(--color-border); border-radius: 0.5rem; padding: 0.6rem 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; font-family: var(--font-primary); }
+        .smart-filter-summary::after { content: '[■]'; font-family: var(--font-secondary); color: var(--color-cyan-accent); margin-left: 0.5rem; }
+        .smart-filter-summary.active::after { content: '[-]'; }
+        .smart-filter-content-hidden { display: none; }
+        .smart-filter-content-open { display: block; position: absolute; z-index: 50; top: calc(100% + 0.25rem); box-sizing: border-box; left: 0; right: 0; width: 100%; min-width: 280px; background: var(--color-bg-medium); border: 1px solid var(--color-border-light); border-radius: 0.5rem; padding: 0.75rem; max-height: 70vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .smart-filters-list { display: flex; flex-direction: column; gap: 0.25rem; }
+        .filter-group-wrapper { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
+        .filter-group-title { font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); padding: 0.5rem 0.75rem; background: var(--color-border); display: flex; align-items: center; cursor: pointer; margin: 0; }
+        .filter-toggle-btn { width: 12px; height: 12px; border: none; border-radius: 3px; margin-right: 0.5rem; padding: 0; }
+        .filter-toggle-btn.gray { background-color: var(--color-text-dim); }
+        .filter-toggle-btn.blue { background-color: var(--color-cyan-accent); }
+        .filter-rows-container { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .filter-rows-container.collapsed { display: none; }
+        .filter-rows-container.expanded { display: flex; }
+        .filter-row { display: grid; grid-template-columns: 1fr; gap: 0.3rem; }
+        @media (min-width: 480px) { .filter-row { grid-template-columns: 1fr 1fr; align-items: center; } }
+        .filter-row label { font-size: 0.8rem; color: var(--color-text-secondary); padding-right: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-primary); }
+        .overlay-visible { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); z-index: 49; }
+        .overlay-hidden { display: none; }
+
+        /* Chips */
+        .active-filters-bar-hidden { display: none; }
+        .active-filters-bar-visible { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--color-bg-medium); border: 1px solid var(--color-border); border-radius: 0.5rem; margin-bottom: 1rem; height: auto; max-height: none; overflow: visible; }
+        .active-filter-chip { display: flex; align-items: center; gap: 0.5rem; background: var(--color-cyan-glow); border: 1px solid var(--color-cyan-accent); border-radius: 4px; padding: 0.35rem 0.6rem; font-family: var(--font-secondary); font-size: 0.8rem; color: var(--color-text-primary); max-width: 100%; height: auto; }
+        .schema-chip { border-color: var(--color-text-secondary); background: var(--color-border); }
+        .chip-label { display: flex; flex-wrap: wrap; gap: 0.3rem; white-space: normal; word-break: break-word; line-height: 1.3; }
+        .chip-label .filter-name { white-space: normal; font-weight: 400; color: var(--color-text-secondary); font-family: var(--font-primary); }
+        .chip-label .filter-value { color: var(--color-text-primary); font-weight: 700; white-space: normal; overflow: visible; text-overflow: clip; }
+        .chip-remove-btn { background: none; border: none; color: var(--color-cyan-accent); font-weight: 700; cursor: pointer; padding: 0 0.25rem; min-width: 24px; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-primary); }
+        .chip-remove-btn:hover { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        /* Tarjetas & Inputs */
+        .futuristic-card { background-color: var(--color-bg-medium); border: 1px solid var(--color-border); border-left: 3px solid var(--color-cyan-accent); border-radius: 0.5rem; padding: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        .search-panel { display: flex; flex-direction: column; }
+        .futuristic-title { font-family: var(--font-secondary); font-size: 1.15rem; font-weight: 600; color: var(--color-text-primary); margin: 0; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem; }
+        .futuristic-subtitle { font-family: var(--font-secondary); font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin: 0 0 0.5rem 0; }
+        .futuristic-input, .futuristic-select, .futuristic-textarea { background-color: var(--color-bg-dark); border: 1px solid var(--color-border); color: var(--color-text-primary); border-radius: 4px; padding: 0.6rem 0.8rem; font-size: 0.85rem; width: 100%; box-sizing: border-box; font-family: var(--font-primary); transition: all 0.2s; }
+        .futuristic-input:focus, .futuristic-select:focus, .futuristic-textarea:focus { outline: none; border-color: var(--color-cyan-accent); }
+        .futuristic-select { -webkit-appearance: none; appearance: none; padding-right: 2.5rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; }
+        .futuristic-list { background-color: var(--color-bg-dark); border: 1px solid var(--color-border-light); border-radius: 4px; }
+        .full-list-visible { margin-top: 0.75rem; flex-grow: 1; overflow-y: auto; border-radius: 4px; background-color: var(--color-bg-dark); }
+        .futuristic-list .list-item { padding: 0.45rem 0.75rem; border-bottom: 1px dashed var(--color-border); cursor: pointer; font-size: 0.85rem; font-family: var(--font-secondary); }
+        .futuristic-list .list-item:hover { background-color: var(--color-border); color: var(--color-cyan-accent); }
+        .futuristic-list .list-item.active { background-color: var(--color-cyan-glow); color: var(--color-cyan-accent); font-weight: 600; border-left: 3px solid var(--color-cyan-accent); }
+
+        /* BUSCADOR REACTIVO */
+        .search-wrapper { position: relative; width: 100%; }
+        .search-clear-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-secondary); font-size: 1.2rem; cursor: pointer; padding: 0; line-height: 1; z-index: 2; }
+        .search-clear-btn:hover { color: var(--color-cyan-accent); }
+        .futuristic-input.has-text { border-color: var(--color-cyan-accent); box-shadow: 0 0 0 1px var(--color-cyan-glow); }
+
+        /* Specs */
+        .spec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem; }
+        .spec-title { font-family: var(--font-secondary); font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+        .spec-controls-hidden { display: none; }
+        body.model-is-selected .spec-controls-visible { display: flex; gap: 0.5rem; }
+        .spec-button { background-color: var(--color-bg-medium); border: 1px solid var(--color-border-light); color: var(--color-text-secondary); font-family: var(--font-secondary); font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; padding: 0.2rem 0.4rem; }
+        details.spec-group { border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
+        details.spec-group summary { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); font-family: var(--font-secondary); padding: 0.5rem 0.75rem; background: var(--color-border); display: flex; align-items: center; cursor: pointer; list-style: none; }
+        details.spec-group summary::before { content: ''; width: 12px; height: 12px; border-radius: 3px; margin-right: 0.5rem; background-color: var(--color-text-dim); }
+        details[open].spec-group summary::before { background-color: var(--color-cyan-accent); }
+        .spec-group-content { padding: 0.75rem 1.25rem; border-top: 1px solid var(--color-border-light); background-color: var(--color-bg-dark); }
+        .spec-row { display: flex; flex-direction: column; justify-content: space-between; padding: 0.45rem 0; font-size: 0.85rem; border-bottom: 1px dotted var(--color-border-light); }
+        @media (min-width: 768px) { .spec-row { flex-direction: row; } }
+        .spec-row .attr-desc { color: var(--color-text-secondary); margin-right: 0.75rem; font-family: var(--font-primary); }
+        .spec-row .attr-value { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-secondary); text-align: right; }
+
+        /* Modals */
+        .modal-hidden { display: none; }
+        .modal-visible { display: flex; position: fixed; z-index: 99; left: 0; top: 0; width: 100%; height: 100%; align-items: center; justify-content: center; }
+        .modal-content { background: var(--color-bg-medium); border: 1px solid var(--color-border-light); border-left: 3px solid var(--color-cyan-accent); border-radius: 0.5rem; width: 90%; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
+        .modal-close-btn { background: none; border: none; font-size: 1.75rem; color: var(--color-text-secondary); cursor: pointer; }
+        .modal-body { padding: 1rem; overflow-y: auto; font-family: var(--font-primary); font-size: 0.8rem; color: var(--color-text-secondary); white-space: pre-wrap; }
+        .futuristic-button { background: var(--color-cyan-accent); color: #fff; border: 1px solid var(--color-cyan-accent); border-radius: 4px; font-weight: 600; font-size: 0.85rem; padding: 0.6rem 1.2rem; cursor: pointer; transition: all 0.2s; width: 100%; }
+        .futuristic-button:hover { background: #0891b2; }
+
+        /* Biblioteca & Export Styles */
+        .library-modal-content { max-width: 450px; max-height: 70vh; }
+        .compact-body { white-space: normal !important; display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem; }
+        .compact-header { padding: 0.5rem 1rem; }
+        .library-section { margin: 0; }
+        .lib-sec-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
+        .library-desc { font-family: var(--font-primary); font-size: 0.75rem; color: var(--color-text-dim); margin: 0; }
+        .library-list { display: flex; flex-direction: column; background-color: var(--color-bg-dark); border: 1px solid var(--color-border-light); border-radius: 4px; max-height: 150px; overflow-y: auto; }
+        
+        /* GAMA LIST ITEMS + DOWNLOAD BUTTONS */
+        .gama-toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.6rem; border-bottom: 1px dashed var(--color-border); transition: background-color 0.2s; }
+        .gama-toggle-item:hover { background-color: var(--color-border); }
+        .gama-toggle-item:last-child { border-bottom: none; }
+        .gama-toggle-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1; overflow: hidden; }
+        .gama-checkbox { accent-color: var(--color-cyan-accent); width: 14px; height: 14px; cursor: pointer; }
+        .gama-name { font-weight: 600; font-family: var(--font-secondary); color: var(--color-text-primary); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Acciones Derecha (Status + Download) */
+        .gama-actions-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+        .gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); font-family: var(--font-primary); min-width: 40px; text-align: right; }
+        .gama-download-btn { background: none; border: 1px solid var(--color-border); color: var(--color-text-secondary); border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; line-height: 1.2; font-family: var(--font-primary); }
+        .gama-download-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); background-color: rgba(6, 182, 212, 0.1); }
+        
+        /* Upload */
+        .upload-area { display: flex; align-items: center; gap: 0.5rem; background-color: var(--color-bg-dark); border: 1px solid var(--color-border); border-radius: 4px; padding: 0.5rem; }
+        .upload-label { font-size: 0.75rem; padding: 0.4rem 0.8rem; margin: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--color-bg-medium); border: 1px solid var(--color-border-light); color: var(--color-text-primary); border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s; font-family: var(--font-primary); white-space: nowrap; }
+        .upload-label:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); }
+        .upload-status { font-size: 0.7rem; color: var(--color-text-dim); font-family: var(--font-secondary); text-align: right; width: 100%; margin-top: 0.25rem;}
+        .futuristic-textarea-mini { background-color: var(--color-bg-medium); border: 1px solid var(--color-border-light); color: var(--color-text-primary); border-radius: 4px; padding: 0.4rem; font-family: var(--font-mono); font-size: 0.7rem; resize: none; overflow: hidden; flex-grow: 1; height: 32px; box-sizing: border-box; white-space: pre; }
+        .futuristic-textarea-mini:focus { outline: none; border-color: var(--color-cyan-accent); }
+    </style>
+
+    <script>
+        /** * Pokedex Master - Empty Core */
+        window.APP_DB = {
+            products: [],
+            schemas: {},
+            registerProduct: function(p) { this.products.push(p); },
+            registerSchema: function(k, s) { this.schemas[k] = s; }
+        };
+        window.IS_POKEDEX_DRIVE = true;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">Pokedex Drive 📟 <span class="app-version">v.Master</span></h1>
+                <div id="selected-model-display" class="model-chip-hidden"></div>
+            </div>
+
+            <div class="settings-menu-wrapper absolute-top-right">
+                <button id="settings-menu-toggle" class="settings-button" title="Ajustes">⚙️</button>
+                <div id="settings-menu-panel" class="settings-menu-panel-hidden">
+                    <button id="library-menu-toggle" class="settings-menu-item">📚 Biblioteca</button>
+                    <button id="palette-toggle-btn" class="settings-menu-item">🎨 Tema</button>
+                    <button id="font-toggle-btn" class="settings-menu-item">📄 Texto</button>
+                    <button id="info-toggle-btn" class="settings-menu-item">ℹ️ Info</button>
+                    
+                    <button id="config-release-btn" class="settings-menu-item">🛠️ Configurar Release</button>
+                    <button id="master-builder-btn" class="settings-menu-item">💾 Construir Release</button>
+                </div>
+            </div>
+
+            <div class="header-right-controls">
+                <div id="smart-filter-system" class="smart-filter-wrapper-v2">
+                    <button id="smart-filter-toggle" class="smart-filter-summary">Filtros</button>
+                    <div id="smart-filter-panel" class="smart-filter-content-hidden">
+                        <div class="filter-schema-selector">
+                            <label for="schema-filter-select">Gama:</label>
+                            <select id="schema-filter-select" class="futuristic-select">
+                                <option value="all">Todas</option>
+                            </select>
+                        </div>
+                        <div id="smart-filters-container" class="smart-filters-list"></div>
+                    </div>
+                </div>
+            </div> 
+        </header>
+
+        <div id="active-filters-bar" class="active-filters-bar-hidden"></div>
+
+        <div class="main-layout">
+            <aside class="sidebar-column">
+                <div class="futuristic-card search-panel">
+                    <h2 id="model-list-header" class="futuristic-title">Modelos (...)</h2>
+                    <div class="search-wrapper">
+                        <input type="text" id="search-model" placeholder="..." class="futuristic-input w-full">
+                        <button id="clear-search-btn" class="search-clear-btn" style="display: none;">&times;</button>
+                    </div>
+                    <div id="model-results-list" class="futuristic-list full-list-visible"></div>
+                </div>
+            </aside>
+            <main class="main-column">
+                <div class="futuristic-card sticky-panel">
+                    <div class="spec-header">
+                        <h2 id="product-title" class="spec-title">Selecciona un producto</h2>
+                        <div id="spec-controls" class="spec-controls-hidden">
+                            <button id="expand-all-btn" class="spec-button">[■]</button>
+                            <button id="collapse-all-btn" class="spec-button">[-]</button>
+                        </div>
+                    </div>
+                    <div id="product-specs" class="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
+                        <p id="product-placeholder" class="text-gray-400">(...)</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <div id="filter-overlay" class="overlay-hidden"></div>
+    
+    <div id="readme-modal" class="modal-hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Info</h2><button id="readme-close-btn" class="modal-close-btn">&times;</button></div>
+            <pre id="readme-content" class="modal-body"></pre>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIG RELEASE (NUEVO) -->
+    <div id="config-release-modal" class="modal-hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Configurar Release</h2>
+                <button id="config-release-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <label class="futuristic-subtitle">Título App</label>
+                    <input type="text" id="conf-title" class="futuristic-input" value="Pokedex Drive">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="futuristic-subtitle">Versión (ej: v2.0)</label>
+                    <input type="text" id="conf-version" class="futuristic-input" placeholder="Automático si se deja vacío">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="futuristic-subtitle">Texto Info (Readme)</label>
+                    <textarea id="conf-text" class="futuristic-textarea" rows="6" style="resize:vertical;">La aplicación Pokedex Drive es un visor web interactivo...</textarea>
+                </div>
+                <button id="conf-save-btn" class="futuristic-button">Guardar Configuración</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="library-modal" class="modal-hidden">
+        <div class="modal-content library-modal-content">
+            <div class="modal-header compact-header">
+                <h2 class="spec-title" style="margin:0; font-size: 1.1rem;">Biblioteca Virtual</h2>
+                <button id="library-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body compact-body">
+                <div class="library-section">
+                    <div class="lib-sec-header">
+                        <h3 class="futuristic-subtitle" style="margin:0;">Gamas Cargadas</h3>
+                        <p class="library-desc">Gestiona la base de datos.</p>
+                    </div>
+                    <div id="library-gama-list" class="library-list"></div>
+                </div>
+                <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem;">
+                    <h3 class="futuristic-subtitle" style="margin-bottom: 0.5rem;">Importar Datos</h3>
+                    <div class="upload-area">
+                        <label for="csv-upload-input" class="upload-label">📂 Archivo</label>
+                        <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
+                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
+                        <button id="csv-text-btn" class="upload-label">📥 TXT</button>
+                    </div>
+                    <div id="upload-status-text" class="upload-status">Formato Admin (;)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Inicializar Config por defecto
+        window.driveConfig = {
+            title: "Pokedex Drive",
+            version: "",
+            introText: "La aplicación Pokedex Drive es un visor web interactivo..."
+        };
+
+        const dom = {
+            body: document.body,
+            modelSearchInput: document.getElementById('search-model'),
+            searchClearBtn: document.getElementById('clear-search-btn'),
+            modelSearchResults: document.getElementById('model-results-list'),
+            modelListHeader: document.getElementById('model-list-header'),
+            smartFilterToggle: document.getElementById('smart-filter-toggle'),
+            smartFilterPanel: document.getElementById('smart-filter-panel'),
+            filterOverlay: document.getElementById('filter-overlay'),
+            smartFilterContainer: document.getElementById('smart-filters-container'),
+            schemaFilterSelect: document.getElementById('schema-filter-select'),
+            activeFiltersBar: document.getElementById('active-filters-bar'),
+            settingsMenuToggle: document.getElementById('settings-menu-toggle'),
+            settingsMenuPanel: document.getElementById('settings-menu-panel'),
+            paletteToggleButton: document.getElementById('palette-toggle-btn'),
+            fontToggleButton: document.getElementById('font-toggle-btn'),
+            infoToggleButton: document.getElementById('info-toggle-btn'),
+            libraryBtn: document.getElementById('library-menu-toggle'),
+            readmeModal: document.getElementById('readme-modal'),
+            readmeContent: document.getElementById('readme-content'),
+            readmeCloseButton: document.getElementById('readme-close-btn'),
+            productDisplayPlaceholder: document.getElementById('product-placeholder'),
+            productTitle: document.getElementById('product-title'),
+            productSpecsContainer: document.getElementById('product-specs'),
+            specControls: document.getElementById('spec-controls'),
+            expandAllButton: document.getElementById('expand-all-btn'),
+            collapseAllButton: document.getElementById('collapse-all-btn'),
+            selectedModelDisplay: document.getElementById('selected-model-display'),
+            libraryModal: document.getElementById('library-modal'),
+            libraryCloseBtn: document.getElementById('library-close-btn'),
+            libraryGamaList: document.getElementById('library-gama-list'),
+            csvUploadInput: document.getElementById('csv-upload-input'),
+            uploadStatusText: document.getElementById('upload-status-text'),
+            csvTextInput: document.getElementById('csv-text-input'),
+            csvTextBtn: document.getElementById('csv-text-btn'),
+            
+            // Config Modal DOM
+            configReleaseBtn: document.getElementById('config-release-btn'),
+            configModal: document.getElementById('config-release-modal'),
+            configCloseBtn: document.getElementById('config-release-close-btn'),
+            confSaveBtn: document.getElementById('conf-save-btn'),
+            confTitleInput: document.getElementById('conf-title'),
+            confVersionInput: document.getElementById('conf-version'),
+            confTextInput: document.getElementById('conf-text')
+        };
+
+        const originalPlaceholder = dom.productDisplayPlaceholder;
+        let masterDatabase = [];
+        let masterSchemaMap = {};
+        let attrCodeToDescMap = {};
+        let activeSchemas = new Set(); 
+
+        const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
+        const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
+        let isLightMode = true; 
+        let currentAccentHue = darkPaletteHSL.accent.h;
+
+        const fontGroupPrimary = ["'Inter', system-ui, sans-serif", "Arial, Helvetica, sans-serif", "'Segoe UI', Roboto, Helvetica, sans-serif", "'Verdana', sans-serif", "'Trebuchet MS', 'Lucida Sans', sans-serif", "'Tahoma', Geneva, sans-serif", "'Gill Sans', 'Gill Sans MT', Calibri, sans-serif", "'Optima', sans-serif", "'Candara', sans-serif", "'Century Gothic', Futura, sans-serif", "'Franklin Gothic Medium', 'Arial Narrow', sans-serif", "'Geneva', Verdana, sans-serif", "'Helvetica Neue', Helvetica, Arial, sans-serif", "'Calibri', 'Candara', 'Segoe', 'Segoe UI', sans-serif", "'Cambria', Georgia, serif", "Georgia, 'Times New Roman', Times, serif", "'Garamond', 'Baskerville', serif", "'Palatino Linotype', 'Book Antiqua', serif", "'Bookman Old Style', serif", "'Times New Roman', Times, serif", "'Didot', serif", "'American Typewriter', serif", "'Lucida Bright', Georgia, serif"];
+        const fontGroupSecondary = ["'ui-monospace', 'SFMono-Regular', 'Menlo', monospace", "'Courier New', Courier, monospace", "'Lucida Console', Monaco, monospace", "'Consolas', 'Andale Mono', monospace", "'Monaco', 'Courier New', monospace", "'Brush Script MT', cursive", "'Copperplate', 'Copperplate Gothic Light', serif", "'Papyrus', fantasy", "'Impact', Haettenschweiler, sans-serif", "'Arial Black', Gadget, sans-serif", "'Comic Sans MS', 'Chalkboard SE', sans-serif", "'Courier', monospace", "'Lucida Sans Typewriter', monospace", "'Perpetua', serif", "'Rockwell', 'Courier Bold', serif", "'Baskerville Old Face', serif", "'Haettenschweiler', 'Impact', sans-serif", "'Chalkduster', fantasy", "'Luminari', fantasy", "'Trattatello', fantasy", "'Big Caslon', serif", "'Bodoni MT', serif", "'OCR A Std', monospace"];
+
+        function initialize() {
+            setTimeout(() => {
+                masterDatabase = window.APP_DB.products;
+                masterSchemaMap = window.APP_DB.schemas;
+                masterDatabase.sort((a, b) => a.model.localeCompare(b.model));
+                Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
+                buildAttributeCache();
+                setupEventListeners();
+                populateSchemaSelector();
+                populateSmartFilters('all');
+                populateFullModelList(); 
+                currentAccentHue = Math.floor(Math.random() * 360);
+                updatePaletteCSS(lightPaletteHSL, currentAccentHue);
+                dom.paletteToggleButton.innerHTML = '🎨 Tema';
+            }, 100);
+        }
+
+        function setupEventListeners() {
+            // BÚSQUEDA REACTIVA
+            if (dom.modelSearchInput) {
+                dom.modelSearchInput.addEventListener('input', (e) => {
+                    handleSearchInputUI(e.target);
+                    applyFiltersAndSearch();
+                });
+            }
+            if (dom.searchClearBtn) {
+                dom.searchClearBtn.addEventListener('click', () => {
+                    dom.modelSearchInput.value = '';
+                    handleSearchInputUI(dom.modelSearchInput);
+                    applyFiltersAndSearch();
+                    dom.modelSearchInput.focus();
+                });
+            }
+
+            if (dom.schemaFilterSelect) dom.schemaFilterSelect.addEventListener('change', () => { populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); });
+            if (dom.smartFilterContainer) { dom.smartFilterContainer.addEventListener('change', applyFiltersAndSearch); dom.smartFilterContainer.addEventListener('click', (e) => { if (e.target.classList.contains('filter-toggle-btn') || e.target.closest('.filter-group-title')) { const titleEl = e.target.closest('.filter-group-title'); if (titleEl) toggleFilterGroup(titleEl); } }); }
+            if (dom.activeFiltersBar) { dom.activeFiltersBar.addEventListener('click', (e) => { const btn = e.target.closest('.chip-remove-btn'); if (btn) { e.preventDefault(); e.stopPropagation(); const action = btn.dataset.action; action === 'remove-schema' ? removeSchemaFilter() : removeActiveFilter(btn.dataset.attrCode); } }); }
+            if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
+            if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
+            if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
+            if (dom.filterOverlay) dom.filterOverlay.addEventListener('click', () => { closeFilterPanel(); closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); closeConfigModal(); });
+            if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
+            if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
+            if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
+            if (dom.paletteToggleButton) dom.paletteToggleButton.addEventListener('click', handleThemeToggle);
+            if (dom.fontToggleButton) dom.fontToggleButton.addEventListener('click', handleDualFontToggle);
+            if (dom.infoToggleButton) dom.infoToggleButton.addEventListener('click', showReadmeInfo);
+            if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
+            if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
+            if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
+            // TXT Import
+            if (dom.csvTextBtn) dom.csvTextBtn.addEventListener('click', handleTextImport);
+
+            // GAMA LIST LISTENERS
+            if (dom.libraryGamaList) {
+                dom.libraryGamaList.addEventListener('click', (e) => {
+                    if (e.target.matches('.gama-download-btn')) {
+                        e.preventDefault(); 
+                        e.stopPropagation();
+                        exportGamaToCSV(e.target.dataset.key);
+                        return;
+                    }
+                });
+                dom.libraryGamaList.addEventListener('change', handleGamaToggle);
+            }
+
+            // CONFIG LISTENERS
+            if (dom.configReleaseBtn) dom.configReleaseBtn.addEventListener('click', openConfigModal);
+            if (dom.configCloseBtn) dom.configCloseBtn.addEventListener('click', closeConfigModal);
+            if (dom.confSaveBtn) dom.confSaveBtn.addEventListener('click', saveConfig);
+        }
+
+        // --- FUNCIONES CONFIGURACIÓN (NUEVAS) ---
+        function openConfigModal() {
+            closeSettingsMenu();
+            // Cargar valores actuales
+            dom.confTitleInput.value = window.driveConfig.title;
+            dom.confVersionInput.value = window.driveConfig.version;
+            dom.confTextInput.value = window.driveConfig.introText;
+            
+            dom.configModal.className = 'modal-visible';
+            dom.filterOverlay.className = 'overlay-visible';
+        }
+
+        function closeConfigModal() {
+            dom.configModal.className = 'modal-hidden';
+            checkOverlay();
+        }
+
+        function saveConfig() {
+            window.driveConfig.title = dom.confTitleInput.value.trim();
+            window.driveConfig.version = dom.confVersionInput.value.trim();
+            window.driveConfig.introText = dom.confTextInput.value;
+            alert("Configuración guardada en memoria.\nLista para aplicar al 'Construir Release'.");
+            closeConfigModal();
+        }
+
+
+        // --- FUNCIONES BIBLIOTECA & EXPORTACIÓN ---
+
+        function renderLibraryGamaList() {
+            dom.libraryGamaList.innerHTML = '';
+            Object.keys(masterSchemaMap).forEach(schemaKey => {
+                const isActive = activeSchemas.has(schemaKey);
+                const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1);
+                
+                const item = document.createElement('div');
+                item.className = 'gama-toggle-item';
+                item.innerHTML = `
+                    <label class="gama-toggle-label">
+                        <input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}>
+                        <span class="gama-name">${friendlyName}</span>
+                    </label>
+                    <div class="gama-actions-right">
+                        <button class="gama-download-btn" data-key="${schemaKey}" title="Descargar CSV de ${friendlyName}">⬇</button>
+                        <span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>
+                    </div>
+                `;
+                dom.libraryGamaList.appendChild(item);
+            });
+        }
+
+        function exportGamaToCSV(selectedSchema) {
+            if (!selectedSchema) return;
+            const products = masterDatabase.filter(p => p.schema_key === selectedSchema);
+            if (products.length === 0) {
+                alert("Esta gama no tiene productos para exportar.");
+                return;
+            }
+
+            const schemaDef = masterSchemaMap[selectedSchema];
+            let row1_groups = [selectedSchema, "Identificación"];
+            let row2_codes = ["", "model"];
+            let row3_descs = ["", "Modelo"];
+            let attrKeys = [];
+
+            if (schemaDef) {
+                schemaDef.forEach(group => {
+                    group.attrs.forEach(attr => {
+                        row1_groups.push(group.group);
+                        row2_codes.push(attr.code);
+                        row3_descs.push(attr.desc);
+                        attrKeys.push(attr.code);
+                    });
+                });
+            }
+
+            const sanitize = (val) => {
+                if (val === null || val === undefined) return "";
+                val = String(val);
+                val = val.replace(/"/g, '""');
+                if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`;
+                return val;
+            };
+
+            const dataRows = products.map(p => {
+                let row = ["", sanitize(p.model)];
+                attrKeys.forEach(key => {
+                    let val = p.attributes[key] || "";
+                    row.push(sanitize(val));
+                });
+                return row.join(";");
+            });
+
+            const header1 = row1_groups.map(g => sanitize(g)).join(";");
+            const header2 = row2_codes.map(c => sanitize(c)).join(";");
+            const header3 = row3_descs.map(d => sanitize(d)).join(";");
+
+            const csvContent = "\uFEFF" + header1 + "\n" + header2 + "\n" + header3 + "\n" + dataRows.join("\n");
+            const filename = `GAMA_${selectedSchema.toUpperCase()}.csv`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function handleGamaToggle(e) { 
+            if (!e.target.matches('.gama-checkbox')) return; 
+            const key = e.target.dataset.key; 
+            const isChecked = e.target.checked; 
+            if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); 
+            
+            // Actualizar UI Status
+            const item = e.target.closest('.gama-toggle-item');
+            const statusSpan = item.querySelector('.gama-status');
+            statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; 
+            statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; 
+            
+            populateSchemaSelector(); 
+            populateSmartFilters(dom.schemaFilterSelect.value); 
+            applyFiltersAndSearch(); 
+        }
+
+        // --- REST OF THE APP LOGIC ---
+
+        function handleSearchInputUI(input) {
+            const hasText = input.value.length > 0;
+            if (hasText) { input.classList.add('has-text'); dom.searchClearBtn.style.display = 'block'; }
+            else { input.classList.remove('has-text'); dom.searchClearBtn.style.display = 'none'; }
+        }
+
+        function removeActiveFilter(attrCode) { const allSelects = Array.from(dom.smartFilterContainer.querySelectorAll('select')); const targetSelects = allSelects.filter(s => s.dataset.attribute === attrCode || s.getAttribute('data-attribute') === attrCode); if (targetSelects.length > 0) { targetSelects.forEach(select => select.value = ""); applyFiltersAndSearch(); } else { applyFiltersAndSearch(); } }
+        function renderActiveFilters(filters) { if (!dom.activeFiltersBar) return; const currentSchema = dom.schemaFilterSelect.value; const hasSchemaFilter = currentSchema !== 'all'; const hasAttrFilters = Object.keys(filters).length > 0; if (!hasSchemaFilter && !hasAttrFilters) { dom.activeFiltersBar.className = 'active-filters-bar-hidden'; dom.activeFiltersBar.innerHTML = ''; return; } dom.activeFiltersBar.className = 'active-filters-bar-visible'; dom.activeFiltersBar.innerHTML = ''; const fragment = document.createDocumentFragment(); if (hasSchemaFilter) { const schemaName = currentSchema.charAt(0).toUpperCase() + currentSchema.slice(1); const schemaChip = document.createElement('div'); schemaChip.className = 'active-filter-chip schema-chip'; schemaChip.innerHTML = `<span class="chip-label"><span class="filter-name">Gama:</span><span class="filter-value">${schemaName}</span></span><button class="chip-remove-btn" data-action="remove-schema" title="Quitar filtro de gama">&times;</button>`; fragment.appendChild(schemaChip); } Object.entries(filters).forEach(([attrCode, attrValue]) => { const attrDesc = attrCodeToDescMap[attrCode] || attrCode; const safeCode = attrCode.replace(/"/g, '&quot;'); const chip = document.createElement('div'); chip.className = 'active-filter-chip'; chip.innerHTML = `<span class="chip-label"><span class="filter-name">${attrDesc}:</span><span class="filter-value">${attrValue}</span></span><button class="chip-remove-btn" data-attr-code="${safeCode}" title="Eliminar filtro">&times;</button>`; fragment.appendChild(chip); }); dom.activeFiltersBar.appendChild(fragment); }
+        function populateFullModelList() { renderSearchResults(masterDatabase, dom.modelSearchResults); }
+        function buildAttributeCache() { attrCodeToDescMap = {}; if (Object.keys(masterSchemaMap).length === 0) return; Object.values(masterSchemaMap).forEach(schema => { schema.forEach(group => { group.attrs.forEach(attr => { attrCodeToDescMap[attr.code] = attr.desc; }); }); }); }
+        function populateSchemaSelector() { if (!dom.schemaFilterSelect) return; const currentValue = dom.schemaFilterSelect.value; dom.schemaFilterSelect.innerHTML = '<option value="all">Todas las Gamas</option>'; const fragment = document.createDocumentFragment(); Object.keys(masterSchemaMap).filter(k => activeSchemas.has(k)).forEach(key => { const option = document.createElement('option'); option.value = key; const friendlyName = key.charAt(0).toUpperCase() + key.slice(1); option.textContent = friendlyName; fragment.appendChild(option); }); dom.schemaFilterSelect.appendChild(fragment); if (activeSchemas.has(currentValue)) { dom.schemaFilterSelect.value = currentValue; } else { dom.schemaFilterSelect.value = 'all'; } }
+        function populateSmartFilters(schemaKey = 'all') { if (!dom.smartFilterContainer) return; dom.smartFilterContainer.innerHTML = ''; const fragment = document.createDocumentFragment(); if (schemaKey === 'all') { const placeholder = document.createElement('p'); placeholder.className = 'filter-placeholder'; placeholder.textContent = 'Selecciona una gama para ver filtros específicos.'; fragment.appendChild(placeholder); dom.smartFilterContainer.appendChild(fragment); return; } const relevantProducts = masterDatabase.filter(p => p.schema_key === schemaKey && activeSchemas.has(p.schema_key)); const schemaGroups = masterSchemaMap[schemaKey] || []; schemaGroups.forEach(group => { const groupWrapper = document.createElement('div'); groupWrapper.className = 'filter-group-wrapper'; const title = document.createElement('h3'); title.className = 'filter-group-title'; title.innerHTML = `<button class="filter-toggle-btn gray"></button>${group.group}`; groupWrapper.appendChild(title); const rowsContainer = document.createElement('div'); rowsContainer.className = 'filter-rows-container collapsed'; let hasFiltersInGroup = false; group.attrs.forEach(attr => { const rawValues = relevantProducts.map(p => p.attributes[attr.code]).filter(v => v && v !== 'unknown'); const uniqueValues = [...new Set(rawValues)].sort((a, b) => { const numA = parseFloat(a); const numB = parseFloat(b); if (!isNaN(numA) && !isNaN(numB)) return numA - numB; return String(a).localeCompare(String(b)); }); if (uniqueValues.length > 0) { hasFiltersInGroup = true; const uniqueId = `filter_${attr.code}_${Math.random().toString(36).substr(2, 5)}`; const row = document.createElement('div'); row.className = 'filter-row'; const label = document.createElement('label'); label.htmlFor = uniqueId; label.textContent = attr.desc; label.title = attr.desc; const select = document.createElement('select'); select.id = uniqueId; select.className = 'futuristic-select'; select.dataset.attribute = attr.code; select.setAttribute('data-attribute', attr.code); select.innerHTML = '<option value="">---</option>'; uniqueValues.forEach(value => { const option = document.createElement('option'); option.value = value; option.textContent = value; select.appendChild(option); }); row.appendChild(label); row.appendChild(select); rowsContainer.appendChild(row); } }); if (hasFiltersInGroup) { groupWrapper.appendChild(rowsContainer); fragment.appendChild(groupWrapper); } }); dom.smartFilterContainer.appendChild(fragment); }
+        function getAppliedFilters() { const filters = {}; dom.smartFilterContainer.querySelectorAll('select').forEach(select => { if (select.value) filters[select.dataset.attribute] = select.value; }); return filters; }
+        function applyFiltersAndSearch() { const textQuery = dom.modelSearchInput.value.toLowerCase().trim(); const attributeFilters = getAppliedFilters(); const filteredProducts = filterProducts(textQuery, attributeFilters); renderSearchResults(filteredProducts, dom.modelSearchResults); renderActiveFilters(attributeFilters); }
+        function filterProducts(textQuery, attributeFilters) { const selectedSchema = dom.schemaFilterSelect.value; const hasTextQuery = textQuery.length > 0; const hasAttributeFilters = Object.keys(attributeFilters).length > 0; const hasSchemaFilter = selectedSchema !== 'all'; let candidates = masterDatabase.filter(p => activeSchemas.has(p.schema_key)); if (!hasTextQuery && !hasAttributeFilters && !hasSchemaFilter) return candidates; return candidates.filter(product => { if (hasSchemaFilter && product.schema_key !== selectedSchema) return false; if (hasTextQuery && !product.model.toLowerCase().includes(textQuery)) return false; if (hasAttributeFilters) { const match = Object.entries(attributeFilters).every(([attrCode, attrValue]) => product.attributes[attrCode] === attrValue); if (!match) return false; } return true; }); }
+        function handleResultClick(e) { const target = e.target.closest('.list-item'); if (!target) return; document.querySelectorAll('.list-item.active').forEach(item => item.classList.remove('active')); target.classList.add('active'); closeFilterPanel(); closeSettingsMenu(); closeLibraryModal(); const model = target.dataset.model; const product = masterDatabase.find(p => p.model === model); if (product) { displayProduct(product); expandAllSpecs(); dom.body.classList.add('model-is-selected'); showSelectedModelChip(product.model); } }
+        function removeSchemaFilter() { if (dom.schemaFilterSelect) { dom.schemaFilterSelect.value = 'all'; populateSmartFilters('all'); applyFiltersAndSearch(); } }
+        function renderSearchResults(results, container) { if (!container) return; container.innerHTML = ''; if (dom.modelListHeader) dom.modelListHeader.textContent = `Modelos (${results.length})`; if (results.length === 0) { container.innerHTML = '<div class="list-item" style="cursor: default; background: none; color: var(--color-text-dim);">No se encontraron resultados.</div>'; return; } const fragment = document.createDocumentFragment(); results.forEach(product => { const item = document.createElement('div'); item.className = 'list-item'; item.dataset.model = product.model; item.textContent = product.model; fragment.appendChild(item); }); container.appendChild(fragment); }
+        function displayProduct(product) { dom.productDisplayPlaceholder.style.display = 'none'; dom.specControls.className = 'spec-controls-visible'; dom.productTitle.textContent = product.model; const productSchema = masterSchemaMap[product.schema_key]; if (productSchema) renderProductSpecs(product.attributes, productSchema); else dom.productSpecsContainer.innerHTML = '<p class="text-gray-400">Error: Esquema no encontrado.</p>'; }
+        function renderProductSpecs(attributes, schema) { dom.productSpecsContainer.innerHTML = ''; const fragment = document.createDocumentFragment(); schema.forEach(group => { const details = document.createElement('details'); details.className = 'spec-group'; const summary = document.createElement('summary'); summary.textContent = group.group; details.appendChild(summary); const content = document.createElement('div'); content.className = 'spec-group-content'; let hasContentInGroup = false; group.attrs.forEach(attr => { const value = attributes[attr.code]; if (value && value !== 'unknown') { hasContentInGroup = true; const specItem = document.createElement('div'); specItem.className = 'spec-row'; specItem.innerHTML = `<span class="attr-desc">${attr.desc}</span><span class="attr-value">${value}</span>`; content.appendChild(specItem); } }); if (hasContentInGroup) { details.appendChild(content); fragment.appendChild(details); } }); dom.productSpecsContainer.appendChild(fragment); }
+        function showSelectedModelChip(modelName) { dom.selectedModelDisplay.innerHTML = `<button id="clear-selection-btn" class="model-chip-button" title="Cerrar y volver a búsqueda">Modelo: ${modelName} <span>&times;</span></button>`; dom.selectedModelDisplay.querySelector('#clear-selection-btn').addEventListener('click', clearSelection); }
+        function clearSelection() { dom.body.classList.remove('model-is-selected'); dom.selectedModelDisplay.innerHTML = ''; dom.productTitle.textContent = 'Selecciona un producto'; dom.specControls.className = 'spec-controls-hidden'; dom.productSpecsContainer.innerHTML = ''; dom.productSpecsContainer.appendChild(originalPlaceholder); originalPlaceholder.style.display = 'block'; applyFiltersAndSearch(); const currentActive = dom.modelSearchResults.querySelector('.list-item.active'); if (currentActive) currentActive.classList.remove('active'); }
+        function expandAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = true); }
+        function collapseAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = false); }
+        function toggleFilterGroup(titleElement) { const btn = titleElement.querySelector('.filter-toggle-btn'); const rowsContainer = titleElement.nextElementSibling; if (rowsContainer && btn) { if (rowsContainer.classList.contains('collapsed')) { rowsContainer.classList.remove('collapsed'); rowsContainer.classList.add('expanded'); btn.classList.remove('gray'); btn.classList.add('blue'); } else { rowsContainer.classList.remove('expanded'); rowsContainer.classList.add('collapsed'); btn.classList.remove('blue'); btn.classList.add('gray'); } } }
+        function openFilterPanel() { if (!dom.smartFilterPanel) return; closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); closeConfigModal(); dom.smartFilterPanel.className = 'smart-filter-content-open'; dom.filterOverlay.className = 'overlay-visible'; dom.smartFilterToggle.classList.add('active'); }
+        function closeFilterPanel() { if (!dom.smartFilterPanel) return; dom.smartFilterPanel.className = 'smart-filter-content-hidden'; checkOverlay(); dom.smartFilterToggle.classList.remove('active'); }
+        function toggleFilterPanel() { dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel(); }
+        function openSettingsMenu() { if (!dom.settingsMenuPanel) return; closeFilterPanel(); closeReadmeModal(); closeLibraryModal(); closeConfigModal(); dom.settingsMenuPanel.className = 'settings-menu-panel-open'; dom.filterOverlay.className = 'overlay-visible'; dom.settingsMenuToggle.classList.add('active'); }
+        function closeSettingsMenu() { if (!dom.settingsMenuPanel) return; dom.settingsMenuPanel.className = 'settings-menu-panel-hidden'; checkOverlay(); dom.settingsMenuToggle.classList.remove('active'); }
+        function toggleSettingsMenu() { dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu(); }
+        function openReadmeModal() { closeFilterPanel(); closeSettingsMenu(); closeLibraryModal(); closeConfigModal(); dom.readmeModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; }
+        function closeReadmeModal() { dom.readmeModal.className = 'modal-hidden'; checkOverlay(); }
+        function checkOverlay() { if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden' && dom.libraryModal.className === 'modal-hidden' && dom.configModal.className === 'modal-hidden') { dom.filterOverlay.className = 'overlay-hidden'; } }
+        function openLibraryModal() { closeSettingsMenu(); closeFilterPanel(); closeReadmeModal(); closeConfigModal(); renderLibraryGamaList(); dom.libraryModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; dom.uploadStatusText.textContent = "Formato Admin (CSV)"; dom.csvUploadInput.value = ""; }
+        function closeLibraryModal() { dom.libraryModal.className = 'modal-hidden'; checkOverlay(); }
+        
+        function handleCsvUpload(e) { const file = e.target.files[0]; if (!file) return; dom.uploadStatusText.textContent = `Procesando: ${file.name}...`; const reader = new FileReader(); reader.onload = (event) => { try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado con éxito!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8."); } }; reader.readAsText(file, 'UTF-8'); }
+        
+        function handleTextImport() {
+            const text = dom.csvTextInput.value.trim();
+            if (!text) return;
+            dom.uploadStatusText.textContent = "Procesando texto...";
+            try {
+                parseAndImportCsv(text);
+                dom.uploadStatusText.textContent = "¡Texto importado!";
+                dom.uploadStatusText.style.color = 'var(--color-cyan-accent)';
+                dom.csvTextInput.value = ""; 
+                buildAttributeCache();
+                populateSchemaSelector();
+                applyFiltersAndSearch();
+                renderLibraryGamaList();
+            } catch (error) {
+                console.error(error);
+                dom.uploadStatusText.textContent = "Error: Texto inválido";
+                dom.uploadStatusText.style.color = '#ef4444';
+            }
+        }
+
+        function parseCSVLine(text) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < text.length; i++) { const char = text[i]; const nextChar = text[i + 1]; if (inQuotes) { if (char === '"' && nextChar === '"') { current += '"'; i++; } else if (char === '"') { inQuotes = false; } else { current += char; } } else { if (char === ';') { result.push(current); current = ''; } else if (char === '"') { inQuotes = true; } else { current += char; } } } result.push(current); return result; }
+        function parseAndImportCsv(csvText) { let cleanText = csvText; if (cleanText.charCodeAt(0) === 0xFEFF) { cleanText = cleanText.slice(1); } const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== ''); if (lines.length < 4) throw new Error("CSV muy corto"); const rowGroups = parseCSVLine(lines[0]); const schemaKey = rowGroups[0].toLowerCase().trim(); if (!schemaKey) throw new Error("Falta Schema Key"); const rowCodes = parseCSVLine(lines[1]); const rowDescs = parseCSVLine(lines[2]); const startIndex = 2; const tempSchema = {}; const groupOrder = []; for (let i = startIndex; i < rowCodes.length; i++) { const groupName = rowGroups[i] || "Otros"; const code = rowCodes[i]; const desc = rowDescs[i] || code; if (code) { if (!tempSchema[groupName]) { tempSchema[groupName] = []; groupOrder.push(groupName); } tempSchema[groupName].push({ code, desc }); } } const newSchemaGroup = groupOrder.map(gName => ({ group: gName, attrs: tempSchema[gName] })); window.APP_DB.registerSchema(schemaKey, newSchemaGroup); activeSchemas.add(schemaKey); let count = 0; for (let i = 3; i < lines.length; i++) { const cols = parseCSVLine(lines[i]); const modelId = cols[1]; if (!modelId) continue; const attributes = {}; for (let j = startIndex; j < rowCodes.length; j++) { const code = rowCodes[j]; if (code && cols[j]) { attributes[code] = cols[j]; } } const newProduct = { model: modelId, schema_key: schemaKey, attributes: attributes }; window.APP_DB.registerProduct(newProduct); count++; } masterSchemaMap = window.APP_DB.schemas; masterDatabase = window.APP_DB.products; masterDatabase.sort((a, b) => a.model.localeCompare(b.model)); console.log(`Importada gama ${schemaKey} con ${count} modelos.`); }
+        function handleThemeToggle(e) { e.stopPropagation(); isLightMode = !isLightMode; if (isLightMode) updatePaletteCSS(lightPaletteHSL, currentAccentHue); else { currentAccentHue = Math.floor(Math.random() * 360); updatePaletteCSS(darkPaletteHSL, currentAccentHue); } }
+        function handleDualFontToggle(e) { e.stopPropagation(); const primary = fontGroupPrimary[Math.floor(Math.random() * fontGroupPrimary.length)]; const secondary = fontGroupSecondary[Math.floor(Math.random() * fontGroupSecondary.length)]; document.documentElement.style.setProperty('--font-primary', primary); document.documentElement.style.setProperty('--font-secondary', secondary); }
+        function updatePaletteCSS(baseHSL, accentHue) { const p = baseHSL; const hueDifference = 0; const newOtherHue = (accentHue + hueDifference + 360) % 360; const accentRGB = hslToRgb(accentHue, p.accent.s, p.accent.l); const root = document.documentElement; const vars = { '--color-cyan-accent': `hsl(${accentHue}, ${p.accent.s}%, ${p.accent.l}%)`, '--color-cyan-glow': `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`, '--color-bg-dark': `hsl(${newOtherHue}, ${p.dark.s}%, ${p.dark.l}%)`, '--color-bg-medium': `hsl(${newOtherHue}, ${p.medium.s}%, ${p.medium.l}%)`, '--color-border': `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l}%)`, '--color-border-light': `hsl(${newOtherHue}, ${p.border.s}%, ${p.border.l + 5}%)`, '--color-text-primary': `hsl(${newOtherHue}, ${p.textP.s}%, ${p.textP.l}%)`, '--color-text-secondary': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l}%)`, '--color-text-dim': `hsl(${newOtherHue}, ${p.textS.s}%, ${p.textS.l - 10}%)` }; for (const [key, value] of Object.entries(vars)) { root.style.setProperty(key, value); } }
+        function hslToRgb(h, s, l) { s /= 100; l /= 100; const k = n => (n + h / 30) % 12; const a = s * Math.min(l, 1 - l); const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) }; }
+        
+        async function showReadmeInfo() {
+            closeSettingsMenu(); closeLibraryModal(); openReadmeModal(); closeConfigModal();
+            // INYECCIÓN MANUAL PARA LA MASTER (ya que no lee el config al inicio)
+            // Cuando se exporte, esto será reemplazado por el valor estático
+            if (dom.readmeContent.textContent === "") {
+               dom.readmeContent.textContent = window.driveConfig.introText;
+            }
+        }
+        
+        initialize();
+    });
+    </script>
+
+    <script id="master-builder-logic">
+        document.addEventListener('DOMContentLoaded', () => {
+            const builderBtn = document.getElementById('master-builder-btn');
+            if(builderBtn) builderBtn.addEventListener('click', buildRelease);
+
+            function buildRelease() {
+                if(!confirm("¿Generar archivo Release? (Se creará una versión limpia sin herramientas de edición).")) return;
+
+                // 1. CLONAR DOM (Serialización String)
+                const virtualDoc = document.documentElement.cloneNode(true);
+
+                // 2. Limpieza de UI en el Clon (Ocultar paneles abiertos)
+                const settingsPanel = virtualDoc.querySelector('#settings-menu-panel');
+                if (settingsPanel) settingsPanel.className = 'settings-menu-panel-hidden'; 
+
+                const overlay = virtualDoc.querySelector('#filter-overlay');
+                if (overlay) overlay.className = 'overlay-hidden'; 
+
+                const settingsBtn = virtualDoc.querySelector('#settings-menu-toggle');
+                if (settingsBtn) settingsBtn.classList.remove('active');
+                
+                // Ocultar modal config
+                const confModal = virtualDoc.querySelector('#config-release-modal');
+                if (confModal) confModal.className = 'modal-hidden';
+
+                // 3. Obtener Configuración
+                const config = window.driveConfig;
+                const currentProducts = window.APP_DB.products;
+                const currentSchemas = window.APP_DB.schemas;
+
+                // 4. Convertir a HTML String
+                let html = virtualDoc.outerHTML;
+                
+                // 5. Inyectar Datos Estáticos (Base de datos actual)
+                const dbPattern = /window\.APP_DB\s*=\s*\{[\s\S]*?\};/;
+                const newData = `window.APP_DB = {
+                    products: ${JSON.stringify(currentProducts)},
+                    schemas: ${JSON.stringify(currentSchemas)},
+                    registerProduct: function(p) { this.products.push(p); },
+                    registerSchema: function(k, s) { this.schemas[k] = s; }
+                };`;
+                html = html.replace(dbPattern, newData);
+
+                // 6. Aplicar Configuración (Título y Versión)
+                const date = new Date();
+                const dd = String(date.getDate()).padStart(2, '0');
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const yy = String(date.getFullYear()).slice(-2);
+                
+                // Usar versión del usuario o generar automática
+                const finalVer = config.version ? config.version : `v.${dd}.${mm}.${yy}`;
+                
+                // Reemplazo en Title Tag
+                html = html.replace(/<title>.*?<\/title>/, `<title>${config.title} (${finalVer})</title>`);
+                
+                // Reemplazo en H1 Header (Regex para capturar todo el h1)
+                const newHeader = `<h1 class="app-title">${config.title} <span class="app-version">${finalVer}</span></h1>`;
+                html = html.replace(/<h1 class="app-title">[\s\S]*?<\/h1>/, newHeader);
+
+                // 7. INYECTAR TEXTO INFO (README PATCH)
+                // Inyectamos el texto directamente en el <pre> para que sea estático
+                const safeText = config.introText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                html = html.replace(/<pre id="readme-content" class="modal-body"><\/pre>/, `<pre id="readme-content" class="modal-body">${safeText}</pre>`);
+
+                // 8. AUTO-LIMPIEZA (Eliminar herramientas de construcción)
+                // Borrar botón Configurar
+                html = html.replace(/<button id="config-release-btn".*?<\/button>/, '');
+                // Borrar botón Construir
+                html = html.replace(/<button id="master-builder-btn".*?<\/button>/, '');
+                // Borrar el Modal de Configuración entero del HTML final
+                html = html.replace(/<div id="config-release-modal"[\s\S]*?<\/div>\s*<div id="library-modal"/, '<div id="library-modal"');
+                // Borrar script builder
+                const scriptPattern = /<script id="master-builder-logic">[\s\S]*?<\/script>/;
+                html = html.replace(scriptPattern, '');
+
+                // 9. Descarga
+                const blob = new Blob(['<!DOCTYPE html>\n' + html], {type: 'text/html'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                // Nombre de archivo limpio
+                const safeTitle = config.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                a.download = `${safeTitle}_${finalVer.replace(/\./g, '-')}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        });
+    </script>
+</body>
+</html>
