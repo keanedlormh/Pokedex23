@@ -4,68 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Pokedex Drive</title>
-
     <link rel="stylesheet" href="admin.css">
-
-    <!-- Bootloader Admin -->
     <script>
-        window.APP_DB = { 
-            products: [], 
-            schemas: {}, 
-            registerProduct: function(p) { this.products.push(p); }, 
-            registerSchema: function(k, s) { this.schemas[k] = s; } 
-        };
+        // BOOTLOADER ADMIN
+        window.APP_DB = { products: [], schemas: {}, registerProduct: function(p) { this.products.push(p); }, registerSchema: function(k, s) { this.schemas[k] = s; } };
         const basePath = '../'; 
         try {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', basePath + 'db/manifest.json', false);
-            xhr.send(null);
+            const xhr = new XMLHttpRequest(); xhr.open('GET', basePath + 'db/manifest.json', false); xhr.send(null);
             if (xhr.status === 200) {
-                const manifest = JSON.parse(xhr.responseText);
-                manifest.schemas.forEach(path => { document.write('<script src="' + basePath + path + '"><\/script>'); });
-                manifest.bulk_gamas.forEach(jsonPath => { 
-                    const x = new XMLHttpRequest(); x.open('GET', basePath + jsonPath, false); x.send(null); 
-                    if (x.status === 200) JSON.parse(x.responseText).forEach(pr => window.APP_DB.registerProduct(pr)); 
-                });
-                Object.values(manifest.products).forEach(productList => { 
-                    productList.forEach(jsonPath => { 
-                        const x = new XMLHttpRequest(); x.open('GET', basePath + jsonPath, false); x.send(null); 
-                        if (x.status === 200) window.APP_DB.registerProduct(JSON.parse(x.responseText)); 
-                    });
-                });
+                const m = JSON.parse(xhr.responseText);
+                m.schemas.forEach(p => document.write('<script src="' + basePath + p + '"><\/script>'));
+                m.bulk_gamas.forEach(j => { const x = new XMLHttpRequest(); x.open('GET', basePath + j, false); x.send(null); if (x.status === 200) JSON.parse(x.responseText).forEach(p => window.APP_DB.registerProduct(p)); });
+                Object.values(m.products).forEach(l => l.forEach(j => { const x = new XMLHttpRequest(); x.open('GET', basePath + j, false); x.send(null); if (x.status === 200) window.APP_DB.registerProduct(JSON.parse(x.responseText)); }));
             }
-        } catch (e) { console.warn("Modo offline o error carga DB."); }
+        } catch (e) { console.warn("Offline Mode"); }
     </script>
-    
-    <!-- LÓGICA PRINCIPAL -->
     <script src="admin.js" defer></script>
-    
-    <!-- MOTOR DRIVE (CRÍTICO PARA EXPORTACIÓN) -->
     <script src="pokedexdrive.js" defer></script>
 </head>
-
 <body>
     <header class="admin-header">
         <div class="header-content">
-            <div class="header-left">
-                <button id="home-btn" class="app-title-btn">
-                    <h1 class="app-title">Pokedex Drive <span class="app-version">v3.9</span></h1>
-                </button>
-            </div>
-            
+            <div class="header-left"><button id="home-btn" class="app-title-btn"><h1 class="app-title">Pokedex Drive <span class="app-version">v4.0</span></h1></button></div>
             <div class="header-right">
-                <div id="editor-controls" style="display: none; gap: 0.5rem; margin-right: 1rem; border-right: 1px solid var(--color-border); padding-right: 1rem;">
-                    <button id="btn-save-memory" class="header-icon-btn action-btn-green" title="Guardar en Memoria (RAM)">💾</button>
-                    <button id="btn-export-file" class="header-icon-btn action-btn-blue" title="Descargar Archivo JSON">⬇️</button>
+                <div id="editor-controls" style="display:none; gap:0.5rem; margin-right:1rem; border-right:1px solid var(--color-border); padding-right:1rem;">
+                    <button id="btn-save-memory" class="header-icon-btn action-btn-green" title="Guardar RAM">💾</button>
+                    <button id="btn-export-file" class="header-icon-btn action-btn-blue" title="Descargar Archivo">⬇️</button>
                 </div>
-
                 <div class="settings-wrapper">
-                    <button id="settings-btn" class="header-icon-btn" title="Menú">⚙️</button>
-                    <div id="settings-menu" class="settings-dropdown" style="display: none;">
+                    <button id="settings-btn" class="header-icon-btn">⚙️</button>
+                    <div id="settings-menu" class="settings-dropdown">
                         <button id="library-menu-toggle" class="settings-dropdown-btn">📚 Biblioteca</button>
-                        <button id="theme-btn" class="settings-dropdown-btn">🎨 Tema Random</button>
+                        <button id="theme-btn" class="settings-dropdown-btn">🎨 Tema</button>
                         <button id="info-btn" class="settings-dropdown-btn">ℹ️ Info</button>
-                        <a href="../index.html" class="settings-dropdown-btn">📖 Ir a Pokedex</a>
+                        <a href="../index.html" class="settings-dropdown-btn">📖 Pokedex</a>
                     </div>
                 </div>
             </div>
@@ -73,94 +45,60 @@
     </header>
 
     <main class="admin-content-area">
-        <!-- PANEL GENERAL -->
         <div id="panel-general" class="content-panel active">
-            <!-- ZONA DE DESPLIEGUE -->
             <div class="deployment-zone">
                 <div class="zone-header">
                     <h2 class="futuristic-title no-border mb-0">Zona de Despliegue</h2>
                     <button id="drive-config-btn" class="futuristic-button small-btn">Configurar Info 🛠️</button>
                 </div>
                 <hr class="separator-line">
-                
                 <div class="deployment-grid">
                     <button id="drive-builder-trigger" class="nav-card special-card drive-card">
                         <span class="nav-card-icon">🚀</span>
-                        <div class="nav-card-text">
-                            <h3>Pokedex Drive</h3>
-                            <p>Compilar versión Offline (.html)</p>
-                        </div>
+                        <div class="nav-card-text"><h3>Pokedex Drive</h3><p>Compilar versión Offline (.html)</p></div>
                     </button>
                     <a href="pokedex23_master.html" download class="nav-card special-card master-card text-decoration-none">
                         <span class="nav-card-icon">💎</span>
-                        <div class="nav-card-text">
-                            <h3>Pokedex23 Master</h3>
-                            <p>Descargar Core (HTML)</p>
-                        </div>
+                        <div class="nav-card-text"><h3>Pokedex23 Master</h3><p>Descargar Core (HTML)</p></div>
                     </a>
                 </div>
             </div>
-
-            <!-- HERRAMIENTAS -->
-            <div class="tools-zone" style="margin-top: 2rem;">
-                <h2 class="futuristic-title">Herramientas de Edición</h2>
+            <div class="tools-zone" style="margin-top:2rem;">
+                <h2 class="futuristic-title">Herramientas</h2>
                 <div class="nav-card-grid">
-                    <button class="nav-card" data-panel="model-hub">
-                        <span class="nav-card-icon">📝</span>
-                        <div class="nav-card-text">
-                            <h3>Gestor de Modelos</h3>
-                            <p>Crear y editar en RAM.</p>
-                        </div>
-                    </button>
-                    <button class="nav-card" data-panel="schema-hub">
-                        <span class="nav-card-icon">🏗️</span>
-                        <div class="nav-card-text">
-                            <h3>Editor de Gamas</h3>
-                            <p>Estructura de datos .js</p>
-                        </div>
-                    </button>
-                    <button class="nav-card" data-panel="export-gama">
-                        <span class="nav-card-icon">📦</span>
-                        <div class="nav-card-text">
-                            <h3>Exportar Gama</h3>
-                            <p>JSON / CSV Masivo</p>
-                        </div>
-                    </button>
+                    <button class="nav-card" data-panel="model-hub"><span class="nav-card-icon">📝</span><h3>Gestor Modelos</h3></button>
+                    <button class="nav-card" data-panel="schema-hub"><span class="nav-card-icon">🏗️</span><h3>Editor Gamas</h3></button>
+                    <button class="nav-card" data-panel="export-gama"><span class="nav-card-icon">📦</span><h3>Exportar</h3></button>
                 </div>
             </div>
         </div>
 
-        <!-- PANEL: MODEL HUB -->
         <div id="panel-model-hub" class="content-panel">
             <div class="futuristic-card center-limit">
-                <h2 class="futuristic-title">1. Editar Modelo</h2>
-                <input type="text" id="search-model" placeholder="Buscar modelo..." class="futuristic-input w-full">
+                <h2 class="futuristic-title">Editar Modelo</h2>
+                <input type="text" id="search-model" placeholder="..." class="futuristic-input w-full">
                 <div id="model-results-list" class="futuristic-list full-list-visible short-list"></div>
-                
-                <h2 class="futuristic-title" style="margin-top:2rem;">2. Crear Nuevo</h2>
+                <h2 class="futuristic-title mt-4">Nuevo Modelo</h2>
                 <div class="control-group-box">
-                    <div class="mb-4"><label class="futuristic-label">Gama:</label><select id="create-model-schema-select" class="futuristic-select w-full"><option value="">--</option></select></div>
-                    <div class="mb-4"><label class="futuristic-label">ID Modelo:</label><input type="text" id="create-model-id" class="futuristic-input w-full"></div>
-                    <button id="create-model-btn" class="futuristic-button w-full">Crear en RAM</button>
+                    <div class="mb-4"><label class="futuristic-label">Gama:</label><select id="create-model-schema-select" class="futuristic-select w-full"></select></div>
+                    <div class="mb-4"><label class="futuristic-label">ID:</label><input type="text" id="create-model-id" class="futuristic-input w-full"></div>
+                    <button id="create-model-btn" class="futuristic-button w-full">Crear</button>
                 </div>
             </div>
         </div>
-        
-        <!-- PANEL: SCHEMA HUB -->
+
         <div id="panel-schema-hub" class="content-panel">
             <div class="futuristic-card center-limit">
-                <h2 class="futuristic-title">Gamas Disponibles</h2>
+                <h2 class="futuristic-title">Gamas</h2>
                 <div id="schema-results-list" class="futuristic-list full-list-visible short-list"></div>
-                <h2 class="futuristic-title" style="margin-top:2rem;">Nueva Gama</h2>
+                <h2 class="futuristic-title mt-4">Nueva Gama</h2>
                 <div class="control-group-box">
-                    <label class="futuristic-label">Clave (ej: smartphone):</label>
-                    <input type="text" id="new-schema-key" class="futuristic-input w-full">
-                    <button id="create-schema-btn" class="futuristic-button w-full mt-2">Crear Estructura</button>
+                    <label class="futuristic-label">Key:</label><input type="text" id="new-schema-key" class="futuristic-input w-full">
+                    <button id="create-schema-btn" class="futuristic-button w-full mt-2">Crear</button>
                 </div>
             </div>
         </div>
-        
-        <!-- EDITOR MODELO -->
+
         <div id="panel-edit-model" class="content-panel">
             <div class="editor-card">
                 <div class="editor-header"><h2 id="product-title" class="spec-title">Editor</h2></div>
@@ -169,36 +107,29 @@
                         <div class="control-group"><label class="futuristic-label">ID:</label><input type="text" id="edit-model-id" class="futuristic-input w-full" readonly></div>
                         <div class="control-group"><label class="futuristic-label">Gama:</label><input type="text" id="edit-schema-key-display" class="futuristic-input w-full" readonly disabled></div>
                     </div>
-                    <p id="editor-placeholder" class="text-gray-400">Cargando campos...</p>
+                    <p id="editor-placeholder" class="text-gray-400">...</p>
                 </form>
             </div>
         </div>
-        
-        <!-- EDITOR ESQUEMA -->
+
         <div id="panel-edit-schema" class="content-panel">
             <div class="editor-card">
                 <h2 id="schema-title" class="spec-title">Editor Estructura</h2>
                 <div id="schema-editor-form" class="editor-form-fields">
-                    <div class="editor-key-fields">
-                        <div class="control-group"><label class="futuristic-label">Key:</label><input type="text" id="edit-schema-key" class="futuristic-input w-full" readonly disabled></div>
-                    </div>
+                    <div class="editor-key-fields"><div class="control-group"><label class="futuristic-label">Key:</label><input type="text" id="edit-schema-key" class="futuristic-input w-full" readonly disabled></div></div>
                 </div>
                 <button id="add-group-btn" class="futuristic-button schema-add-group-btn">+ Grupo</button>
             </div>
         </div>
-        
-        <!-- PANEL EXPORTAR -->
+
         <div id="panel-export-gama" class="content-panel">
             <div class="futuristic-card center-limit">
-                <h2 class="futuristic-title">Exportación Masiva</h2>
+                <h2 class="futuristic-title">Exportación</h2>
                 <div class="gama-export-controls">
-                    <div class="control-group flex-grow" style="width:100%;margin-bottom:1rem;">
-                        <label class="futuristic-label">Seleccionar Gama:</label>
-                        <select id="gama-export-select" class="futuristic-select w-full"><option value="">--</option></select>
-                    </div>
+                    <div class="control-group flex-grow"><label class="futuristic-label">Gama:</label><select id="gama-export-select" class="futuristic-select w-full"></select></div>
                     <div class="export-buttons-container">
-                        <button id="export-gama-json-btn" class="futuristic-button">⬇ JSON</button>
-                        <button id="export-gama-csv-btn" class="futuristic-button csv-button">📊 CSV</button>
+                        <button id="export-gama-json-btn" class="futuristic-button">JSON</button>
+                        <button id="export-gama-csv-btn" class="futuristic-button csv-button">CSV</button>
                     </div>
                 </div>
                 <div id="gama-export-list" class="gama-export-list"></div>
@@ -209,14 +140,11 @@
     <!-- MODALES -->
     <div id="drive-config-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
-            <div class="modal-header">
-                <h2 class="futuristic-title" style="margin:0;">Configurar Pokedex Drive</h2>
-                <button id="drive-config-close-btn" class="modal-close-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h2 class="futuristic-title" style="margin:0;">Configurar Drive</h2><button id="drive-config-close-btn" class="modal-close-btn">×</button></div>
             <div class="modal-body">
-                <div class="control-group mb-4"><label class="futuristic-label">Título App:</label><input type="text" id="conf-drive-title" class="futuristic-input w-full"></div>
+                <div class="control-group mb-4"><label class="futuristic-label">Título:</label><input type="text" id="conf-drive-title" class="futuristic-input w-full"></div>
                 <div class="control-group mb-4"><label class="futuristic-label">Versión:</label><input type="text" id="conf-drive-version" class="futuristic-input w-full"></div>
-                <div class="control-group mb-4"><label class="futuristic-label">Texto Info:</label><textarea id="conf-drive-text" class="futuristic-textarea" rows="4"></textarea></div>
+                <div class="control-group mb-4"><label class="futuristic-label">Intro:</label><textarea id="conf-drive-text" class="futuristic-textarea" rows="4"></textarea></div>
                 <button id="conf-drive-save-btn" class="futuristic-button w-full action-btn-green">Guardar</button>
             </div>
         </div>
@@ -224,54 +152,38 @@
 
     <div id="library-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card library-modal-content">
-            <div class="modal-header compact-header">
-                <h2 class="futuristic-title" style="margin:0; font-size: 1.1rem;">Biblioteca Virtual (RAM)</h2>
-                <button id="library-close-btn" class="modal-close-btn">&times;</button>
-            </div>
+            <div class="modal-header compact-header"><h2 class="futuristic-title" style="margin:0;">Biblioteca (RAM)</h2><button id="library-close-btn" class="modal-close-btn">×</button></div>
             <div class="modal-body compact-body">
-                <div class="library-section">
-                    <div class="lib-sec-header"><h3 class="futuristic-label" style="margin:0;">Gamas Cargadas</h3></div>
-                    <div id="library-gama-list" class="library-list"></div>
-                </div>
-                <div class="library-section" style="border-top: 1px dashed var(--color-border); padding-top: 1rem; margin-top: 1rem;">
-                    <h3 class="futuristic-label" style="margin-bottom: 0.5rem;">Importar Datos</h3>
+                <div class="library-section"><div class="lib-sec-header"><h3 class="futuristic-label">Gamas</h3></div><div id="library-gama-list" class="library-list"></div></div>
+                <div class="library-section" style="border-top:1px dashed var(--color-border);padding-top:1rem;margin-top:1rem;">
+                    <h3 class="futuristic-label">Importar</h3>
                     <div class="upload-area">
-                        <label for="csv-upload-input" class="upload-btn-label upload-file-btn">📂 Archivo</label>
-                        <input type="file" id="csv-upload-input" accept=".csv" style="display: none;">
-                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..." rows="1"></textarea>
-                        <button id="csv-text-btn" class="upload-btn-label">Procesar</button>
+                        <label for="csv-upload-input" class="upload-btn-label">📂 Archivo</label><input type="file" id="csv-upload-input" accept=".csv" style="display:none;">
+                        <textarea id="csv-text-input" class="futuristic-textarea-mini" placeholder="Pegar CSV..."></textarea><button id="csv-text-btn" class="upload-btn-label">Procesar</button>
                     </div>
-                    <span id="upload-status-text" class="upload-status-text">Formato Admin (;)</span>
+                    <span id="upload-status-text" class="upload-status-text">Format: Admin (;)</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="modal-overlay" class="modal-overlay" style="display: none;"></div>
     <div id="info-modal" class="modal-container" style="display: none;">
         <div class="info-modal-content futuristic-card">
-            <div class="modal-header"><h2 class="futuristic-title" style="margin:0;">Info</h2><button id="close-info-modal-btn" class="modal-close-btn">✕</button></div>
-            <div class="modal-body text-wrap-enabled">
-                <pre style="white-space: pre-wrap; word-break: break-word;">Pokedex Drive Admin v3.9</pre>
-            </div>
+            <div class="modal-header"><h2 class="futuristic-title">Info</h2><button id="close-info-modal-btn" class="modal-close-btn">×</button></div>
+            <div class="modal-body text-wrap-enabled"><pre style="white-space: pre-wrap;">Admin v4.0</pre></div>
         </div>
     </div>
 
     <div id="drive-modal" class="modal-container" style="display: none; z-index: 210;">
         <div class="info-modal-content futuristic-card drive-modal-content">
-            <div class="modal-header"><h2 class="futuristic-title" style="margin:0;">Compilador Drive</h2><button id="drive-close-btn" class="modal-close-btn">&times;</button></div>
+            <div class="modal-header"><h2 class="futuristic-title">Compilador</h2><button id="drive-close-btn" class="modal-close-btn">×</button></div>
             <div class="modal-body drive-body">
-                <div class="drive-progress-container">
-                    <div class="drive-progress-bar"><div id="drive-progress-fill" class="drive-progress-fill" style="width: 0%;"></div></div>
-                    <span id="drive-percent-text" class="drive-percent">0%</span>
-                </div>
+                <div class="drive-progress-container"><div class="drive-progress-bar"><div id="drive-progress-fill" class="drive-progress-fill" style="width:0%"></div></div><span id="drive-percent-text" class="drive-percent">0%</span></div>
                 <div id="drive-log-console" class="drive-console"></div>
-                <div id="drive-action-area" class="drive-actions" style="display: none;">
-                    <p class="success-message">¡Compilación completada!</p>
-                    <button id="drive-download-final-btn" class="futuristic-button w-full">Descargar HTML Offline</button>
-                </div>
+                <div id="drive-action-area" class="drive-actions" style="display:none;"><p class="success-message">¡Listo!</p><button id="drive-download-final-btn" class="futuristic-button w-full">Descargar .html</button></div>
             </div>
         </div>
     </div>
+    <div id="modal-overlay" class="modal-overlay" style="display:none;"></div>
 </body>
 </html>
