@@ -1,9 +1,11 @@
 /**
- * Pokedex Drive Engine v2.2
+ * Pokedex Drive Engine v3.0
  * Módulo de compilación para generar versiones monolíticas offline.
- * * ACTUALIZACIÓN CRÍTICA:
- * - Filtra usando window.ADMIN_CONTEXT.activeSchemas para precisión absoluta.
- * - Evita exportar gamas desactivadas en la biblioteca.
+ * * NOVEDADES v3.0:
+ * - Personalización Total: Utiliza window.driveConfig (Título, Versión, Info).
+ * - Parche "Readme Offline": Inyecta el texto de Info directamente en el HTML
+ * para evitar el error de fetch('README.md').
+ * - Filtrado Inteligente: Respeta las gamas activas/ocultas.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console: document.getElementById('drive-log-console'),
         actionArea: document.getElementById('drive-action-area'),
         downloadBtn: document.getElementById('drive-download-final-btn'),
-        overlay: document.getElementById('modal-overlay')
+        overlay: document.getElementById('modal-overlay'),
+        activeSchemaList: document.getElementById('schema-results-list') 
     };
 
     let isCompiling = false;
@@ -49,8 +52,17 @@ document.addEventListener('DOMContentLoaded', () => {
         resetUI();
         
         try {
-            log("Iniciando motor Pokedex Drive v2.2...", "info");
+            log("Iniciando motor Pokedex Drive v3.0 (Custom & Filtered)...", "info");
             
+            // 0. CARGAR CONFIGURACIÓN DE USUARIO
+            // Obtenemos los datos del formulario "Configurar Info"
+            const userConfig = window.driveConfig || { 
+                title: "Pokedex Offline", 
+                version: "v1.0", 
+                introText: "Versión generada automáticamente." 
+            };
+            log(`Configuración cargada: ${userConfig.title} - ${userConfig.version}`, "info");
+
             // PASO 1: Recursos
             updateProgress(10, "Leyendo estructura fuente (../index.html)...");
             const indexHtml = await fetchResource('../index.html');
@@ -61,30 +73,26 @@ document.addEventListener('DOMContentLoaded', () => {
             updateProgress(40, "Leyendo núcleo lógico (../main.js)...");
             const jsContent = await fetchResource('../main.js');
 
-            // PASO 2: Filtrado Robusto de Datos
-            updateProgress(50, "Analizando Biblioteca Virtual (Bridge Mode)...");
+            // PASO 2: Filtrado Robusto de Datos (Bridge Mode)
+            updateProgress(50, "Analizando Biblioteca Virtual...");
             
             if (!window.APP_DB || !window.APP_DB.products) {
                 throw new Error("No hay datos cargados en la memoria del Administrador.");
             }
 
-            // >>>> PUNTO CLAVE <<<<
-            // Leemos el Set directamente del puente que creamos en admin.js
             let activeKeys;
             if (window.ADMIN_CONTEXT && window.ADMIN_CONTEXT.activeSchemas) {
                 activeKeys = window.ADMIN_CONTEXT.activeSchemas;
                 log(`Puente ADMIN_CONTEXT detectado. Filtros activos: ${activeKeys.size}`, "success");
             } else {
-                // Fallback si admin.js no se actualizó (exportar todo)
                 log("ADVERTENCIA: Puente no detectado. Exportando todo.", "warning");
                 activeKeys = new Set(Object.keys(window.APP_DB.schemas));
             }
 
-            // Filtrar Productos
+            // Filtrar Productos y Esquemas
             const rawProducts = window.APP_DB.products;
             const filteredProducts = rawProducts.filter(p => activeKeys.has(p.schema_key));
             
-            // Filtrar Esquemas
             const rawSchemas = window.APP_DB.schemas;
             const filteredSchemas = {};
             Object.keys(rawSchemas).forEach(key => {
@@ -95,18 +103,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const excludedCount = rawProducts.length - filteredProducts.length;
             log(`Datos procesados: ${filteredProducts.length} productos incluidos.`, "success");
-            if (excludedCount > 0) log(`(Omitidos ${excludedCount} productos ocultos)`, "normal");
 
-            // PASO 3: Construcción
-            updateProgress(70, "Ensamblando monolito HTML...");
+            // PASO 3: Construcción y Personalización
+            updateProgress(70, "Ensamblando e inyectando Info...");
             
             let finalHtml = indexHtml;
 
-            // 3.1 CSS
+            // 3.1 Personalización Visual (Header)
+            // Reemplazamos el título de la pestaña del navegador
+            finalHtml = finalHtml.replace(/<title>.*?<\/title>/, `<title>${userConfig.title} (Drive)</title>`);
+            
+            // Reemplazamos el H1 y la versión en el HTML visual
+            // Buscamos: <h1 class="app-title">...</h1> y lo reemplazamos completamente
+            const newHeaderHtml = `<h1 class="app-title">${userConfig.title} <span class="app-version">${userConfig.version}</span></h1>`;
+            finalHtml = finalHtml.replace(/<h1 class="app-title">[\s\S]*?<\/h1>/, newHeaderHtml);
+            log("Cabecera personalizada aplicada.", "info");
+
+            // 3.2 Inyección del Texto INFO (Parche README)
+            // Inyectamos el texto directamente en el contenedor <pre>. 
+            // main.js detectará que no está vacío y no intentará hacer fetch.
+            const escapedInfoText = userConfig.introText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const infoInjection = `<pre id="readme-content" class="modal-body">${escapedInfoText}</pre>`;
+            finalHtml = finalHtml.replace(/<pre id="readme-content" class="modal-body"><\/pre>/, infoInjection);
+            log("Texto de Información inyectado (Offline fix).", "success");
+
+            // 3.3 CSS
             const styleTag = `<style>\n${cssContent}\n</style>`;
             finalHtml = finalHtml.replace(/<link rel="stylesheet" href="style.css">/, styleTag);
 
-            // 3.2 Bootloader Filtrado
+            // 3.4 Bootloader Filtrado
             const offlineBootloader = `
     <script>
         /** BOOTLOADER OFFLINE (Generado por Pokedex Drive) **/
@@ -126,22 +151,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalHtml = finalHtml.replace('<!-- Bootloader v2.9.9 -->', '<!-- Bootloader Replaced -->\n' + offlineBootloader);
             }
 
-            // 3.3 JS
+            // 3.5 JS
             const scriptTag = `<script>\n${jsContent}\n</script>`;
             finalHtml = finalHtml.replace(/<script src="main.js" defer><\/script>/, scriptTag);
 
-            // 3.4 Limpieza
+            // 3.6 Limpieza
             updateProgress(85, "Limpiando accesos...");
             const adminBtnRegex = /<a href="admin\/index\.html".*?id="admin-link-btn".*?>.*?<\/a>/;
             finalHtml = finalHtml.replace(adminBtnRegex, '');
             
-            const appTitle = window.driveConfig && window.driveConfig.title ? window.driveConfig.title : 'Pokedex Offline';
-            finalHtml = finalHtml.replace(/<title>.*?<\/title>/, `<title>${appTitle} (Drive)</title>`);
-
             updateProgress(100, "¡Listo!");
-            log("Monolito generado.", "success");
+            log("Monolito generado exitosamente.", "success");
 
-            prepareDownload(finalHtml);
+            prepareDownload(finalHtml, userConfig.title);
 
         } catch (error) {
             log(`ERROR: ${error.message}`, "error");
@@ -159,10 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return await response.text();
     }
 
-    function prepareDownload(content) {
+    function prepareDownload(content, appTitle) {
         const blob = new Blob([content], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
-        const filename = `Pokedex_Drive_${new Date().toISOString().slice(0,10)}.html`;
+        // Limpiamos el nombre para que sea seguro en el archivo
+        const safeTitle = appTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_drive_${new Date().toISOString().slice(0,10)}.html`;
         
         UI.downloadBtn.onclick = null; 
         UI.downloadBtn.addEventListener('click', () => {
@@ -209,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         line.textContent = `> ${message}`;
         if (type === 'error') line.style.color = 'var(--color-red-accent)';
         if (type === 'success') line.style.color = 'var(--color-green-accent)';
+        if (type === 'info') line.style.color = 'var(--color-cyan-accent)';
         if (type === 'warning') line.style.color = '#fbbf24';
         UI.console.appendChild(line);
         UI.console.scrollTop = UI.console.scrollHeight;
