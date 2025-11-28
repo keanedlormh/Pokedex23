@@ -202,8 +202,7 @@
         .config-label:first-child { margin-top: 0; }
     </style>
 
-    <!-- BOOTLOADER CON ID (CLAVE PARA INYECCIÓN) -->
-    <script id="db-bootloader">
+    <script>
         /** * Pokedex Master - Empty Core */
         window.APP_DB = {
             products: [],
@@ -380,7 +379,7 @@
             csvTextInput: document.getElementById('csv-text-input'),
             csvTextBtn: document.getElementById('csv-text-btn'),
             
-            // DOM Configuración
+            // DOM Configuración (PUEDEN SER NULL EN LA VERSIÓN EXPORTADA)
             configBtn: document.getElementById('config-release-btn'),
             configModal: document.getElementById('config-modal'),
             configCloseBtn: document.getElementById('config-close-btn'),
@@ -457,7 +456,19 @@
             if (dom.modelSearchResults) dom.modelSearchResults.addEventListener('click', handleResultClick);
             if (dom.smartFilterToggle) dom.smartFilterToggle.addEventListener('click', toggleFilterPanel);
             if (dom.settingsMenuToggle) dom.settingsMenuToggle.addEventListener('click', toggleSettingsMenu);
-            if (dom.filterOverlay) dom.filterOverlay.addEventListener('click', () => { closeFilterPanel(); closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); closeConfigModal(); });
+            
+            // --- FIX CRÍTICO: Chequeo de Nulos en Overlay ---
+            // En la versión exportada, los modales de configuración NO EXISTEN.
+            // Si intentamos cerrar algo que no existe, el script muere.
+            if (dom.filterOverlay) dom.filterOverlay.addEventListener('click', () => { 
+                closeFilterPanel(); 
+                closeSettingsMenu(); 
+                closeReadmeModal(); 
+                closeLibraryModal(); 
+                // Solo intentamos cerrar el config modal si el botón existe (indicador de versión Master)
+                if(dom.configBtn) closeConfigModal(); 
+            });
+
             if (dom.readmeCloseButton) dom.readmeCloseButton.addEventListener('click', closeReadmeModal);
             if (dom.expandAllButton) dom.expandAllButton.addEventListener('click', expandAllSpecs);
             if (dom.collapseAllButton) dom.collapseAllButton.addEventListener('click', collapseAllSpecs);
@@ -480,7 +491,7 @@
                 dom.libraryGamaList.addEventListener('change', handleGamaToggle);
             }
             
-            // CONFIG EVENT LISTENERS
+            // CONFIG EVENT LISTENERS (SOLO SI EXISTEN)
             if (dom.configBtn) dom.configBtn.addEventListener('click', openConfigModal);
             if (dom.configCloseBtn) dom.configCloseBtn.addEventListener('click', closeConfigModal);
             if (dom.configSaveBtn) dom.configSaveBtn.addEventListener('click', saveConfig);
@@ -488,6 +499,9 @@
 
         // --- LOGICA DE CONFIGURACIÓN ---
         function openConfigModal() {
+            // Protección extra
+            if (!dom.configModal) return;
+            
             closeSettingsMenu();
             dom.cfgTitle.value = window.masterConfig.title;
             dom.cfgVersion.value = window.masterConfig.version;
@@ -497,11 +511,14 @@
         }
 
         function closeConfigModal() {
-            dom.configModal.className = 'modal-hidden';
+            // Protección crítica: Si el modal fue borrado por el builder, esto evita el crash
+            if (dom.configModal) dom.configModal.className = 'modal-hidden';
             checkOverlay();
         }
 
         function saveConfig() {
+            if (!dom.configSaveBtn) return;
+            
             window.masterConfig.title = dom.cfgTitle.value.trim() || "Pokedex Drive";
             window.masterConfig.version = dom.cfgVersion.value.trim() || "v.Release";
             window.masterConfig.text = dom.cfgText.value;
@@ -606,16 +623,49 @@
         function expandAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = true); }
         function collapseAllSpecs() { dom.productSpecsContainer.querySelectorAll('details.spec-group').forEach(group => group.open = false); }
         function toggleFilterGroup(titleElement) { const btn = titleElement.querySelector('.filter-toggle-btn'); const rowsContainer = titleElement.nextElementSibling; if (rowsContainer && btn) { if (rowsContainer.classList.contains('collapsed')) { rowsContainer.classList.remove('collapsed'); rowsContainer.classList.add('expanded'); btn.classList.remove('gray'); btn.classList.add('blue'); } else { rowsContainer.classList.remove('expanded'); rowsContainer.classList.add('collapsed'); btn.classList.remove('blue'); btn.classList.add('gray'); } } }
-        function openFilterPanel() { if (!dom.smartFilterPanel) return; closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); dom.smartFilterPanel.className = 'smart-filter-content-open'; dom.filterOverlay.className = 'overlay-visible'; dom.smartFilterToggle.classList.add('active'); }
+        function openFilterPanel() { if (!dom.smartFilterPanel) return; closeSettingsMenu(); closeReadmeModal(); closeLibraryModal(); if(dom.configBtn) closeConfigModal(); dom.smartFilterPanel.className = 'smart-filter-content-open'; dom.filterOverlay.className = 'overlay-visible'; dom.smartFilterToggle.classList.add('active'); }
         function closeFilterPanel() { if (!dom.smartFilterPanel) return; dom.smartFilterPanel.className = 'smart-filter-content-hidden'; checkOverlay(); dom.smartFilterToggle.classList.remove('active'); }
         function toggleFilterPanel() { dom.smartFilterPanel.className === 'smart-filter-content-hidden' ? openFilterPanel() : closeFilterPanel(); }
-        function openSettingsMenu() { if (!dom.settingsMenuPanel) return; closeFilterPanel(); closeReadmeModal(); closeLibraryModal(); dom.settingsMenuPanel.className = 'settings-menu-panel-open'; dom.filterOverlay.className = 'overlay-visible'; dom.settingsMenuToggle.classList.add('active'); }
+        function openSettingsMenu() { if (!dom.settingsMenuPanel) return; closeFilterPanel(); closeReadmeModal(); closeLibraryModal(); if(dom.configBtn) closeConfigModal(); dom.settingsMenuPanel.className = 'settings-menu-panel-open'; dom.filterOverlay.className = 'overlay-visible'; dom.settingsMenuToggle.classList.add('active'); }
         function closeSettingsMenu() { if (!dom.settingsMenuPanel) return; dom.settingsMenuPanel.className = 'settings-menu-panel-hidden'; checkOverlay(); dom.settingsMenuToggle.classList.remove('active'); }
         function toggleSettingsMenu() { dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' ? openSettingsMenu() : closeSettingsMenu(); }
-        function openReadmeModal() { closeFilterPanel(); closeSettingsMenu(); closeLibraryModal(); closeConfigModal(); dom.readmeModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; }
+        
+        function openReadmeModal() { 
+            closeFilterPanel(); 
+            closeSettingsMenu(); 
+            closeLibraryModal(); 
+            if(dom.configBtn) closeConfigModal(); // FIX: Solo si existe
+            dom.readmeModal.className = 'modal-visible'; 
+            dom.filterOverlay.className = 'overlay-visible'; 
+        }
         function closeReadmeModal() { dom.readmeModal.className = 'modal-hidden'; checkOverlay(); }
-        function checkOverlay() { if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden' && dom.libraryModal.className === 'modal-hidden' && dom.configModal.className === 'modal-hidden') { dom.filterOverlay.className = 'overlay-hidden'; } }
-        function openLibraryModal() { closeSettingsMenu(); closeFilterPanel(); closeReadmeModal(); closeConfigModal(); renderLibraryGamaList(); dom.libraryModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; dom.uploadStatusText.textContent = "Formato Admin (CSV)"; dom.csvUploadInput.value = ""; }
+        
+        function checkOverlay() { 
+            // FIX CRÍTICO: Chequeo de nulos antes de comprobar className
+            const isSmartFilterClosed = dom.smartFilterPanel.className === 'smart-filter-content-hidden';
+            const isSettingsClosed = dom.settingsMenuPanel.className === 'settings-menu-panel-hidden';
+            const isReadmeClosed = dom.readmeModal.className === 'modal-hidden';
+            const isLibraryClosed = dom.libraryModal.className === 'modal-hidden';
+            
+            // Si el config modal existe, comprobamos su estado. Si no, asumimos cerrado (true).
+            const isConfigClosed = dom.configModal ? dom.configModal.className === 'modal-hidden' : true;
+
+            if (isSmartFilterClosed && isSettingsClosed && isReadmeClosed && isLibraryClosed && isConfigClosed) { 
+                dom.filterOverlay.className = 'overlay-hidden'; 
+            } 
+        }
+        
+        function openLibraryModal() { 
+            closeSettingsMenu(); 
+            closeFilterPanel(); 
+            closeReadmeModal(); 
+            if(dom.configBtn) closeConfigModal(); // FIX: Solo si existe
+            renderLibraryGamaList(); 
+            dom.libraryModal.className = 'modal-visible'; 
+            dom.filterOverlay.className = 'overlay-visible'; 
+            dom.uploadStatusText.textContent = "Formato Admin (CSV)"; 
+            dom.csvUploadInput.value = ""; 
+        }
         function closeLibraryModal() { dom.libraryModal.className = 'modal-hidden'; checkOverlay(); }
         
         function handleCsvUpload(e) { const file = e.target.files[0]; if (!file) return; dom.uploadStatusText.textContent = `Procesando: ${file.name}...`; const reader = new FileReader(); reader.onload = (event) => { try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado con éxito!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8."); } }; reader.readAsText(file, 'UTF-8'); }
@@ -648,7 +698,9 @@
         function hslToRgb(h, s, l) { s /= 100; l /= 100; const k = n => (n + h / 30) % 12; const a = s * Math.min(l, 1 - l); const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return { r: Math.round(255 * f(0)), g: Math.round(255 * f(8)), b: Math.round(255 * f(4)) }; }
         
         async function showReadmeInfo() {
-            closeSettingsMenu(); closeLibraryModal(); closeConfigModal(); openReadmeModal();
+            closeSettingsMenu(); closeLibraryModal(); 
+            if(dom.configBtn) closeConfigModal(); // FIX: Solo si existe
+            openReadmeModal();
             // Comprobamos si hay texto "hardcoded" primero (inyectado por el Builder)
             if (dom.readmeContent.textContent.trim() === "") {
                 dom.readmeContent.textContent = "Cargando...";
@@ -676,25 +728,10 @@
                 if(!confirm("¿Generar archivo Release? (Se eliminará el constructor y se inyectará la configuración actual).")) return;
 
                 // 1. CLONAR DOM para Manipulación Segura
-                // Al clonar, perdemos los event listeners, pero eso está BIEN porque 
-                // el archivo generado volverá a ejecutar el script de inicialización al abrirse.
                 const virtualDoc = document.documentElement.cloneNode(true);
 
-                // 2. Limpieza Quirúrgica (DOM Manipulation)
-                // Usamos remove() en lugar de Replace por Regex para evitar romper el HTML
-                
-                // Limpiar botones del constructor
-                const btnConfig = virtualDoc.querySelector('#config-release-btn');
-                if(btnConfig) btnConfig.remove();
-                
-                const btnBuild = virtualDoc.querySelector('#master-builder-btn');
-                if(btnBuild) btnBuild.remove();
-
-                // Limpiar Modal de Configuración (Completo)
-                const modalConfig = virtualDoc.querySelector('#config-modal');
-                if(modalConfig) modalConfig.remove();
-
-                // Resetear estado visual de paneles
+                // 2. Limpieza de Estado de UI en el Clon (Cerrar menús y resetear estados)
+                // Es vital eliminar clases 'active' o estados abiertos que puedan haberse clonado
                 const settingsPanel = virtualDoc.querySelector('#settings-menu-panel');
                 if (settingsPanel) settingsPanel.className = 'settings-menu-panel-hidden'; 
 
@@ -703,54 +740,52 @@
 
                 const settingsBtn = virtualDoc.querySelector('#settings-menu-toggle');
                 if (settingsBtn) settingsBtn.classList.remove('active');
+                
+                // Limpiar cualquier modal abierto
+                const modals = virtualDoc.querySelectorAll('.modal-visible');
+                modals.forEach(m => m.className = 'modal-hidden');
 
-                // 3. Capturar datos actuales
+                // 3. Capturar datos actuales (Memoria) y Configuración
                 const currentProducts = window.APP_DB.products;
                 const currentSchemas = window.APP_DB.schemas;
-                const config = window.masterConfig;
+                const config = window.masterConfig; // Usamos la configuración del usuario
 
-                // 4. INYECCIÓN DE DATOS (Usando DOM Text Content)
-                // Buscamos el script bootloader por ID en el clon
-                const bootloaderScript = virtualDoc.querySelector('#db-bootloader');
-                if (bootloaderScript) {
-                    bootloaderScript.textContent = `
-                        /** Pokedex Drive Release (${config.version}) */
-                        window.APP_DB = {
-                            products: ${JSON.stringify(currentProducts)},
-                            schemas: ${JSON.stringify(currentSchemas)},
-                            registerProduct: function(p) { this.products.push(p); },
-                            registerSchema: function(k, s) { this.schemas[k] = s; }
-                        };
-                        window.IS_POKEDEX_DRIVE = true;
-                    `;
-                }
-
-                // 5. INYECCIÓN DE CONFIGURACIÓN (DOM)
-                // Título
-                const titleTag = virtualDoc.querySelector('title');
-                if(titleTag) titleTag.textContent = `${config.title} (${config.version})`;
-
-                // H1 Header
-                const appTitle = virtualDoc.querySelector('.app-title');
-                if(appTitle) {
-                    appTitle.innerHTML = `${config.title} <span class="app-version">${config.version}</span>`;
-                }
-
-                // Info Text (Readme)
-                const readmePre = virtualDoc.querySelector('#readme-content');
-                if(readmePre) {
-                    readmePre.textContent = config.text; // TextContent escapa HTML automáticamente
-                }
-
-                // 6. SERIALIZACIÓN FINAL
+                // 4. Convertir Clon a String HTML
                 let html = virtualDoc.outerHTML;
+                
+                // 5. INYECCIÓN DE DATOS DE PRODUCTOS (Reemplazar bloque de script inicial)
+                // Usamos una regex más robusta que busque hasta la asignación de IS_POKEDEX_DRIVE para asegurar el cierre correcto
+                const dbPattern = /window\.APP_DB\s*=\s*\{[\s\S]*?\};\s*window\.IS_POKEDEX_DRIVE/;
+                const newData = `window.APP_DB = {
+                    products: ${JSON.stringify(currentProducts)},
+                    schemas: ${JSON.stringify(currentSchemas)},
+                    registerProduct: function(p) { this.products.push(p); },
+                    registerSchema: function(k, s) { this.schemas[k] = s; }
+                };\n        window.IS_POKEDEX_DRIVE`;
+                html = html.replace(dbPattern, newData);
 
-                // 7. Borrar el script del constructor (Este script)
-                // Esto lo hacemos por Regex porque es seguro (es un bloque único y final)
+                // 6. ACTUALIZACIÓN DINÁMICA DE CABECERAS Y TÍTULOS
+                html = html.replace(/<title>.*?<\/title>/, `<title>${config.title} (${config.version})</title>`);
+                const newHeader = `<h1 class="app-title">${config.title} <span class="app-version">${config.version}</span></h1>`;
+                html = html.replace(/<h1 class="app-title">[\s\S]*?<\/h1>/, newHeader);
+
+                // 7. INYECCIÓN DIRECTA DEL TEXTO INFO
+                const safeText = config.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const infoInjection = `<pre id="readme-content" class="modal-body">${safeText}</pre>`;
+                html = html.replace(/<pre id="readme-content" class="modal-body"><\/pre>/, infoInjection);
+
+                // 8. ELIMINACIÓN DE HERRAMIENTAS DE CONSTRUCCIÓN (HTML + CSS)
+                // Borrar botones del menú
+                html = html.replace(/<button id="config-release-btn".*?<\/button>/, '');
+                html = html.replace(/<button id="master-builder-btn".*?<\/button>/, '');
+                // Borrar Modal de Configuración HTML
+                const modalPattern = /<div id="config-modal"[\s\S]*?<\/div>\s*<\/div>/; 
+                html = html.replace(modalPattern, '');
+                // Borrar script builder
                 const scriptPattern = /<script id="master-builder-logic">[\s\S]*?<\/script>/;
                 html = html.replace(scriptPattern, '');
 
-                // 8. Descarga
+                // 9. Descarga
                 const blob = new Blob(['<!DOCTYPE html>\n' + html], {type: 'text/html'});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
