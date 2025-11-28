@@ -3,20 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- VARIABLES GLOBALES ---
     let masterDatabase = [];
     let masterSchemaMap = {};
-    let activeSchemas = new Set();
+    let activeSchemas = new Set(); // Este Set contiene las gamas activas (checkboxes)
     let currentLoadedSchemaKey = null; 
     let currentActivePanel = 'general';
     let isLightMode = false;
 
+    // --- PUENTE DE CONTEXTO (NUEVO) ---
+    // Exponemos activeSchemas para que pokedexdrive.js pueda leer qué está activado
+    window.ADMIN_CONTEXT = {
+        activeSchemas: activeSchemas
+    };
+
     // Configuración Global para el Metaconstructor
-    // Se expone a window para que pokedexdrive.js pueda leerla
     window.driveConfig = {
         title: "Pokedex Drive",
         version: "v24.0.1",
         introText: "Versión offline generada automáticamente.\nContiene toda la base de datos y funcionalidad completa."
     };
 
-    // Paletas
+    // Paletas (Mantener igual)
     const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
     const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
 
@@ -64,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
         exportGamaCsvButton: document.getElementById('export-gama-csv-btn'),
         
-        // Config Drive
         driveConfigBtn: document.getElementById('drive-config-btn'),
         driveConfigModal: document.getElementById('drive-config-modal'),
         driveConfigCloseBtn: document.getElementById('drive-config-close-btn'),
@@ -72,8 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         confDriveTitle: document.getElementById('conf-drive-title'),
         confDriveVersion: document.getElementById('conf-drive-version'),
         confDriveText: document.getElementById('conf-drive-text'),
-        
-        // Modales Compilador (Solo cierre, la lógica está en pokedexdrive.js)
         driveCloseBtn: document.getElementById('drive-close-btn')
     };
 
@@ -87,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.APP_DB) {
                 masterDatabase = window.APP_DB.products || [];
                 masterSchemaMap = window.APP_DB.schemas || [];
+                // Inicializar activeSchemas con todas las keys cargadas
                 Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
             }
             setupEventListeners();
@@ -96,57 +99,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
-        // Nav & Panels
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
         dom.navCardButtons.forEach(btn => btn.addEventListener('click', () => showPanel(btn.dataset.panel)));
         
-        // Header Actions
         dom.btnSaveMemory.addEventListener('click', handleMemorySave);
         dom.btnExportFile.addEventListener('click', handleExportFile);
         dom.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); dom.settingsMenu.style.display = dom.settingsMenu.style.display === 'block' ? 'none' : 'block'; });
         document.addEventListener('click', () => { if (dom.settingsMenu) dom.settingsMenu.style.display = 'none'; });
 
-        // Modals Globales
         dom.closeInfoModalBtn.addEventListener('click', hideAllModals);
         dom.libraryCloseBtn.addEventListener('click', hideAllModals);
         dom.driveConfigCloseBtn.addEventListener('click', hideAllModals);
         dom.modalOverlay.addEventListener('click', hideAllModals);
         if(dom.driveCloseBtn) dom.driveCloseBtn.addEventListener('click', hideAllModals);
 
-        // Library & Settings
         dom.libraryBtn.addEventListener('click', openLibraryModal);
         dom.themeBtn.addEventListener('click', (e) => { e.stopPropagation(); isLightMode = !isLightMode; localStorage.setItem('admin-theme-mode', isLightMode?'light':'dark'); randomizeTheme(); });
         dom.infoBtn.addEventListener('click', () => { dom.infoModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; });
 
-        // Drive Config
         dom.driveConfigBtn.addEventListener('click', openDriveConfigModal);
         dom.driveConfigSaveBtn.addEventListener('click', saveDriveConfig);
 
-        // CSV Import
         dom.csvTextBtn.addEventListener('click', handleCsvTextImport);
         dom.csvUploadInput.addEventListener('change', handleCsvFileUpload);
 
-        // Model Hub
         dom.modelSearchInput.addEventListener('input', updateSearchResults);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
         dom.createModelBtn.addEventListener('click', createNewModel);
 
-        // Schema Hub
         dom.schemaResultsList.addEventListener('click', handleSchemaLoad);
         dom.createSchemaBtn.addEventListener('click', createNewSchema);
         dom.addGroupBtn.addEventListener('click', () => addGroupToSchemaEditor());
         dom.schemaEditorForm.addEventListener('click', handleSchemaEditorEvents);
 
-        // Export
         dom.gamaExportSelect.addEventListener('change', updateExportList);
         dom.exportGamaJsonButton.addEventListener('click', exportFullGamaJson);
         dom.exportGamaCsvButton.addEventListener('click', exportFullGamaCsv);
 
-        // Biblioteca Dinámica
         if(dom.libraryGamaList) {
             dom.libraryGamaList.addEventListener('change', (e) => {
                 if(e.target.matches('.gama-checkbox')) {
                     const key = e.target.dataset.key;
+                    // Aquí actualizamos el Set activeSchemas, y como window.ADMIN_CONTEXT.activeSchemas 
+                    // es una referencia al mismo objeto, se actualiza automáticamente.
                     if(e.target.checked) activeSchemas.add(key); else activeSchemas.delete(key);
                     refreshUI();
                 }
@@ -195,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.infoModal.style.display = 'none';
         dom.libraryModal.style.display = 'none';
         dom.driveConfigModal.style.display = 'none';
-        // driveModal se maneja en pokedexdrive.js, pero podemos cerrarlo si el usuario hace click fuera
         const driveModal = document.getElementById('drive-modal');
         if(driveModal) driveModal.style.display = 'none';
         dom.modalOverlay.style.display = 'none';
@@ -222,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLightMode) root.classList.add('light-mode'); else root.classList.remove('light-mode');
     }
 
-    // --- CSV & EDITOR LOGIC (Preservada de v3.9) ---
+    // --- CSV & EDITOR LOGIC ---
     function parseCSVLine(text) { const r=[]; let c='',q=false; for(let i=0;i<text.length;i++){const x=text[i],n=text[i+1];if(q){if(x==='"'&&n==='"'){c+='"';i++}else if(x==='"')q=false;else c+=x}else{if(x===';'){r.push(c);c=''}else if(x==='"')q=true;else c+=x}} r.push(c); return r; }
     function parseAndImportCsv(t) { let x=t;if(x.charCodeAt(0)===0xFEFF)x=x.slice(1); const l=x.split(/\r?\n/).filter(y=>y.trim()); if(l.length<4)throw new Error("CSV corto"); const g=parseCSVLine(l[0]),k=g[0].toLowerCase().trim(); if(!k)throw new Error("No Key"); const c=parseCSVLine(l[1]),d=parseCSVLine(l[2]),s={},o=[]; for(let i=2;i<c.length;i++){const n=g[i]||"Otros",CD=c[i],DS=d[i]||CD;if(CD){if(!s[n]){s[n]=[];o.push(n)}s[n].push({code:CD,desc:DS})}} masterSchemaMap[k]=o.map(n=>({group:n,attrs:s[n]})); activeSchemas.add(k); let cnt=0; for(let i=3;i<l.length;i++){const r=parseCSVLine(l[i]),m=r[1];if(!m)continue;const a={};for(let j=2;j<c.length;j++){if(c[j]&&r[j])a[c[j]]=r[j]}const ix=masterDatabase.findIndex(z=>z.model===m),np={model:m,schema_key:k,attributes:a};if(ix>=0)masterDatabase[ix]=np;else masterDatabase.push(np);cnt++} return {count:cnt,schemaKey:k}; }
     function handleCsvTextImport(){ const t=dom.csvTextInput.value.trim();if(t){try{const r=parseAndImportCsv(t);alert(`Importados ${r.count} en ${r.schemaKey}`);dom.csvTextInput.value='';refreshUI();}catch(e){alert(e.message);}} }
