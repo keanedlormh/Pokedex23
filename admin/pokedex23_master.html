@@ -161,7 +161,7 @@
         .modal-close-btn { background: none; border: none; font-size: 1.75rem; color: var(--color-text-secondary); cursor: pointer; }
         .modal-body { padding: 1rem; overflow-y: auto; font-family: var(--font-primary); font-size: 0.8rem; color: var(--color-text-secondary); white-space: pre-wrap; }
 
-        /* Biblioteca */
+        /* Biblioteca & Export Styles */
         .library-modal-content { max-width: 450px; max-height: 70vh; }
         .compact-body { white-space: normal !important; display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem; }
         .compact-header { padding: 0.5rem 1rem; }
@@ -169,13 +169,20 @@
         .lib-sec-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
         .library-desc { font-family: var(--font-primary); font-size: 0.75rem; color: var(--color-text-dim); margin: 0; }
         .library-list { display: flex; flex-direction: column; background-color: var(--color-bg-dark); border: 1px solid var(--color-border-light); border-radius: 4px; max-height: 150px; overflow-y: auto; }
+        
+        /* GAMA LIST ITEMS + DOWNLOAD BUTTONS */
         .gama-toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.6rem; border-bottom: 1px dashed var(--color-border); transition: background-color 0.2s; }
         .gama-toggle-item:hover { background-color: var(--color-border); }
         .gama-toggle-item:last-child { border-bottom: none; }
-        .gama-toggle-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1; }
+        .gama-toggle-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; flex-grow: 1; overflow: hidden; }
         .gama-checkbox { accent-color: var(--color-cyan-accent); width: 14px; height: 14px; cursor: pointer; }
-        .gama-name { font-weight: 600; font-family: var(--font-secondary); color: var(--color-text-primary); font-size: 0.9rem; }
-        .gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); font-family: var(--font-primary); }
+        .gama-name { font-weight: 600; font-family: var(--font-secondary); color: var(--color-text-primary); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Acciones Derecha (Status + Download) */
+        .gama-actions-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+        .gama-status { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: var(--color-text-dim); font-family: var(--font-primary); min-width: 40px; text-align: right; }
+        .gama-download-btn { background: none; border: 1px solid var(--color-border); color: var(--color-text-secondary); border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.7rem; cursor: pointer; transition: all 0.2s; line-height: 1.2; font-family: var(--font-primary); }
+        .gama-download-btn:hover { border-color: var(--color-cyan-accent); color: var(--color-cyan-accent); background-color: rgba(6, 182, 212, 0.1); }
         
         /* Upload */
         .upload-area { display: flex; align-items: center; gap: 0.5rem; background-color: var(--color-bg-dark); border: 1px solid var(--color-border); border-radius: 4px; padding: 0.5rem; }
@@ -199,7 +206,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- HEADER -->
         <header class="app-header">
             <div class="header-left">
                 <h1 class="app-title">Pokedex Drive 📟 <span class="app-version">v.Master</span></h1>
@@ -214,7 +220,6 @@
                     <button id="font-toggle-btn" class="settings-menu-item">📄 Texto</button>
                     <button id="info-toggle-btn" class="settings-menu-item">ℹ️ Info</button>
                     
-                    <!-- BOTÓN MASTER -->
                     <button id="master-builder-btn" class="settings-menu-item">💾 Construir Release</button>
                 </div>
             </div>
@@ -241,7 +246,6 @@
             <aside class="sidebar-column">
                 <div class="futuristic-card search-panel">
                     <h2 id="model-list-header" class="futuristic-title">Modelos (...)</h2>
-                    <!-- BUSCADOR REACTIVO -->
                     <div class="search-wrapper">
                         <input type="text" id="search-model" placeholder="..." class="futuristic-input w-full">
                         <button id="clear-search-btn" class="search-clear-btn" style="display: none;">&times;</button>
@@ -275,7 +279,6 @@
         </div>
     </div>
 
-    <!-- Modal Biblioteca (Actualizado) -->
     <div id="library-modal" class="modal-hidden">
         <div class="modal-content library-modal-content">
             <div class="modal-header compact-header">
@@ -407,10 +410,129 @@
             if (dom.libraryBtn) dom.libraryBtn.addEventListener('click', openLibraryModal);
             if (dom.libraryCloseBtn) dom.libraryCloseBtn.addEventListener('click', closeLibraryModal);
             if (dom.csvUploadInput) dom.csvUploadInput.addEventListener('change', handleCsvUpload);
-            if (dom.libraryGamaList) dom.libraryGamaList.addEventListener('change', handleGamaToggle);
             // TXT Import
             if (dom.csvTextBtn) dom.csvTextBtn.addEventListener('click', handleTextImport);
+
+            // GAMA LIST LISTENERS (Updated with Download Delegation)
+            if (dom.libraryGamaList) {
+                dom.libraryGamaList.addEventListener('click', (e) => {
+                    // Caso: Click en botón descarga
+                    if (e.target.matches('.gama-download-btn')) {
+                        e.preventDefault(); 
+                        e.stopPropagation();
+                        exportGamaToCSV(e.target.dataset.key);
+                        return;
+                    }
+                });
+                // Caso: Toggle checkbox
+                dom.libraryGamaList.addEventListener('change', handleGamaToggle);
+            }
         }
+
+        // --- FUNCIONES BIBLIOTECA & EXPORTACIÓN (MERGED) ---
+
+        function renderLibraryGamaList() {
+            dom.libraryGamaList.innerHTML = '';
+            Object.keys(masterSchemaMap).forEach(schemaKey => {
+                const isActive = activeSchemas.has(schemaKey);
+                const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1);
+                
+                const item = document.createElement('div');
+                item.className = 'gama-toggle-item';
+                item.innerHTML = `
+                    <label class="gama-toggle-label">
+                        <input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}>
+                        <span class="gama-name">${friendlyName}</span>
+                    </label>
+                    <div class="gama-actions-right">
+                        <button class="gama-download-btn" data-key="${schemaKey}" title="Descargar CSV de ${friendlyName}">⬇</button>
+                        <span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>
+                    </div>
+                `;
+                dom.libraryGamaList.appendChild(item);
+            });
+        }
+
+        function exportGamaToCSV(selectedSchema) {
+            if (!selectedSchema) return;
+            const products = masterDatabase.filter(p => p.schema_key === selectedSchema);
+            if (products.length === 0) {
+                alert("Esta gama no tiene productos para exportar.");
+                return;
+            }
+
+            const schemaDef = masterSchemaMap[selectedSchema];
+            let row1_groups = [selectedSchema, "Identificación"];
+            let row2_codes = ["", "model"];
+            let row3_descs = ["", "Modelo"];
+            let attrKeys = [];
+
+            if (schemaDef) {
+                schemaDef.forEach(group => {
+                    group.attrs.forEach(attr => {
+                        row1_groups.push(group.group);
+                        row2_codes.push(attr.code);
+                        row3_descs.push(attr.desc);
+                        attrKeys.push(attr.code);
+                    });
+                });
+            }
+
+            const sanitize = (val) => {
+                if (val === null || val === undefined) return "";
+                val = String(val);
+                val = val.replace(/"/g, '""');
+                if (val.search(/("|\;|:|\n|\r)/g) >= 0) val = `"${val}"`;
+                return val;
+            };
+
+            const dataRows = products.map(p => {
+                let row = ["", sanitize(p.model)];
+                attrKeys.forEach(key => {
+                    let val = p.attributes[key] || "";
+                    row.push(sanitize(val));
+                });
+                return row.join(";");
+            });
+
+            const header1 = row1_groups.map(g => sanitize(g)).join(";");
+            const header2 = row2_codes.map(c => sanitize(c)).join(";");
+            const header3 = row3_descs.map(d => sanitize(d)).join(";");
+
+            const csvContent = "\uFEFF" + header1 + "\n" + header2 + "\n" + header3 + "\n" + dataRows.join("\n");
+            const filename = `GAMA_${selectedSchema.toUpperCase()}.csv`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function handleGamaToggle(e) { 
+            if (!e.target.matches('.gama-checkbox')) return; 
+            const key = e.target.dataset.key; 
+            const isChecked = e.target.checked; 
+            if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); 
+            
+            // Actualizar UI Status
+            const item = e.target.closest('.gama-toggle-item');
+            const statusSpan = item.querySelector('.gama-status');
+            statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; 
+            statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; 
+            
+            populateSchemaSelector(); 
+            populateSmartFilters(dom.schemaFilterSelect.value); 
+            applyFiltersAndSearch(); 
+        }
+
+        // --- REST OF THE APP LOGIC ---
 
         function handleSearchInputUI(input) {
             const hasText = input.value.length > 0;
@@ -448,8 +570,6 @@
         function checkOverlay() { if (dom.smartFilterPanel.className === 'smart-filter-content-hidden' && dom.settingsMenuPanel.className === 'settings-menu-panel-hidden' && dom.readmeModal.className === 'modal-hidden' && dom.libraryModal.className === 'modal-hidden') { dom.filterOverlay.className = 'overlay-hidden'; } }
         function openLibraryModal() { closeSettingsMenu(); closeFilterPanel(); closeReadmeModal(); renderLibraryGamaList(); dom.libraryModal.className = 'modal-visible'; dom.filterOverlay.className = 'overlay-visible'; dom.uploadStatusText.textContent = "Formato Admin (CSV)"; dom.csvUploadInput.value = ""; }
         function closeLibraryModal() { dom.libraryModal.className = 'modal-hidden'; checkOverlay(); }
-        function renderLibraryGamaList() { dom.libraryGamaList.innerHTML = ''; Object.keys(masterSchemaMap).forEach(schemaKey => { const isActive = activeSchemas.has(schemaKey); const friendlyName = schemaKey.charAt(0).toUpperCase() + schemaKey.slice(1); const item = document.createElement('div'); item.className = 'gama-toggle-item'; item.innerHTML = `<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${schemaKey}" ${isActive ? 'checked' : ''}><span class="gama-name">${friendlyName}</span></label><span class="gama-status">${isActive ? 'Activa' : 'Oculta'}</span>`; dom.libraryGamaList.appendChild(item); }); }
-        function handleGamaToggle(e) { if (!e.target.matches('.gama-checkbox')) return; const key = e.target.dataset.key; const isChecked = e.target.checked; if (isChecked) activeSchemas.add(key); else activeSchemas.delete(key); const statusSpan = e.target.closest('.gama-toggle-item').querySelector('.gama-status'); statusSpan.textContent = isChecked ? 'Activa' : 'Oculta'; statusSpan.style.color = isChecked ? 'var(--color-cyan-accent)' : 'var(--color-text-dim)'; populateSchemaSelector(); populateSmartFilters(dom.schemaFilterSelect.value); applyFiltersAndSearch(); }
         
         function handleCsvUpload(e) { const file = e.target.files[0]; if (!file) return; dom.uploadStatusText.textContent = `Procesando: ${file.name}...`; const reader = new FileReader(); reader.onload = (event) => { try { parseAndImportCsv(event.target.result); dom.uploadStatusText.textContent = `¡Importado con éxito!`; dom.uploadStatusText.style.color = 'var(--color-cyan-accent)'; buildAttributeCache(); populateSchemaSelector(); applyFiltersAndSearch(); renderLibraryGamaList(); } catch (error) { console.error(error); dom.uploadStatusText.textContent = `Error: Formato inválido`; dom.uploadStatusText.style.color = '#ef4444'; alert("Error al importar. Revisa que el CSV use punto y coma (;) y formato UTF-8."); } }; reader.readAsText(file, 'UTF-8'); }
         
@@ -490,7 +610,7 @@
                     const text = await response.text();
                     dom.readmeContent.textContent = text;
                 } catch (error) {
-                    dom.readmeContent.textContent = "La aplicación Pokedex Drive es un visor web interactivo para un catálogo de modelos, implementado en HTML/CSS/JS como una aplicación offline con un sistema de datos integrados sobre productos y esquemas de atributos.\n\n- **HTML**: Estructura con cabecera (título, ajustes, filtros), capas flexibles (barras laterales para búsqueda/lista de modelos, main para detalles), y modales (info, biblioteca). Incluye superposición para cierres.\n\n- **CSS**: Tema básico con variables, fuentes dual (primaria: sans/serif legible; secundaria: mono/display), estilos para tarjetas, inputs, listas, specs (detalles agrupados), y responsive (media queries para mobile/desktop). Soporta transiciones y hover effects.\n\n- **JavaScript**: Inicializa DB (productos ordenados, caches), listeners para inputs/clicks. Maneja:\n\n  - Búsqueda/filtros: Dinámicos por gama/atributos, chips activos, render resultados.\n\n  - Visualización: Muestra specs en <details>, expande/colapsa.\n\n  - UI: Toggles panels/modales, temas (light/dark con tonos random), fuentes dual random.\n\n  - Biblioteca: Gestión de gamas (activar/ocultar), import CSV (parser personalizado para schemas y datos).\n\n  - Auxiliares: para colores, README para info modal.\n\n🏴‍☠️";
+                    dom.readmeContent.textContent = "La aplicación Pokedex Drive es un visor web interactivo para un catálogo de modelos, implementado en HTML/CSS/JS como una aplicación offline con un sistema de datos integrados sobre productos y esquemas de atributos.\n\n- **HTML**: Estructura con cabecera (título, ajustes, filtros), capas flexibles (barras laterales para búsqueda/lista de modelos, main para detalles), y modales (info, biblioteca). Incluye superposición para cierres.\n\n- **CSS**: Tema básico con variables, fuentes dual (primaria: sans/serif legible; secundaria: mono/display), estilos para tarjetas, inputs, listas, specs (detalles agrupados), y responsive (media queries para mobile/desktop). Soporta transiciones y hover effects.\n\n- **JavaScript**: Inicializa DB (productos ordenados, caches), listeners para inputs/clicks. Maneja:\n\n  - Búsqueda/filtros: Dinámicos por gama/atributos, chips activos, render resultados.\n\n  - Visualización: Muestra specs en <details>, expande/colapsa.\n\n  - UI: Toggles panels/modales, temas (light/dark con tonos random), fuentes dual random.\n\n  - Biblioteca: Gestión de gamas (activar/ocultar), import CSV (parser personalizado para schemas y datos).\n\n  - Exportación: Genera CSVs compatibles de las gamas cargadas.\n\n  - Master Builder: Capacidad de generar releases limpias.\n\n🏴‍☠️";
                 }
             }
         }
@@ -499,7 +619,6 @@
     });
     </script>
 
-    <!-- META-CONSTRUCTOR (SINGLE FILE LOGIC) -->
     <script id="master-builder-logic">
         document.addEventListener('DOMContentLoaded', () => {
             const builderBtn = document.getElementById('master-builder-btn');
@@ -569,6 +688,3 @@
     </script>
 </body>
 </html>
-
-
-
