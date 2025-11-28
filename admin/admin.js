@@ -8,26 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentActivePanel = 'general';
     let isLightMode = false;
 
-    // Configuración Drive
-    let driveConfig = {
-        title: "Pokedex Drive Offline",
-        version: "v2.0",
-        introText: "Base de datos técnica generada con Pokedex Drive Admin."
+    // Configuración Global para el Metaconstructor
+    // Se expone a window para que pokedexdrive.js pueda leerla
+    window.driveConfig = {
+        title: "Pokedex Drive",
+        version: "v24.0.1",
+        introText: "Versión offline generada automáticamente.\nContiene toda la base de datos y funcionalidad completa."
     };
 
-    // --- DOM REFS & INIT ---
-    // (Igual que antes, solo actualizamos la parte crítica)
+    // Paletas
+    const darkPaletteHSL = { accent: { h: 188, s: 96, l: 41 }, dark: { h: 210, s: 29, l: 8 }, medium: { h: 210, s: 19, l: 11 }, border: { h: 210, s: 16, l: 15 }, textP: { h: 210, s: 29, l: 92 }, textS: { h: 210, s: 12, l: 67 } };
+    const lightPaletteHSL = { accent: { h: 188, s: 86, l: 40 }, dark: { h: 210, s: 20, l: 98 }, medium: { h: 210, s: 19, l: 94 }, border: { h: 210, s: 16, l: 85 }, textP: { h: 210, s: 29, l: 10 }, textS: { h: 210, s: 12, l: 40 } };
+
+    // --- DOM REFERENCES ---
     const dom = {
-        // ... (resto de referencias)
-        driveTriggerBtn: document.getElementById('drive-builder-trigger'),
-        driveModal: document.getElementById('drive-modal'),
-        driveCloseBtn: document.getElementById('drive-close-btn'),
-        driveProgressFill: document.getElementById('drive-progress-fill'),
-        drivePercentText: document.getElementById('drive-percent-text'),
-        driveConsole: document.getElementById('drive-log-console'),
-        driveActionArea: document.getElementById('drive-action-area'),
-        driveDownloadBtn: document.getElementById('drive-download-final-btn'),
-        // ...
         homeBtn: document.getElementById('home-btn'),
         btnSaveMemory: document.getElementById('btn-save-memory'),
         btnExportFile: document.getElementById('btn-export-file'),
@@ -70,19 +64,24 @@ document.addEventListener('DOMContentLoaded', () => {
         exportGamaJsonButton: document.getElementById('export-gama-json-btn'),
         exportGamaCsvButton: document.getElementById('export-gama-csv-btn'),
         
+        // Config Drive
         driveConfigBtn: document.getElementById('drive-config-btn'),
         driveConfigModal: document.getElementById('drive-config-modal'),
         driveConfigCloseBtn: document.getElementById('drive-config-close-btn'),
         driveConfigSaveBtn: document.getElementById('conf-drive-save-btn'),
         confDriveTitle: document.getElementById('conf-drive-title'),
         confDriveVersion: document.getElementById('conf-drive-version'),
-        confDriveText: document.getElementById('conf-drive-text')
+        confDriveText: document.getElementById('conf-drive-text'),
+        
+        // Modales Compilador (Solo cierre, la lógica está en pokedexdrive.js)
+        driveCloseBtn: document.getElementById('drive-close-btn')
     };
 
+    // --- INIT ---
     function initialize() {
         const savedMode = localStorage.getItem('admin-theme-mode');
         isLightMode = (savedMode === 'light');
-        // randomizeTheme(); (Simplificado para brevedad)
+        randomizeTheme();
 
         setTimeout(() => {
             if (window.APP_DB) {
@@ -91,161 +90,166 @@ document.addEventListener('DOMContentLoaded', () => {
                 Object.keys(masterSchemaMap).forEach(k => activeSchemas.add(k));
             }
             setupEventListeners();
+            refreshUI();
             showPanel('general');
         }, 100);
     }
 
     function setupEventListeners() {
-        // ... (Listeners previos igual)
-        dom.driveTriggerBtn.addEventListener('click', startDriveBuild);
-        dom.driveDownloadBtn.addEventListener('click', downloadCompiledDrive);
-        
-        // Listeners resto UI
+        // Nav & Panels
         dom.homeBtn.addEventListener('click', () => showPanel('general'));
         dom.navCardButtons.forEach(btn => btn.addEventListener('click', () => showPanel(btn.dataset.panel)));
+        
+        // Header Actions
         dom.btnSaveMemory.addEventListener('click', handleMemorySave);
         dom.btnExportFile.addEventListener('click', handleExportFile);
         dom.settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); dom.settingsMenu.style.display = dom.settingsMenu.style.display === 'block' ? 'none' : 'block'; });
         document.addEventListener('click', () => { if (dom.settingsMenu) dom.settingsMenu.style.display = 'none'; });
-        dom.libraryBtn.addEventListener('click', openLibraryModal);
-        dom.infoBtn.addEventListener('click', () => { dom.infoModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; });
+
+        // Modals Globales
         dom.closeInfoModalBtn.addEventListener('click', hideAllModals);
         dom.libraryCloseBtn.addEventListener('click', hideAllModals);
-        dom.modalOverlay.addEventListener('click', hideAllModals);
-        dom.driveCloseBtn.addEventListener('click', hideAllModals);
         dom.driveConfigCloseBtn.addEventListener('click', hideAllModals);
+        dom.modalOverlay.addEventListener('click', hideAllModals);
+        if(dom.driveCloseBtn) dom.driveCloseBtn.addEventListener('click', hideAllModals);
+
+        // Library & Settings
+        dom.libraryBtn.addEventListener('click', openLibraryModal);
+        dom.themeBtn.addEventListener('click', (e) => { e.stopPropagation(); isLightMode = !isLightMode; localStorage.setItem('admin-theme-mode', isLightMode?'light':'dark'); randomizeTheme(); });
+        dom.infoBtn.addEventListener('click', () => { dom.infoModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; });
+
+        // Drive Config
         dom.driveConfigBtn.addEventListener('click', openDriveConfigModal);
         dom.driveConfigSaveBtn.addEventListener('click', saveDriveConfig);
+
+        // CSV Import
         dom.csvTextBtn.addEventListener('click', handleCsvTextImport);
         dom.csvUploadInput.addEventListener('change', handleCsvFileUpload);
+
+        // Model Hub
         dom.modelSearchInput.addEventListener('input', updateSearchResults);
         dom.modelSearchResults.addEventListener('click', handleResultClick);
         dom.createModelBtn.addEventListener('click', createNewModel);
+
+        // Schema Hub
         dom.schemaResultsList.addEventListener('click', handleSchemaLoad);
         dom.createSchemaBtn.addEventListener('click', createNewSchema);
         dom.addGroupBtn.addEventListener('click', () => addGroupToSchemaEditor());
         dom.schemaEditorForm.addEventListener('click', handleSchemaEditorEvents);
+
+        // Export
         dom.gamaExportSelect.addEventListener('change', updateExportList);
         dom.exportGamaJsonButton.addEventListener('click', exportFullGamaJson);
         dom.exportGamaCsvButton.addEventListener('click', exportFullGamaCsv);
+
+        // Biblioteca Dinámica
         if(dom.libraryGamaList) {
-            dom.libraryGamaList.addEventListener('change', (e) => { if(e.target.matches('.gama-checkbox')) { const key = e.target.dataset.key; if(e.target.checked) activeSchemas.add(key); else activeSchemas.delete(key); refreshUI(); } });
-            dom.libraryGamaList.addEventListener('click', (e) => { if(e.target.matches('.gama-download-btn')) { e.preventDefault(); exportGamaToCSV(e.target.dataset.key); } });
-        }
-    }
-
-    // ... (Resto de funciones de UI/CSV/Export/Editores se mantienen igual que en v3.7) ...
-    // ... SOLO MODIFICAMOS startDriveBuild ...
-
-    // --- DRIVE BUILDER LOGIC ---
-    let compiledBlob = null;
-
-    function startDriveBuild() {
-        // Reset UI
-        dom.driveModal.style.display = 'block';
-        dom.modalOverlay.style.display = 'block';
-        dom.driveActionArea.style.display = 'none';
-        dom.driveProgressFill.style.width = '0%';
-        dom.drivePercentText.textContent = '0%';
-        dom.driveConsole.innerHTML = '<div class="log-line">> Iniciando Pokedex Drive Engine...</div>';
-
-        // 1. Filtrar datos activos
-        const activeData = masterDatabase.filter(p => activeSchemas.has(p.schema_key));
-        const activeSchemasObj = {};
-        activeSchemas.forEach(k => activeSchemasObj[k] = masterSchemaMap[k]);
-
-        if (activeData.length === 0) {
-            dom.driveConsole.innerHTML += `<div class="log-line error">> Error: No hay datos activos.</div>`;
-            return;
-        }
-
-        const steps = [
-            { pct: 20, msg: `Analizando ${activeData.length} modelos en RAM...` },
-            { pct: 50, msg: "Generando estructura visual (v4.9)..." },
-            { pct: 80, msg: "Inyectando Bootloader Offline..." }
-        ];
-
-        let currentStep = 0;
-
-        function nextStep() {
-            if (currentStep >= steps.length) {
-                // PASO FINAL: Compilación
-                try {
-                    dom.driveConsole.innerHTML += `<div class="log-line">> Compilando HTML final...</div>`;
-                    
-                    if (typeof PokedexDrive === 'undefined') {
-                        throw new Error("Motor 'pokedexdrive.js' no cargado.");
-                    }
-
-                    compiledBlob = PokedexDrive.compile(activeData, activeSchemasObj, driveConfig);
-                    
-                    // Finalización exitosa
-                    dom.driveProgressFill.style.width = '100%';
-                    dom.drivePercentText.textContent = '100%';
-                    dom.driveConsole.innerHTML += `<div class="log-line success" style="color:var(--color-green-accent)">> ¡Compilación completada!</div>`;
-                    dom.driveConsole.scrollTop = dom.driveConsole.scrollHeight;
-                    dom.driveActionArea.style.display = 'block';
-
-                } catch (error) {
-                    console.error(error);
-                    dom.driveConsole.innerHTML += `<div class="log-line error" style="color:var(--color-red-accent)">> Error Fatal: ${error.message}</div>`;
+            dom.libraryGamaList.addEventListener('change', (e) => {
+                if(e.target.matches('.gama-checkbox')) {
+                    const key = e.target.dataset.key;
+                    if(e.target.checked) activeSchemas.add(key); else activeSchemas.delete(key);
+                    refreshUI();
                 }
-                return;
-            }
-
-            const s = steps[currentStep];
-            dom.driveProgressFill.style.width = s.pct + '%';
-            dom.drivePercentText.textContent = s.pct + '%';
-            dom.driveConsole.innerHTML += `<div class="log-line">> ${s.msg}</div>`;
-            dom.driveConsole.scrollTop = dom.driveConsole.scrollHeight;
-            
-            currentStep++;
-            setTimeout(nextStep, 600); // Pequeño delay para ver el progreso
-        }
-
-        // Iniciar secuencia
-        setTimeout(nextStep, 500);
-    }
-
-    function downloadCompiledDrive() {
-        if(compiledBlob) {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(compiledBlob);
-            a.download = 'pokedex_drive_offline.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            });
+            dom.libraryGamaList.addEventListener('click', (e) => {
+                if(e.target.matches('.gama-download-btn')) {
+                    e.preventDefault();
+                    exportGamaToCSV(e.target.dataset.key);
+                }
+            });
         }
     }
 
-    // ... (Helpers UI panel, modals, etc... necesarios para que no falle el init)
-    function showPanel(id) { currentActivePanel = id; dom.allContentPanels.forEach(p => p.classList.remove('active')); document.getElementById(`panel-${id}`).classList.add('active'); dom.editorControls.style.display = (id === 'edit-model' || id === 'edit-schema') ? 'flex' : 'none'; }
-    function hideAllModals() { dom.infoModal.style.display = 'none'; dom.libraryModal.style.display = 'none'; dom.driveModal.style.display = 'none'; dom.driveConfigModal.style.display = 'none'; dom.modalOverlay.style.display = 'none'; }
-    function openDriveConfigModal() { dom.confDriveTitle.value = driveConfig.title; dom.confDriveVersion.value = driveConfig.version; dom.confDriveText.value = driveConfig.introText; dom.driveConfigModal.style.display = 'block'; dom.modalOverlay.style.display = 'block'; }
-    function saveDriveConfig() { driveConfig.title = dom.confDriveTitle.value.trim() || "Pokedex Drive"; driveConfig.version = dom.confDriveVersion.value.trim() || "v1.0"; driveConfig.introText = dom.confDriveText.value.trim(); hideAllModals(); alert("Guardado en RAM."); }
-    function handleCsvTextImport() { const t = dom.csvTextInput.value.trim(); if(t) { try{ parseAndImportCsv(t); alert("Importado."); dom.csvTextInput.value=''; refreshUI(); }catch(e){alert(e.message);} } }
-    function handleCsvFileUpload(e) { const f = e.target.files[0]; if(f) { const r = new FileReader(); r.onload=ev=>{ try{ parseAndImportCsv(ev.target.result); refreshUI(); }catch(e){alert(e.message);} }; r.readAsText(f); } }
-    function parseCSVLine(text) { const result = []; let current = ''; let inQuotes = false; for (let i = 0; i < text.length; i++) { const char = text[i]; const nextChar = text[i + 1]; if (inQuotes) { if (char === '"' && nextChar === '"') { current += '"'; i++; } else if (char === '"') { inQuotes = false; } else { current += char; } } else { if (char === ';') { result.push(current); current = ''; } else if (char === '"') { inQuotes = true; } else { current += char; } } } result.push(current); return result; }
-    function parseAndImportCsv(csvText) { let cleanText = csvText; if (cleanText.charCodeAt(0) === 0xFEFF) cleanText = cleanText.slice(1); const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== ''); if (lines.length < 4) throw new Error("CSV muy corto"); const rowGroups = parseCSVLine(lines[0]); const schemaKey = rowGroups[0].toLowerCase().trim(); if (!schemaKey) throw new Error("Falta Schema Key"); const rowCodes = parseCSVLine(lines[1]); const rowDescs = parseCSVLine(lines[2]); const startIndex = 2; const tempSchema = {}; const groupOrder = []; for (let i = startIndex; i < rowCodes.length; i++) { const groupName = rowGroups[i] || "Otros"; const code = rowCodes[i]; const desc = rowDescs[i] || code; if (code) { if (!tempSchema[groupName]) { tempSchema[groupName] = []; groupOrder.push(groupName); } tempSchema[groupName].push({ code, desc }); } } const newSchemaGroup = groupOrder.map(gName => ({ group: gName, attrs: tempSchema[gName] })); masterSchemaMap[schemaKey] = newSchemaGroup; activeSchemas.add(schemaKey); for (let i = 3; i < lines.length; i++) { const cols = parseCSVLine(lines[i]); const modelId = cols[1]; if (!modelId) continue; const attributes = {}; for (let j = startIndex; j < rowCodes.length; j++) { const code = rowCodes[j]; if (code && cols[j]) attributes[code] = cols[j]; } const existingIdx = masterDatabase.findIndex(p => p.model === modelId); const newProd = { model: modelId, schema_key: schemaKey, attributes: attributes }; if (existingIdx >= 0) masterDatabase[existingIdx] = newProd; else masterDatabase.push(newProd); } return { schemaKey }; }
-    function refreshUI() { updateSearchResults(); updateSchemaLists(); if(dom.libraryModal.style.display==='block') renderLibraryList(); }
-    function updateSearchResults() { dom.modelSearchResults.innerHTML = ''; const q = dom.modelSearchInput.value.toLowerCase(); masterDatabase.filter(p => p.model.toLowerCase().includes(q) && activeSchemas.has(p.schema_key)).forEach(p => { const d = document.createElement('div'); d.className='list-item'; d.textContent=p.model; d.dataset.model=p.model; dom.modelSearchResults.appendChild(d); }); }
-    function handleResultClick(e) { const t=e.target.closest('.list-item'); if(t) loadModelEditor(t.dataset.model); }
-    function createNewModel() { /* Lógica igual a v3.7 */ } 
-    function loadModelEditor(id) { /* Lógica igual a v3.7 */ showPanel('edit-model'); }
-    function updateSchemaLists() { /* Lógica igual a v3.7 */ }
-    function handleSchemaLoad() { /* Lógica igual a v3.7 */ }
-    function createNewSchema() { /* Lógica igual a v3.7 */ }
-    function addGroupToSchemaEditor() { /* Lógica igual a v3.7 */ }
-    function handleSchemaEditorEvents() { /* Lógica igual a v3.7 */ }
-    function openLibraryModal() { renderLibraryList(); dom.libraryModal.style.display='block'; dom.modalOverlay.style.display='block'; }
-    function renderLibraryList() { dom.libraryGamaList.innerHTML=''; Object.keys(masterSchemaMap).forEach(k => { const act=activeSchemas.has(k); const div=document.createElement('div'); div.className='gama-toggle-item'; div.innerHTML=`<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${k}" ${act?'checked':''}><span class="gama-name">${k}</span></label><div class="gama-actions-right"><button class="gama-download-btn" data-key="${k}">⬇</button></div>`; dom.libraryGamaList.appendChild(div); }); }
-    function handleMemorySave() { /* Igual v3.7 */ refreshUI(); }
-    function handleExportFile() { /* Igual v3.7 */ }
-    function updateExportList() { /* Igual v3.7 */ }
-    function exportFullGamaJson() { /* Igual v3.7 */ }
-    function exportFullGamaCsv() { /* Igual v3.7 */ }
-    function exportGamaToCSV(k) { /* Igual v3.7 */ }
-    function downloadFile(n,c,m) { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([c],{type:m})); a.download=n; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    function refreshUI() {
+        updateSearchResults();
+        updateSchemaLists();
+        if(dom.libraryModal.style.display === 'block') renderLibraryList();
+    }
+
+    // --- LOGICA DE CONFIGURACIÓN DRIVE ---
+    function openDriveConfigModal() {
+        dom.confDriveTitle.value = window.driveConfig.title;
+        dom.confDriveVersion.value = window.driveConfig.version;
+        dom.confDriveText.value = window.driveConfig.introText;
+        dom.driveConfigModal.style.display = 'block';
+        dom.modalOverlay.style.display = 'block';
+    }
+
+    function saveDriveConfig() {
+        window.driveConfig.title = dom.confDriveTitle.value.trim() || "Pokedex Drive";
+        window.driveConfig.version = dom.confDriveVersion.value.trim() || "v1.0";
+        window.driveConfig.introText = dom.confDriveText.value.trim();
+        hideAllModals();
+        alert("Configuración actualizada. Lista para compilar.");
+    }
+
+    // --- HELPERS UI & THEME ---
+    function showPanel(id) {
+        currentActivePanel = id;
+        dom.allContentPanels.forEach(p => p.classList.remove('active'));
+        document.getElementById(`panel-${id}`).classList.add('active');
+        dom.editorControls.style.display = (id === 'edit-model' || id === 'edit-schema') ? 'flex' : 'none';
+    }
+
+    function hideAllModals() {
+        dom.infoModal.style.display = 'none';
+        dom.libraryModal.style.display = 'none';
+        dom.driveConfigModal.style.display = 'none';
+        // driveModal se maneja en pokedexdrive.js, pero podemos cerrarlo si el usuario hace click fuera
+        const driveModal = document.getElementById('drive-modal');
+        if(driveModal) driveModal.style.display = 'none';
+        dom.modalOverlay.style.display = 'none';
+    }
+
+    function randomizeTheme() {
+        const hue = Math.floor(Math.random() * 360);
+        updatePaletteCSS(isLightMode ? lightPaletteHSL : darkPaletteHSL, hue);
+    }
+
+    function updatePaletteCSS(p, hue) {
+        const root = document.documentElement;
+        const hsl = (h,s,l) => `hsl(${h},${s}%,${l}%)`;
+        const rgb = (h,s,l) => { s/=100; l/=100; const f=n=>{ const k=(n+h/30)%12; const a=s*Math.min(l,1-l); return l-a*Math.max(-1,Math.min(k-3,9-k,1));}; return [Math.round(255*f(0)),Math.round(255*f(8)),Math.round(255*f(4))].join(','); };
+        const c = rgb(hue,p.accent.s,p.accent.l); const bgHue=(hue+200)%360;
+        root.style.setProperty('--color-cyan-accent', hsl(hue,p.accent.s,p.accent.l));
+        root.style.setProperty('--color-cyan-glow', `rgba(${c},0.25)`);
+        root.style.setProperty('--color-green-accent', `hsl(${(hue+120)%360},80%,45%)`);
+        root.style.setProperty('--color-bg-dark', hsl(bgHue,p.dark.s,p.dark.l));
+        root.style.setProperty('--color-bg-medium', hsl(bgHue,p.medium.s,p.medium.l));
+        root.style.setProperty('--color-border', hsl(bgHue,p.border.s,p.border.l));
+        root.style.setProperty('--color-text-primary', hsl(bgHue,p.textP.s,p.textP.l));
+        root.style.setProperty('--color-text-secondary', hsl(bgHue,p.textS.s,p.textS.l));
+        if (isLightMode) root.classList.add('light-mode'); else root.classList.remove('light-mode');
+    }
+
+    // --- CSV & EDITOR LOGIC (Preservada de v3.9) ---
+    function parseCSVLine(text) { const r=[]; let c='',q=false; for(let i=0;i<text.length;i++){const x=text[i],n=text[i+1];if(q){if(x==='"'&&n==='"'){c+='"';i++}else if(x==='"')q=false;else c+=x}else{if(x===';'){r.push(c);c=''}else if(x==='"')q=true;else c+=x}} r.push(c); return r; }
+    function parseAndImportCsv(t) { let x=t;if(x.charCodeAt(0)===0xFEFF)x=x.slice(1); const l=x.split(/\r?\n/).filter(y=>y.trim()); if(l.length<4)throw new Error("CSV corto"); const g=parseCSVLine(l[0]),k=g[0].toLowerCase().trim(); if(!k)throw new Error("No Key"); const c=parseCSVLine(l[1]),d=parseCSVLine(l[2]),s={},o=[]; for(let i=2;i<c.length;i++){const n=g[i]||"Otros",CD=c[i],DS=d[i]||CD;if(CD){if(!s[n]){s[n]=[];o.push(n)}s[n].push({code:CD,desc:DS})}} masterSchemaMap[k]=o.map(n=>({group:n,attrs:s[n]})); activeSchemas.add(k); let cnt=0; for(let i=3;i<l.length;i++){const r=parseCSVLine(l[i]),m=r[1];if(!m)continue;const a={};for(let j=2;j<c.length;j++){if(c[j]&&r[j])a[c[j]]=r[j]}const ix=masterDatabase.findIndex(z=>z.model===m),np={model:m,schema_key:k,attributes:a};if(ix>=0)masterDatabase[ix]=np;else masterDatabase.push(np);cnt++} return {count:cnt,schemaKey:k}; }
+    function handleCsvTextImport(){ const t=dom.csvTextInput.value.trim();if(t){try{const r=parseAndImportCsv(t);alert(`Importados ${r.count} en ${r.schemaKey}`);dom.csvTextInput.value='';refreshUI();}catch(e){alert(e.message);}} }
+    function handleCsvFileUpload(e){ const f=e.target.files[0];if(f){const r=new FileReader();r.onload=v=>{try{const res=parseAndImportCsv(v.target.result);dom.uploadStatusText.textContent=`OK: ${res.schemaKey}`;dom.uploadStatusText.style.color='var(--color-green-accent)';refreshUI();}catch(err){alert(err.message);}};r.readAsText(f,'UTF-8');e.target.value='';} }
+    
+    // --- EXPORT & EDITORS ---
+    function updateSearchResults(){const q=dom.modelSearchInput.value.toLowerCase();dom.modelSearchResults.innerHTML='';const f=masterDatabase.filter(p=>p.model.toLowerCase().includes(q)&&activeSchemas.has(p.schema_key));if(f.length===0){dom.modelSearchResults.innerHTML='<div class="list-item" style="cursor:default">Sin resultados</div>';return}const fg=document.createDocumentFragment();f.forEach(p=>{const d=document.createElement('div');d.className='list-item';d.textContent=p.model;d.dataset.model=p.model;fg.appendChild(d)});dom.modelSearchResults.appendChild(fg);}
+    function handleResultClick(e){const i=e.target.closest('.list-item');if(i)loadModelEditor(i.dataset.model);}
+    function createNewModel(){const s=dom.createModelSchemaSelect.value,id=dom.createModelIdInput.value.trim().toUpperCase();if(!s||!id)return alert("Datos?");if(masterDatabase.find(p=>p.model===id)&&!confirm("Editar?"))return;masterDatabase.push({model:id,schema_key:s,attributes:{}});loadModelEditor(id);}
+    function loadModelEditor(id){const p=masterDatabase.find(x=>x.model===id);if(!p)return;currentLoadedSchemaKey=p.schema_key;dom.productTitle.textContent=id;dom.editModelIdInput.value=id;dom.editSchemaKeyDisplay.value=p.schema_key;dom.editorPlaceholder.style.display='none';dom.editorForm.querySelectorAll('.form-group-title,.form-row').forEach(e=>e.remove());const s=masterSchemaMap[p.schema_key];if(!s)return alert("No schema");s.forEach(g=>{const h=document.createElement('h3');h.className='form-group-title';h.textContent=g.group;dom.editorForm.appendChild(h);g.attrs.forEach(a=>{const r=document.createElement('div');r.className='form-row';r.innerHTML=`<label class="futuristic-label">${a.desc}</label><textarea class="futuristic-textarea" name="${a.code}" rows="1">${p.attributes[a.code]||''}</textarea>`;dom.editorForm.appendChild(r)})});showPanel('edit-model');}
+    function updateSchemaLists(){const k=Object.keys(masterSchemaMap).filter(x=>activeSchemas.has(x));dom.schemaResultsList.innerHTML='';dom.createModelSchemaSelect.innerHTML='<option value="">--</option>';dom.gamaExportSelect.innerHTML='<option value="">--</option>';k.forEach(x=>{const d=document.createElement('div');d.className='list-item';d.textContent=x;d.dataset.key=x;dom.schemaResultsList.appendChild(d);const o1=document.createElement('option');o1.value=x;o1.textContent=x;dom.createModelSchemaSelect.appendChild(o1);const o2=document.createElement('option');o2.value=x;o2.textContent=x;dom.gamaExportSelect.appendChild(o2);});}
+    function handleSchemaLoad(e){const i=e.target.closest('.list-item');if(i)loadSchemaEditor(i.dataset.key);}
+    function createNewSchema(){const k=dom.newSchemaKeyInput.value.trim().toLowerCase();if(k){if(!masterSchemaMap[k])masterSchemaMap[k]=[];loadSchemaEditor(k);}}
+    function loadSchemaEditor(k){dom.editSchemaKeyInput.value=k;dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(e=>e.remove());masterSchemaMap[k].forEach(g=>addGroupToSchemaEditor(g));showPanel('edit-schema');}
+    function addGroupToSchemaEditor(g=null){const d=document.createElement('div');d.className='schema-group-box';d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:.5rem"><input class="futuristic-input" placeholder="Grupo" value="${g?g.group:''}" data-role="group-name"><button class="schema-action-btn schema-remove-btn" onclick="this.closest('.schema-group-box').remove()">Eliminar</button></div><div class="attrs-container"></div><button class="schema-action-btn" data-role="add-attr" style="margin-left:0;margin-top:.5rem;color:var(--color-green-accent)">+ Attr</button>`;const c=d.querySelector('.attrs-container');if(g)g.attrs.forEach(a=>addAttrRow(c,a));dom.schemaEditorForm.appendChild(d);}
+    function addAttrRow(c,a=null){const r=document.createElement('div');r.className='schema-attr-row';r.innerHTML=`<input class="futuristic-input" placeholder="ID" value="${a?a.code:''}" data-role="attr-code"><input class="futuristic-input" placeholder="Label" value="${a?a.desc:''}" data-role="attr-desc"><button class="schema-action-btn schema-remove-btn" onclick="this.parentElement.remove()">✕</button>`;c.appendChild(r);}
+    function handleSchemaEditorEvents(e){if(e.target.dataset.role==='add-attr'){e.preventDefault();addAttrRow(e.target.previousElementSibling);}}
+    function buildSchemaFromDOM(){const g=[];let ok=true;dom.schemaEditorForm.querySelectorAll('.schema-group-box').forEach(b=>{const n=b.querySelector('[data-role="group-name"]').value.trim();if(!n){ok=false;return}const a=[];b.querySelectorAll('.schema-attr-row').forEach(r=>{const c=r.querySelector('[data-role="attr-code"]').value.trim(),d=r.querySelector('[data-role="attr-desc"]').value.trim();if(c&&d)a.push({code:c,desc:d})});g.push({group:n,attrs:a})});return ok?g:null;}
+    function openLibraryModal(){renderLibraryList();dom.libraryModal.style.display='block';dom.modalOverlay.style.display='block';}
+    function renderLibraryList(){dom.libraryGamaList.innerHTML='';Object.keys(masterSchemaMap).forEach(k=>{const a=activeSchemas.has(k),d=document.createElement('div');d.className='gama-toggle-item';d.innerHTML=`<label class="gama-toggle-label"><input type="checkbox" class="gama-checkbox" data-key="${k}" ${a?'checked':''}><span class="gama-name">${k.toUpperCase()}</span></label><div class="gama-actions-right"><button class="gama-download-btn" data-key="${k}">⬇</button></div>`;dom.libraryGamaList.appendChild(d)});}
+    function handleMemorySave(){dom.btnSaveMemory.style.transform="scale(0.9)";setTimeout(()=>dom.btnSaveMemory.style.transform="scale(1)",150);if(currentActivePanel==='edit-model'){const id=dom.editModelIdInput.value;if(!id)return;const fd=new FormData(dom.editorForm),at={};for(const[k,v]of fd.entries())if(v.trim())at[k]=v.trim();const ix=masterDatabase.findIndex(x=>x.model===id),np={model:id,schema_key:dom.editSchemaKeyDisplay.value,attributes:at};if(ix>=0)masterDatabase[ix]=np;else masterDatabase.push(np);alert("Modelo guardado en RAM");}else if(currentActivePanel==='edit-schema'){const k=dom.editSchemaKeyInput.value,s=buildSchemaFromDOM();if(s){masterSchemaMap[k]=s;alert("Esquema guardado en RAM");}}refreshUI();}
+    function handleExportFile(){if(currentActivePanel==='edit-model'){const id=dom.editModelIdInput.value,p=masterDatabase.find(x=>x.model===id);if(p)downloadFile(id+'.json',JSON.stringify(p,null,4),'application/json');}else if(currentActivePanel==='edit-schema'){const k=dom.editSchemaKeyInput.value,s=masterSchemaMap[k];if(s)downloadFile('schema_'+k+'.js',`window.APP_DB.registerSchema('${k}',${JSON.stringify(s,null,4)});`,'text/javascript');}}
+    function updateExportList(){const s=dom.gamaExportSelect.value;dom.gamaExportList.innerHTML='';if(s)masterDatabase.filter(p=>p.schema_key===s).forEach(p=>{const d=document.createElement('div');d.className='gama-toggle-item';d.innerHTML=p.model;dom.gamaExportList.appendChild(d)});}
+    function exportFullGamaJson(){const s=dom.gamaExportSelect.value;if(s)downloadFile('GAMA_'+s+'.json',JSON.stringify(masterDatabase.filter(p=>p.schema_key===s),null,4),'application/json');}
+    function exportFullGamaCsv(){const s=dom.gamaExportSelect.value;if(s)exportGamaToCSV(s);else alert("Selecciona gama");}
+    function exportGamaToCSV(k){const p=masterDatabase.filter(x=>x.schema_key===k);if(!p.length)return alert("Vacío");const sd=masterSchemaMap[k],r1=[k,"Info"],r2=["","model"],r3=["","Modelo"],ak=[];sd.forEach(g=>g.attrs.forEach(a=>{r1.push(g.group);r2.push(a.code);r3.push(a.desc);ak.push(a.code)}));const san=v=>{if(v==null)return"";v=String(v).replace(/"/g,'""');return(v.search(/("|\;|:|\n)/g)>=0)?'"'+v+'"':v},rows=p.map(x=>{let r=["",san(x.model)];ak.forEach(c=>r.push(san(x.attributes[c]||"")));return r.join(";")}),csv="\uFEFF"+r1.map(san).join(";")+"\n"+r2.map(san).join(";")+"\n"+r3.map(san).join(";")+"\n"+rows.join("\n");downloadFile('GAMA_'+k+'.csv',csv,'text/csv;charset=utf-8');}
+    function downloadFile(n,c,m){const b=new Blob([c],{type:m}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;document.body.appendChild(a);a.click();document.body.removeChild(a);}
 
     initialize();
 });
